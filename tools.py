@@ -50,6 +50,22 @@ class Tools(QMainWindow):
         button.clicked.connect(lambda: self.redo(self.canvas))
         layout.addWidget(button)
 
+        # Our fill tool will be next.
+        button = QPushButton("Fill")
+        button.setStyleSheet("background-color: white;")
+
+        # Connecting its signal to a function that will set the canvas's fill mode to True.
+        button.clicked.connect(lambda: self.set_fill_mode(True))
+        layout.addWidget(button)
+
+        # Our pencil tool:
+        button = QPushButton("Pencil")
+        button.setStyleSheet("background-color: white;")
+
+        # Connecting its signal to a function that will set the canvas's fill mode to False.
+        button.clicked.connect(self.use_pencil_tool)
+        layout.addWidget(button)
+
         # Creating an intermediary widget to hold our layout.
         window = QWidget()
         window.setLayout(layout)
@@ -82,3 +98,13 @@ class Tools(QMainWindow):
 
         # Redrawing our canvas.
         self.canvas.update()
+
+    def set_fill_mode(self, fill_mode):
+
+        # Setting the fill mode of our canvas.
+        self.canvas.set_fill_mode(fill_mode)
+
+    def use_pencil_tool(self):
+
+        # Setting the fill mode of our canvas to False.
+        self.canvas.set_fill_mode(False)
