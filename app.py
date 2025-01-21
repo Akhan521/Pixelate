@@ -16,19 +16,23 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Pixelate")
         self.setGeometry(100, 100, 800, 600)
 
+        self.pixel_size = 15
+        self.grid_width = 64
+        self.grid_height = 32
+
         # Using a horizontal layout for our program.
         layout = QHBoxLayout()
 
         # Creating our color selection window + adding it to our layout.
-        self.color_selection_window = ColorSelectionWindow()
+        self.color_selection_window = ColorSelectionWindow(self.pixel_size, self.grid_width, self.grid_height)
         layout.addWidget(self.color_selection_window)
 
         # Creating our canvas widget + adding it to our layout.
-        self.canvas = PixelateCanvas(self.color_selection_window)
+        self.canvas = PixelateCanvas(self.color_selection_window, self.pixel_size, self.grid_width, self.grid_height)
         layout.addWidget(self.canvas)
 
         # Creating our tools widget + adding it to our layout.
-        self.tools = Tools(self.canvas)
+        self.tools = Tools(self.canvas, self.pixel_size, self.grid_width, self.grid_height)
         layout.addWidget(self.tools)
 
         # Creating an intermediary widget to hold our layout.
