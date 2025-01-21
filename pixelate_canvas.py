@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 from PyQt6.QtGui import QPainter, QColor
 from PyQt6.QtCore import Qt
 from color_selection_window import ColorSelectionWindow
+from canvas_history import CanvasHistory
 
 # Defining a custom canvas widget for Pixelate.
 class PixelateCanvas(QWidget):
@@ -24,8 +25,11 @@ class PixelateCanvas(QWidget):
         self.grid_height = grid_height # The number of pixels tall the canvas will be.
 
         # We'll also need to store the color of each pixel.
-        # Our dictionary will map the (x, y) coordinates of each pixel to a color.
-        self.pixels = {}
+        # Our dictionary will map the (x, y) coordinates of each pixel to a color. Initially, all pixels will be white.
+        self.pixels = {(x, y): QColor("white") for x in range(self.grid_width) for y in range(self.grid_height)}
+
+        # Finally, we'll need to store copies of our canvas to implement undo/redo functionality.
+        self.canvas_history = CanvasHistory()
 
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
@@ -81,6 +85,9 @@ class PixelateCanvas(QWidget):
 
     # Overriding the mousePressEvent method to draw pixels on our canvas.
     def mousePressEvent(self, event):
+        # Before drawing, we'll save the current state of our canvas in the canvas history object.
+        # This ensures that we can undo our strokes if needed.
+        self.canvas_history.save_state(self.pixels)
 
         # Getting the x and y coordinates of our mouse click and converting them to pixel coordinates.
         x, y = event.pos().x(), event.pos().y()
@@ -101,3 +108,7 @@ class PixelateCanvas(QWidget):
         # For now, we'll draw a pixel at the given coordinates.
         self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
 
+    # When we release the mouse button, we'll save the current state of our canvas.
+    # This state will be stored within our canvas history object.
+    def mouseReleaseEvent(self, event):
+        pass
