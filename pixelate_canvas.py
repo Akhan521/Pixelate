@@ -31,6 +31,9 @@ class PixelateCanvas(QWidget):
         # Finally, we'll need to store copies of our canvas to implement undo/redo functionality.
         self.canvas_history = CanvasHistory()
 
+        # To store whether we're in fill mode (for the use of our fill tool).
+        self.fill_mode = False
+
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
 
@@ -94,7 +97,14 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
 
-        # For now, we'll draw a pixel at the given coordinates.
+        # If we're in fill mode, we'll use the fill method to fill in areas.
+        if self.fill_mode:
+            target_color = self.pixels.get((x, y), QColor("white"))
+            replacement_color = self.color_selection_window.get_primary_color()
+            self.fill(x, y, target_color, replacement_color)
+            return
+
+        # Otherwise, we'll draw a pixel at the given coordinates.
         self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
@@ -107,3 +117,28 @@ class PixelateCanvas(QWidget):
         
         # For now, we'll draw a pixel at the given coordinates.
         self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
+
+
+    # To set our canvas to fill mode, we'll use the following method.
+    def set_fill_mode(self, fill_mode):
+        self.fill_mode = fill_mode
+
+    # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
+    def fill(self, x, y, target_color, replacement_color):
+
+        # If the pixel is out of bounds or the target and replacement colors are the same, we'll return.
+        if not (0 <= x < self.grid_width and 0 <= y < self.grid_height) or target_color == replacement_color:
+            return
+        
+        # If the color of the pixel at (x, y) is not the color we'd like to replace, we'll return.
+        if self.pixels.get((x, y), QColor("white")) != target_color:
+            return
+        
+        # Otherwise, we'll fill the pixel with the replacement color.
+        self.draw_pixel(x, y, replacement_color)
+
+        # We'll recursively fill the neighboring pixels (our 4 cardinal directions).
+        self.fill(x + 1, y, target_color, replacement_color)
+        self.fill(x - 1, y, target_color, replacement_color)
+        self.fill(x, y + 1, target_color, replacement_color)
+        self.fill(x, y - 1, target_color, replacement_color)
