@@ -5,6 +5,7 @@ from PyQt6.QtGui import QPainter, QColor
 from PyQt6.QtCore import Qt
 # Importing our canvas class.
 from pixelate_canvas import PixelateCanvas
+from canvas_history import CanvasHistory
 
 class Tools(QMainWindow):
     
@@ -31,8 +32,22 @@ class Tools(QMainWindow):
 
         # Connecting the button's clicked signal to a lambda function that clears the canvas.
         button.clicked.connect(lambda: self.clear_canvas(self.canvas))
+        layout.addWidget(button)
 
-        # Adding the button to our layout.
+        # Our next tool/button will be the undo button.
+        button = QPushButton("Undo")
+        button.setStyleSheet("background-color: white;")
+
+        # Connecting the button's clicked signal to our undo method.
+        button.clicked.connect(lambda: self.undo(self.canvas))
+        layout.addWidget(button)
+
+        # Then, we'll add a redo button to go with our undo button.
+        button = QPushButton("Redo")
+        button.setStyleSheet("background-color: white;")
+
+        # Connecting the button's clicked signal to our redo method.
+        button.clicked.connect(lambda: self.redo(self.canvas))
         layout.addWidget(button)
 
         # Creating an intermediary widget to hold our layout.
@@ -49,4 +64,21 @@ class Tools(QMainWindow):
 
         # Redrawing a brand new canvas.
         self.canvas.update()
+
+    def undo(self, canvas):
+
+        # Calling the undo method of our canvas history object.
+        # It will return the last state of our canvas which we'll reassign to our canvas.
+        self.canvas.pixels = self.canvas.canvas_history.undo(self.canvas.pixels)
         
+        # Redrawing our canvas.
+        self.canvas.update()
+        
+    def redo(self, canvas):
+        
+        # Calling the redo method of our canvas history object.
+        # It will return the last state of our canvas which we'll reassign to our canvas.
+        self.canvas.pixels = self.canvas.canvas_history.redo(self.canvas.pixels)
+
+        # Redrawing our canvas.
+        self.canvas.update()
