@@ -107,8 +107,3 @@ class PixelateCanvas(QWidget):
         
         # For now, we'll draw a pixel at the given coordinates.
         self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
-
-    # When we release the mouse button, we'll save the current state of our canvas.
-    # This state will be stored within our canvas history object.
-    def mouseReleaseEvent(self, event):
-        pass
