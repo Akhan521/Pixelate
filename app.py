@@ -1,4 +1,3 @@
-import PyQt6
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import Qt

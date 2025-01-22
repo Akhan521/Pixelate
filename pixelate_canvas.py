@@ -1,8 +1,8 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget # type: ignore
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor # type: ignore
-from PyQt6.QtCore import Qt # type: ignore
+from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtCore import Qt
 from color_selection_window import ColorSelectionWindow
 from canvas_history import CanvasHistory
 
@@ -23,7 +23,6 @@ class PixelateCanvas(QWidget):
         self.pixel_size = pixel_size   # This will be the size of each pixel.
         self.grid_width = grid_width   # The number of pixels wide the canvas will be.
         self.grid_height = grid_height # The number of pixels tall the canvas will be.
-        self.current_color = QColor("black");
 
         # We'll also need to store the color of each pixel.
         # Our dictionary will map the (x, y) coordinates of each pixel to a color. Initially, all pixels will be white.
@@ -98,20 +97,15 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
 
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.current_color = self.color_selection_window.get_primary_color()
-        elif event.button() == Qt.MouseButton.RightButton:
-            self.current_color = self.color_selection_window.get_secondary_color()
-
         # If we're in fill mode, we'll use the fill method to fill in areas.
         if self.fill_mode:
             target_color = self.pixels.get((x, y), QColor("white"))
-            replacement_color = self.current_color
+            replacement_color = self.color_selection_window.get_primary_color()
             self.fill(x, y, target_color, replacement_color)
             return
-        
+
         # Otherwise, we'll draw a pixel at the given coordinates.
-        self.draw_pixel(x, y, self.current_color)
+        self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
     def mouseMoveEvent(self, event):
@@ -122,7 +116,7 @@ class PixelateCanvas(QWidget):
         y = y // self.pixel_size
         
         # For now, we'll draw a pixel at the given coordinates.
-        self.draw_pixel(x, y, self.current_color)
+        self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
 
 
     # To set our canvas to fill mode, we'll use the following method.

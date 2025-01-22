@@ -15,7 +15,6 @@ class ColorSelectionWindow(QMainWindow):
         # Grid dimensions: 6 rows and 5 columns.
         self.rows    = 6
         self.columns = 5
-        self.left_click = True
         
         # Defining an offset for our main window border (12.5 pixels of padding on either side).
         self.window_border_offset = 25
@@ -64,14 +63,6 @@ class ColorSelectionWindow(QMainWindow):
             grid_layout.addWidget(button, i // self.columns, i % self.columns)
             # Fixing the size of each button.
             button.setFixedSize(self.button_size, self.button_size)
-
-        def on_button_click(self, event):
-            if event.button() == Qt.LeftButton:
-                self.left_click = True
-                
-            elif event.button() == Qt.RightButton:
-                self.left_click = False
-                
         
         # We'll then add our primary and secondary color boxes below.
         button = QPushButton()
@@ -124,14 +115,15 @@ class ColorSelectionWindow(QMainWindow):
     # The following method will set the primary color to the given color and update the secondary color.
     def set_current_color(self, color):
         
+        # If the color we're trying to set is the same as our primary color, we'll simply return as no changes need to be made.
+        if color == self.get_primary_color():
+            return
+        
+        # Otherwise, we'll update our primary/secondary colors.
+        self.set_secondary_color(self.get_primary_color())
+        self.set_primary_color(color)
         self.update_selected_colors()
         
-    def handle_color_click(self, event, color):
-        """Handle left and right mouse button clicks on color buttons."""
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.set_primary_color(color)
-        elif event.button() == Qt.MouseButton.RightButton:
-            self.set_secondary_color(color)
 
     # The following method will return the primary color.
     def get_primary_color(self):
