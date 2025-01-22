@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
 
         self.pixel_size = 15
-        self.grid_width = 64
+        self.grid_width = 32
         self.grid_height = 32
 
         # Using a horizontal layout for our program.

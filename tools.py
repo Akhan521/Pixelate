@@ -78,6 +78,9 @@ class Tools(QMainWindow):
         # Clearing our dictionary of pixels.
         self.canvas.pixels = {}
 
+        # Clearing our set of preview pixels.
+        self.canvas.preview_pixels.clear()
+
         # Redrawing a brand new canvas.
         self.canvas.update()
 
