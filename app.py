@@ -1,9 +1,8 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QWidget
-from PyQt6.QtGui import QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QWidget, QGraphicsScene, QGraphicsProxyWidget
 from tools import Tools
 from pixelate_canvas import PixelateCanvas
 from color_selection_window import ColorSelectionWindow
+from zoomable_canvas_view import ZoomableCanvasView
 
 
 class MainWindow(QMainWindow):
@@ -14,7 +13,7 @@ class MainWindow(QMainWindow):
         
         # Setting the window title and size.
         self.setWindowTitle("Pixelate")
-        self.setGeometry(100, 100, 800, 600)
+        self.setMinimumSize(800, 600)
 
         self.pixel_size = 15
         self.grid_width = 32
@@ -27,16 +26,25 @@ class MainWindow(QMainWindow):
         self.color_selection_window = ColorSelectionWindow(self.pixel_size, self.grid_width, self.grid_height)
         layout.addWidget(self.color_selection_window)
 
-        # Creating our canvas widget + adding it to our layout.
+        # Creating our canvas widget.
         self.canvas = PixelateCanvas(self.color_selection_window, self.pixel_size, self.grid_width, self.grid_height)
-        layout.addWidget(self.canvas)
+
+        # To achieve zoom functionality, we'll need the following:
+        self.scene        = QGraphicsScene()       # Creating a scene to hold our canvas.
+        self.proxy_widget = QGraphicsProxyWidget() # Creating a proxy widget that will be embedded in our view.
+        self.proxy_widget.setWidget(self.canvas)   # Setting our canvas as the proxy widget.
+        self.scene.addItem(self.proxy_widget)      # Adding the proxy widget to our scene (this embeds our canvas in the scene).\
+
+        # To finalize our zoom functionality, we'll create a view to display our scene.
+        self.view = ZoomableCanvasView(self.scene, self.canvas)
+        layout.addWidget(self.view)
 
         # Creating our tools widget + adding it to our layout.
         self.tools = Tools(self.canvas, self.pixel_size, self.grid_width, self.grid_height)
         layout.addWidget(self.tools)
-
-        # Creating an intermediary widget to hold our layout.
-        window = QWidget()
+        
+        # Creating an intermediary widget to hold our layout + setting the layout.
+        window = QWidget()   
         window.setLayout(layout)
 
         # Setting the central widget of our application.

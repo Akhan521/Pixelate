@@ -43,6 +43,7 @@ class PixelateCanvas(QWidget):
         # To work with mouse hover events, we'll set the following attribute.
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
+
     # Overriding the event method to handle hover events as well.
     def event(self, event):
         
@@ -127,7 +128,7 @@ class PixelateCanvas(QWidget):
     # The following method will draw a pixel @ the given (x, y) coordinates with the given color (QColor object).
     def draw_pixel(self, x, y, color):
 
-        # Checking whether the pixel is within the canvas bounds.
+        # Otherwise, we'll ensure that the pixel is within bounds.
         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
 
             # Updating the color of the pixel at (x, y).
@@ -151,6 +152,7 @@ class PixelateCanvas(QWidget):
 
     # Overriding the mousePressEvent method to draw pixels on our canvas.
     def mousePressEvent(self, event):
+
         # Before drawing, we'll save the current state of our canvas in the canvas history object.
         # This ensures that we can undo our strokes if needed.
         self.canvas_history.save_state(self.pixels)
@@ -212,7 +214,6 @@ class PixelateCanvas(QWidget):
 
         # Getting our primary color (with some transparency).
         preview_color = self.color_selection_window.get_primary_color()
-        # preview_color.setAlpha(100)
 
         # Drawing the preview pixels on our canvas.
         self.draw_preview_pixels(painter, preview_color)
@@ -254,7 +255,5 @@ class PixelateCanvas(QWidget):
             stack.append((x, y + 1))
             stack.append((x, y - 1))
 
-
-        
         
         
