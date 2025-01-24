@@ -1,8 +1,8 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter, QColor, QIcon
+from PyQt6.QtCore import Qt, QSize
 # Importing our canvas class.
 from pixelate_canvas import PixelateCanvas
 from canvas_history import CanvasHistory
@@ -10,7 +10,7 @@ from canvas_history import CanvasHistory
 class Tools(QMainWindow):
     
     # Our constructor will initialize our tools window.
-    # We provide the canvas to handle canvas operations with our tools.
+    # We provide our canvas to handle canvas operations with our tools.
     def __init__(self, canvas, pixel_size=15, grid_width=32, grid_height=32):
 
         super().__init__()
@@ -22,6 +22,10 @@ class Tools(QMainWindow):
         # Setting the background color of our window to light gray.
         self.setStyleSheet("background-color: lightgray;")
 
+        # Specifying our icons path and the size of our icons.
+        self.icons_path = "icons/"
+        self.icon_size = QSize(30, 30)
+
         # Using a vertical layout for our tools window.
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -31,7 +35,7 @@ class Tools(QMainWindow):
         button.setStyleSheet("background-color: white;")
 
         # Connecting the button's clicked signal to a lambda function that clears the canvas.
-        button.clicked.connect(lambda: self.clear_canvas(self.canvas))
+        button.clicked.connect(self.clear_canvas)
         layout.addWidget(button)
 
         # Our next tool/button will be the undo button.
@@ -39,7 +43,7 @@ class Tools(QMainWindow):
         button.setStyleSheet("background-color: white;")
 
         # Connecting the button's clicked signal to our undo method.
-        button.clicked.connect(lambda: self.undo(self.canvas))
+        button.clicked.connect(self.undo)
         layout.addWidget(button)
 
         # Then, we'll add a redo button to go with our undo button.
@@ -47,7 +51,7 @@ class Tools(QMainWindow):
         button.setStyleSheet("background-color: white;")
 
         # Connecting the button's clicked signal to our redo method.
-        button.clicked.connect(lambda: self.redo(self.canvas))
+        button.clicked.connect(self.redo)
         layout.addWidget(button)
 
         # Our fill tool will be next.
@@ -59,11 +63,21 @@ class Tools(QMainWindow):
         layout.addWidget(button)
 
         # Our pencil tool:
-        button = QPushButton("Pencil")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "pencil.png"))
 
         # Connecting its signal to a function that will set the canvas's fill mode to False.
         button.clicked.connect(self.use_pencil_tool)
+        button.setIconSize(self.icon_size)
+        layout.addWidget(button)
+
+        # Our cursor tool:
+        button = QPushButton("Cursor")
+        button.setStyleSheet("background-color: white;")
+
+        # Connecting its signal to a function that will set our drag state to True.
+        button.clicked.connect(self.use_cursor_tool)
         layout.addWidget(button)
 
         # Creating an intermediary widget to hold our layout.
@@ -73,7 +87,7 @@ class Tools(QMainWindow):
         # Setting the central widget of our tools window.
         self.setCentralWidget(window)
 
-    def clear_canvas(self, canvas):
+    def clear_canvas(self):
         
         # Clearing our dictionary of pixels.
         self.canvas.pixels = {}
@@ -84,7 +98,7 @@ class Tools(QMainWindow):
         # Redrawing a brand new canvas.
         self.canvas.update()
 
-    def undo(self, canvas):
+    def undo(self):
 
         # Calling the undo method of our canvas history object.
         # It will return the last state of our canvas which we'll reassign to our canvas.
@@ -93,7 +107,7 @@ class Tools(QMainWindow):
         # Redrawing our canvas.
         self.canvas.update()
         
-    def redo(self, canvas):
+    def redo(self):
         
         # Calling the redo method of our canvas history object.
         # It will return the last state of our canvas which we'll reassign to our canvas.
@@ -111,3 +125,11 @@ class Tools(QMainWindow):
 
         # Setting the fill mode of our canvas to False.
         self.canvas.set_fill_mode(False)
+
+        # Setting the drag state of our canvas to False.
+        self.canvas.set_draggable(False)
+
+    def use_cursor_tool(self):
+
+        # Setting the drag state of our canvas to True.
+        self.canvas.set_draggable(True)
