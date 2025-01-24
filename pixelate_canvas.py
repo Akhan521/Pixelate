@@ -43,6 +43,9 @@ class PixelateCanvas(QWidget):
         # To work with mouse hover events, we'll set the following attribute.
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
+        # To store whether our canvas is draggable.
+        self.is_draggable = False
+
 
     # Overriding the event method to handle hover events as well.
     def event(self, event):
@@ -84,7 +87,7 @@ class PixelateCanvas(QWidget):
 
     # Overriding the paintEvent method, which handles drawing on the canvas.
     def paintEvent(self, event):
-    
+        
         # Drawing our canvas.
         self.draw_canvas()
         
@@ -128,6 +131,10 @@ class PixelateCanvas(QWidget):
     # The following method will draw a pixel @ the given (x, y) coordinates with the given color (QColor object).
     def draw_pixel(self, x, y, color):
 
+        # If our canvas is draggable, we'll return since we're not drawing.
+        if self.is_draggable:
+            return
+
         # Otherwise, we'll ensure that the pixel is within bounds.
         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
 
@@ -138,6 +145,10 @@ class PixelateCanvas(QWidget):
     
     # This method handles drawing the preview pixels on our canvas.
     def draw_preview_pixels(self, painter, preview_color):
+
+        # If our canvas is draggable, we'll return since we're not drawing.
+        if self.is_draggable:
+            return
 
         # If our painter object is not active, we'll simply return.
         if not painter.isActive():
@@ -255,5 +266,8 @@ class PixelateCanvas(QWidget):
             stack.append((x, y + 1))
             stack.append((x, y - 1))
 
+    # To set the draggable state of our canvas, we'll use the following method.
+    def set_draggable(self, draggable):
+        self.is_draggable = draggable
         
         
