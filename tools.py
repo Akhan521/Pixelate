@@ -1,8 +1,8 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter, QColor, QIcon
+from PyQt6.QtCore import Qt, QSize
 # Importing our canvas class.
 from pixelate_canvas import PixelateCanvas
 from canvas_history import CanvasHistory
@@ -21,6 +21,10 @@ class Tools(QMainWindow):
 
         # Setting the background color of our window to light gray.
         self.setStyleSheet("background-color: lightgray;")
+
+        # Specifying our icons path and the size of our icons.
+        self.icons_path = "icons/"
+        self.icon_size = QSize(30, 30)
 
         # Using a vertical layout for our tools window.
         layout = QVBoxLayout()
@@ -59,11 +63,13 @@ class Tools(QMainWindow):
         layout.addWidget(button)
 
         # Our pencil tool:
-        button = QPushButton("Pencil")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "pencil.png"))
 
         # Connecting its signal to a function that will set the canvas's fill mode to False.
         button.clicked.connect(self.use_pencil_tool)
+        button.setIconSize(self.icon_size)
         layout.addWidget(button)
 
         # Creating an intermediary widget to hold our layout.
