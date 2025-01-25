@@ -31,32 +31,40 @@ class Tools(QMainWindow):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Creating our very first tool/button: the clear button.
-        button = QPushButton("Clear")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "clear_icon_1.png"))
+        button.setIconSize(self.icon_size)
 
         # Connecting the button's clicked signal to a lambda function that clears the canvas.
         button.clicked.connect(self.clear_canvas)
         layout.addWidget(button)
 
         # Our next tool/button will be the undo button.
-        button = QPushButton("Undo")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "undo_icon_1.png"))
+        button.setIconSize(self.icon_size)
 
         # Connecting the button's clicked signal to our undo method.
         button.clicked.connect(self.undo)
         layout.addWidget(button)
 
         # Then, we'll add a redo button to go with our undo button.
-        button = QPushButton("Redo")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "redo_icon_1.png"))
+        button.setIconSize(self.icon_size)
 
         # Connecting the button's clicked signal to our redo method.
         button.clicked.connect(self.redo)
         layout.addWidget(button)
 
         # Our fill tool will be next.
-        button = QPushButton("Fill")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "fill_icon_1.png"))
+        button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set the canvas's fill mode to True.
         button.clicked.connect(lambda: self.set_fill_mode(True))
@@ -73,8 +81,10 @@ class Tools(QMainWindow):
         layout.addWidget(button)
 
         # Our cursor tool:
-        button = QPushButton("Cursor")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "drag_icon_1.png"))
+        button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set our drag state to True.
         button.clicked.connect(self.use_cursor_tool)
