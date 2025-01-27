@@ -36,7 +36,7 @@ class Tools(QMainWindow):
         button.setIcon(QIcon(self.icons_path + "clear_icon_1.png"))
         button.setIconSize(self.icon_size)
 
-        # Connecting the button's clicked signal to a lambda function that clears the canvas.
+        # Connecting the button's clicked signal to a method that clears the canvas.
         button.clicked.connect(self.clear_canvas)
         layout.addWidget(button)
 
@@ -75,7 +75,7 @@ class Tools(QMainWindow):
         button.setStyleSheet("background-color: white;")
         button.setIcon(QIcon(self.icons_path + "pencil.png"))
 
-        # Connecting its signal to a function that will set the canvas's fill mode to False.
+        # Connecting its signal to a function that will allow us to draw.
         button.clicked.connect(self.use_pencil_tool)
         button.setIconSize(self.icon_size)
         layout.addWidget(button)
@@ -95,7 +95,7 @@ class Tools(QMainWindow):
         button.setStyleSheet("background-color: white;")
         # button.setIcon(QIcon(self.icons_path + "pencil.png"))
 
-        # Connecting its signal to a function that will set the canvas's eyedropper mode to False.
+        # Connecting its signal to a function that will set the eyedropper tool.
         button.clicked.connect(self.use_eyedropper_tool)
         button.setIconSize(self.icon_size)
         layout.addWidget(button)
@@ -108,12 +108,15 @@ class Tools(QMainWindow):
         self.setCentralWidget(window)
 
     def clear_canvas(self):
+
+        # Saving our current canvas state to allow for undo functionality.
+        self.canvas.canvas_history.save_state_and_update(self.canvas.pixels)
         
         # Clearing our dictionary of pixels.
         self.canvas.pixels = {}
 
-        # Clearing our set of preview pixels.
-        self.canvas.preview_pixels.clear()
+        # Clearing our preview pixel.
+        self.canvas.preview_pixel = None
 
         # Redrawing a brand new canvas.
         self.canvas.update()

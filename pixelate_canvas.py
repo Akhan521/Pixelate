@@ -1,10 +1,11 @@
 # Importing basic widgets from PyQt6.
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor
-from PyQt6.QtCore import Qt, QEvent
+from PyQt6.QtGui import QPainter, QColor, QPixmap
+from PyQt6.QtCore import Qt, QEvent, QRect
 from color_selection_window import ColorSelectionWindow
 from canvas_history import CanvasHistory
+from collections import deque
 
 # Defining a custom canvas widget for Pixelate.
 class PixelateCanvas(QWidget):
@@ -25,13 +26,13 @@ class PixelateCanvas(QWidget):
         self.grid_height = grid_height # The number of pixels tall the canvas will be.
 
         # We'll also need to store the color of each pixel.
-        # Our dictionary will map the (x, y) coordinates of each pixel to a color. Initially, all pixels will be white.
-        self.pixels = {(x, y): QColor("white") for x in range(self.grid_width) for y in range(self.grid_height)}
+        # Our dictionary will map the (x, y) coordinates of each pixel to a color. By default, all pixels are white.
+        self.pixels = {}
 
-        # We'll have a set of preview pixels to show the pixels we're about to draw.
-        self.preview_pixels = set()
+        # We'll have a preview pixel to show the pixel we're about to draw. (The (x, y) coordinates of the pixel.)
+        self.preview_pixel = None
 
-        # Finally, we'll need to store copies of our canvas to implement undo/redo functionality.
+        # We'll need to store copies of our pixel colors to implement undo/redo functionality.
         self.canvas_history = CanvasHistory()
 
         # To store whether we're in fill mode (for the use of our fill tool).
@@ -40,15 +41,46 @@ class PixelateCanvas(QWidget):
         # To store whether we're in eyedropper mode
         self.eyedropper_mode = False
 
+        # To store whether our canvas is draggable.
+        self.is_draggable = False
+
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
 
         # To work with mouse hover events, we'll set the following attribute.
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
-        # To store whether our canvas is draggable.
-        self.is_draggable = False
+        # Finally, we'll have an underlying grid that will serve as our base layer.
+        # This grid will be drawn only once. All subsequent drawings will be on top of this grid.
+        self.init_grid()
 
+    # This method will create a grid for our canvas. It will be implemented as a QPixmap object.
+    # We'll initialize the grid with a white background and draw grid lines on top of it.
+    def init_grid(self):
+
+        # Creating a QPixmap object to store our grid. (This will serve as our canvas's base layer.)
+        self.grid = QPixmap(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
+
+        # Drawing grid lines on our QPixmap object.
+        painter = QPainter(self.grid)
+        painter.setPen(Qt.PenStyle.SolidLine)
+        # Setting our pen color to a more transparent black.
+        painter.setPen(QColor(0, 0, 0, 50))
+
+        # First, we'll fill our grid with a light, transparent gray background.
+        self.grid.fill(QColor(240, 240, 240, 255))
+
+        # Drawing vertical lines.
+        for x in range(self.grid_width + 1):
+            # Draws a line from (x1, y1) to (x2, y2).
+            painter.drawLine(x * self.pixel_size, 0, x * self.pixel_size, self.pixel_size * self.grid_height)
+
+        # Drawing horizontal lines.
+        for y in range(self.grid_height + 1):
+            # Draws a line from (x1, y1) to (x2, y2).
+            painter.drawLine(0, y * self.pixel_size, self.pixel_size * self.grid_width, y * self.pixel_size)
+
+        painter.end()
 
     # Overriding the event method to handle hover events as well.
     def event(self, event):
@@ -64,25 +96,19 @@ class PixelateCanvas(QWidget):
             # Ensuring that our coordinates are integers.
             x, y = int(x), int(y)
 
-            # We'll clear our preview pixels set. We're only interested in previewing the pixels we're selecting.
-            self.preview_pixels.clear()
-
-            # If we're in fill mode, we'll get the starting coordinates of our fill operation.
-            if self.fill_mode:
-                target_color = self.pixels.get((x, y), QColor("white"))
-                self.get_fill_mode_preview_pixels(x, y, target_color)
+            # We'll clear our preview pixel. We're only interested in previewing the pixel we're hovering over.
+            self.preview_pixel = None
 
             # If we're simply in pencil mode, we'll preview the pixel we're about to draw.
-            else:
-                # We'll now add the coordinates of the pixel we're hovering over to our set.
-                self.preview_pixels.add((x, y))
+            # We'll set the coordinates of the pixel we're hovering over to our preview pixel.
+            self.preview_pixel = (x, y)
 
             # Repainting our canvas to reflect the changes.
             self.update()
 
         # If we leave the canvas, we'll clear the preview pixels set and repaint the canvas.
         elif event.type() == QEvent.Type.HoverLeave:
-            self.preview_pixels.clear()
+            self.preview_pixel = None
             self.update()
 
         # Then, we'll handle the event as usual.
@@ -90,46 +116,27 @@ class PixelateCanvas(QWidget):
 
     # Overriding the paintEvent method, which handles drawing on the canvas.
     def paintEvent(self, event):
-        
-        # Drawing our canvas.
-        self.draw_canvas()
-        
-    # This method will draw a canvas w/ grid lines.
-    # We provide a QPainter object as a parameter; it will handle all drawing operations.
-    def draw_canvas(self):
 
-        # Creating a QPainter object to draw on the canvas.
         painter = QPainter(self)
 
-        # If our painter object is not active, we'll simply return.
-        if not painter.isActive():
-            return
-        
-        # Drawing each pixel on our canvas.
-        for x in range(self.grid_width):
-            for y in range(self.grid_height):
-                # We'll use the color of the pixel at (x, y). If no color is found, we'll use white as our default.
-                color = self.pixels.get((x, y), QColor("white"))
-                # Coloring in our pixel: We provide the x, y coordinates, the width and height of the pixel, and the color.
-                painter.fillRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size, color)
+        # We'll draw our pre-rendered grid. We're simply reusing the grid we created earlier.
+        painter.drawPixmap(0, 0, self.grid)
 
-        # If we have any preview pixels, we'll draw them on our canvas.
-        if self.preview_pixels:
+        # Now, we'll only redraw the pixel that needs updating. This is given by the event.
+        pixel_to_update = event.rect()
+
+        # Going through each pixel:
+        for (x, y), color in self.pixels.items():
+            # If the current pixel is within the area that needs updating, we'll redraw it.
+            current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
+            if pixel_to_update.intersects(current_pixel):
+                painter.fillRect(current_pixel, color)
+        
+        # If we have any preview pixel, we'll draw it on our canvas.
+        if self.preview_pixel:
             self.preview(painter)
 
-        # To visualize our pixels, we'll draw grid lines:
-        painter.setPen(Qt.PenStyle.SolidLine)
-        painter.setPen(QColor("lightgray"))
-
-        # Drawing vertical lines.
-        for x in range(self.grid_width + 1):
-            # Draws a line from (x1, y1) to (x2, y2).
-            painter.drawLine(x * self.pixel_size, 0, x * self.pixel_size, self.pixel_size * self.grid_height)
-
-        # Drawing horizontal lines.
-        for y in range(self.grid_height + 1):
-            # Draws a line from (x1, y1) to (x2, y2).
-            painter.drawLine(0, y * self.pixel_size, self.pixel_size * self.grid_width, y * self.pixel_size)
+        painter.end()
 
     # The following method will draw a pixel @ the given (x, y) coordinates with the given color (QColor object).
     def draw_pixel(self, x, y, color):
@@ -147,11 +154,13 @@ class PixelateCanvas(QWidget):
 
             # Updating the color of the pixel at (x, y).
             self.pixels[(x, y)] = color
-            # Repainting our canvas to reflect the changes.
-            self.update()
+            
+            # Repainting only the area where the pixel color was updated.
+            # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
+            self.update(QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size))
     
-    # This method handles drawing the preview pixels on our canvas.
-    def draw_preview_pixels(self, painter, preview_color):
+    # This method handles drawing the preview pixel on our canvas.
+    def draw_preview_pixel(self, painter, preview_color):
 
         # If our canvas is draggable, we'll return since we're not drawing.
         if self.is_draggable:
@@ -165,19 +174,18 @@ class PixelateCanvas(QWidget):
         if not painter.isActive():
             return
 
-        # For each pixel we'd like to preview, we'll draw it on our canvas.
-        # Recall that preview_pixels is a set of (x, y) coordinates.
-        for x, y in self.preview_pixels:
-            # Drawing the preview pixels on our canvas.
-            painter.fillRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size, preview_color)
+        # Drawing the preview pixel on our canvas via its coordinates.
+        x, y = self.preview_pixel
+        painter.fillRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size, preview_color)
 
 
     # Overriding the mousePressEvent method to draw pixels on our canvas.
     def mousePressEvent(self, event):
 
         # Before drawing, we'll save the current state of our canvas in the canvas history object.
-        # This ensures that we can undo our strokes if needed.
-        self.canvas_history.save_state(self.pixels)
+        # Since we've begun drawing, we shouldn't be able to redo any actions. Thus, we'll clear the redo stack.
+        # This ensures that we can undo our strokes if needed, but we can't redo any actions.
+        self.canvas_history.save_state_and_update(self.pixels)
 
         # Getting the x and y coordinates of our mouse click and converting them to pixel coordinates.
         x, y = event.pos().x(), event.pos().y()
@@ -223,43 +231,8 @@ class PixelateCanvas(QWidget):
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):
 
-        # If the pixel is out of bounds or the target and replacement colors are the same, we'll return.
-        if not (0 <= x < self.grid_width and 0 <= y < self.grid_height) or target_color == replacement_color:
-            return
-        
-        # If the color of the pixel at (x, y) is not the color we'd like to replace, we'll return.
-        if self.pixels.get((x, y), QColor("white")) != target_color:
-            return
-        
-        # Otherwise, we'll fill the pixel with the replacement color.
-        self.draw_pixel(x, y, replacement_color)
-
-        # We'll recursively fill the neighboring pixels (our 4 cardinal directions).
-        self.fill(x + 1, y, target_color, replacement_color)
-        self.fill(x - 1, y, target_color, replacement_color)
-        self.fill(x, y + 1, target_color, replacement_color)
-        self.fill(x, y - 1, target_color, replacement_color)
-
-    # The following method will allow us to preview pixels on our canvas before drawing them.
-    # As we hover over the canvas, we'll see a preview of the pixels we're about to draw.
-    # We provide a QPainter object to handle all drawing operations.
-    def preview(self, painter):
-
-        # Getting our primary color (with some transparency).
-        preview_color = self.color_selection_window.get_primary_color()
-
-        # Drawing the preview pixels on our canvas.
-        self.draw_preview_pixels(painter, preview_color)
-
-
-    # This method will store all of the pixels that we'd be previewing in fill mode.
-    # We use an iterative approach to avoid hitting the recursion limit.
-    # It behaves similarly to the fill method, but this method is called as we hover over the canvas.
-    # We only need to provide the starting coordinates of our fill operation and the target color.
-    def get_fill_mode_preview_pixels(self, x, y, target_color):
-
         # Using a stack to simulate recursion.
-        stack = [(x, y)]
+        stack = deque([(x, y)])
 
         # As long as we have pixels to process, we'll continue.
         while stack:
@@ -271,22 +244,27 @@ class PixelateCanvas(QWidget):
                     1. If the pixel is out of bounds, we'll skip it.
                     2. If the pixel is not the target color, we'll skip it.
                     (We're only interested in the pixels we're targeting.)
-                    3. If the pixel is already in our preview pixels list, we'll skip it.
             '''
             if not (0 <= x < self.grid_width and 0 <= y < self.grid_height) or color != target_color:
                 continue
 
-            if (x, y) in self.preview_pixels:
-                continue
-
-            # Otherwise, we'll add this pixel to our preview pixels set.
-            self.preview_pixels.add((x, y))
+            # Otherwise, we'll draw the pixel with the replacement color.
+            self.draw_pixel(x, y, replacement_color)
 
             # We'll now process the neighboring pixels.
-            stack.append((x + 1, y))
-            stack.append((x - 1, y))
-            stack.append((x, y + 1))
-            stack.append((x, y - 1))
+            stack.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
+
+    # The following method will allow us to preview pixels on our canvas before drawing them.
+    # As we hover over the canvas, we'll see a preview of the pixels we're about to draw.
+    # We provide a QPainter object to handle all drawing operations.
+    def preview(self, painter):
+
+        # Getting our primary color (with some transparency).
+        preview_color = self.color_selection_window.get_primary_color()
+
+        # Drawing the preview pixels on our canvas.
+        self.draw_preview_pixel(painter, preview_color)
+
 
     # To set the draggable state of our canvas, we'll use the following method.
     def set_draggable(self, draggable):
