@@ -37,6 +37,9 @@ class PixelateCanvas(QWidget):
         # To store whether we're in fill mode (for the use of our fill tool).
         self.fill_mode = False
 
+        # To store whether we're in eyedropper mode
+        self.eyedropper_mode = False
+
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
 
@@ -135,6 +138,10 @@ class PixelateCanvas(QWidget):
         if self.is_draggable:
             return
 
+        # If our eyedropper mode is enabled, return since we're not drawing.
+        if self.eyedropper_mode:
+            return
+
         # Otherwise, we'll ensure that the pixel is within bounds.
         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
 
@@ -148,6 +155,10 @@ class PixelateCanvas(QWidget):
 
         # If our canvas is draggable, we'll return since we're not drawing.
         if self.is_draggable:
+            return
+
+        # If our eyedropper mode is enabled, return since we're not drawing.
+        if self.eyedropper_mode:
             return
 
         # If our painter object is not active, we'll simply return.
@@ -180,6 +191,13 @@ class PixelateCanvas(QWidget):
             self.fill(x, y, target_color, replacement_color)
             return
 
+        #If we are in eyedropper mode, we will copy the selected color onto the primary color.
+        if self.eyedropper_mode:
+            target_color = self.pixels.get((x, y), QColor("white"))
+            self.color_selection_window.set_primary_color(target_color)
+            self.color_selection_window.update_selected_colors()
+            return
+
         # Otherwise, we'll draw a pixel at the given coordinates.
         self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
 
@@ -197,6 +215,10 @@ class PixelateCanvas(QWidget):
     # To set our canvas to fill mode, we'll use the following method.
     def set_fill_mode(self, fill_mode):
         self.fill_mode = fill_mode
+
+    # To set our canvas to fill mode, we'll use the following method.
+    def set_eyedropper_mode(self, eyedropper_mode):
+        self.eyedropper_mode = eyedropper_mode
 
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):

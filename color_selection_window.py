@@ -114,12 +114,8 @@ class ColorSelectionWindow(QMainWindow):
 
     # The following method will set the primary color to the given color and update the secondary color.
     def set_current_color(self, color):
-        
-        # If the color we're trying to set is the same as our primary color, we'll simply return as no changes need to be made.
-        if color == self.get_primary_color():
-            return
-        
-        # Otherwise, we'll update our primary/secondary colors.
+
+        #We'll update our primary/secondary colors.
         self.set_secondary_color(self.get_primary_color())
         self.set_primary_color(color)
         self.update_selected_colors()

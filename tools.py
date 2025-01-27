@@ -90,6 +90,16 @@ class Tools(QMainWindow):
         button.clicked.connect(self.use_cursor_tool)
         layout.addWidget(button)
 
+        # Our eyedropper tool:
+        button = QPushButton("Eye Dropper")
+        button.setStyleSheet("background-color: white;")
+        # button.setIcon(QIcon(self.icons_path + "pencil.png"))
+
+        # Connecting its signal to a function that will set the canvas's eyedropper mode to False.
+        button.clicked.connect(self.use_eyedropper_tool)
+        button.setIconSize(self.icon_size)
+        layout.addWidget(button)
+
         # Creating an intermediary widget to hold our layout.
         window = QWidget()
         window.setLayout(layout)
@@ -131,6 +141,13 @@ class Tools(QMainWindow):
         # Setting the fill mode of our canvas.
         self.canvas.set_fill_mode(fill_mode)
 
+        # Setting the drag state of our canvas to False.
+        self.canvas.set_draggable(False)
+
+        # Setting the eyedropper mode of our canvas to False.
+        self.canvas.set_eyedropper_mode(False)
+
+
     def use_pencil_tool(self):
 
         # Setting our cursor to be an arrow cursor.
@@ -142,6 +159,9 @@ class Tools(QMainWindow):
         # Setting the drag state of our canvas to False.
         self.canvas.set_draggable(False)
 
+        #Setting eyedropper mode to False.
+        self.canvas.set_eyedropper_mode(False)
+
     def use_cursor_tool(self):
 
         # Setting our cursor to be an open hand cursor to indicate that it's draggable.
@@ -152,3 +172,16 @@ class Tools(QMainWindow):
 
         # Setting the drag state of our canvas to True.
         self.canvas.set_draggable(True)
+
+        #Setting eyedropper mode to False.
+        self.canvas.set_eyedropper_mode(False)
+
+    def use_eyedropper_tool(self):
+        # Setting the fill mode of our canvas to False.
+        self.canvas.set_fill_mode(False)
+
+        # Setting the drag state of our canvas to False.
+        self.canvas.set_draggable(False)
+
+        # Setting the eyedropper mode of our canvas to True.
+        self.canvas.set_eyedropper_mode(True)
