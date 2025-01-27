@@ -123,6 +123,9 @@ class Tools(QMainWindow):
 
     def use_pencil_tool(self):
 
+        # Setting our cursor to be an arrow cursor.
+        self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
+
         # Setting the fill mode of our canvas to False.
         self.canvas.set_fill_mode(False)
 
@@ -130,6 +133,12 @@ class Tools(QMainWindow):
         self.canvas.set_draggable(False)
 
     def use_cursor_tool(self):
+
+        # Setting our cursor to be an open hand cursor to indicate that it's draggable.
+        self.canvas.setCursor(Qt.CursorShape.OpenHandCursor)
+
+        # Setting the fill mode of our canvas to False.
+        self.canvas.set_fill_mode(False)
 
         # Setting the drag state of our canvas to True.
         self.canvas.set_draggable(True)
