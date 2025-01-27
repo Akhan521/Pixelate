@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QWidget, QGraphicsScene, QGraphicsProxyWidget
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtGui import QGuiApplication, QColor
 from PyQt6.QtCore import Qt
 from tools import Tools
 from pixelate_canvas import PixelateCanvas
@@ -62,12 +62,12 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.tools)
         
         # Creating an intermediary widget to hold our layout + setting the layout.
-        window = QWidget()   
+        window = QWidget()
         window.setLayout(layout)
 
         # Setting the central widget of our application.
         self.setCentralWidget(window)
-        
+              
 
 # Creating the application instance.
 app = QApplication([])

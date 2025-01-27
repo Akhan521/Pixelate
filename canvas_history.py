@@ -14,12 +14,17 @@ class CanvasHistory:
         self.undo_stack = [] # To store our undo states.
         self.redo_stack = [] # To store our redo states.
 
-    # When we draw on our canvas, we'll need to save the current state of our canvas.
-    # The following method will handle this task.
+    # This method will save the current state of our canvas to the undo stack.
     def save_state(self, pixels):
+        self.undo_stack.append(pixels.copy())
+
+    # When we draw on our canvas, we'll need to save the current state of our canvas and reset our redo stack.
+    # The following method will handle this task.
+    def save_state_and_update(self, pixels):
+        
         # Adding our current state to the undo stack, so that we have the ability to undo our actions.
         # The pixels dictionary specifies the current state of our canvas.
-        self.undo_stack.append(pixels.copy())
+        self.save_state(pixels)
 
         # Once we've drawn on our canvas, we can no longer redo any actions. Thus, we'll clear the redo stack.
         self.redo_stack.clear()
@@ -47,7 +52,7 @@ class CanvasHistory:
         # If we can redo an action, we'll retrieve the last state of our canvas.
         if self.redo_stack:
             # First, we must save our current state to the undo stack. This will allow us to undo our actions.
-            self.undo_stack.append(pixels.copy())
+            self.save_state(pixels)
 
             # Next, we'll retrieve the last state of our canvas from the redo stack.
             pixels.clear()

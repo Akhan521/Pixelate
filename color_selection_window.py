@@ -58,7 +58,7 @@ class ColorSelectionWindow(QMainWindow):
             button = QPushButton()
             # Connecting the button's clicked signal to a lambda function that sets the current color.
             button.clicked.connect(lambda _, color=color: self.set_current_color(color))
-            button.setStyleSheet(f"background-color: {color.name()}; border: 2px solid black;")
+            button.setStyleSheet(f"background-color: {color.name()}; border: 1.5px solid black;")
             # Adding the button to our grid layout. We'll need to specify the row and column for each button.
             grid_layout.addWidget(button, i // self.columns, i % self.columns)
             # Fixing the size of each button.
@@ -66,10 +66,10 @@ class ColorSelectionWindow(QMainWindow):
         
         # We'll then add our primary and secondary color boxes below.
         button = QPushButton()
-        button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 2px solid black;")
+        button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 1.5px solid black;")
         selected_colors_layout.addWidget(button)
         button = QPushButton()
-        button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 2px solid black;")
+        button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 1.5px solid black;")
         selected_colors_layout.addWidget(button)
 
         # Creating an intermediary widget to hold all of our other widgets.
@@ -84,6 +84,7 @@ class ColorSelectionWindow(QMainWindow):
         self.selected_colors.setLayout(selected_colors_layout)
         main_layout.addWidget(color_grid)
         main_layout.addWidget(self.selected_colors)
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         window.setLayout(main_layout)
 
         # Fixing the size of our color selection grid widget.
@@ -105,11 +106,11 @@ class ColorSelectionWindow(QMainWindow):
         # The very first widget is our primary color button (at index 0).
         primary_color_button = layout.itemAt(0).widget()
         # We'll update the background color of our primary color button.
-        primary_color_button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 2px solid black;")
+        primary_color_button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 1.5px solid black;")
 
         # Next, we'll do the same for our secondary color button (at index 1).
         secondary_color_button = layout.itemAt(1).widget() 
-        secondary_color_button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 2px solid black;")
+        secondary_color_button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 1.5px solid black;")
 
 
     # The following method will set the primary color to the given color and update the secondary color.
