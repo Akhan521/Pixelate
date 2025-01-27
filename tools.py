@@ -43,7 +43,7 @@ class Tools(QMainWindow):
         # Our next tool/button will be the undo button.
         button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "undo_icon_1.png"))
+        button.setIcon(QIcon(self.icons_path + "undo_icon_2.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting the button's clicked signal to our undo method.
@@ -53,7 +53,7 @@ class Tools(QMainWindow):
         # Then, we'll add a redo button to go with our undo button.
         button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "redo_icon_1.png"))
+        button.setIcon(QIcon(self.icons_path + "redo_icon_2.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting the button's clicked signal to our redo method.
