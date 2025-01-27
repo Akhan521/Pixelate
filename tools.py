@@ -33,7 +33,7 @@ class Tools(QMainWindow):
         # Creating our very first tool/button: the clear button.
         button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "clear_icon_1.png"))
+        button.setIcon(QIcon(self.icons_path + "clear_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting the button's clicked signal to a method that clears the canvas.
@@ -43,7 +43,7 @@ class Tools(QMainWindow):
         # Our next tool/button will be the undo button.
         button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "undo_icon_2.png"))
+        button.setIcon(QIcon(self.icons_path + "undo_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting the button's clicked signal to our undo method.
@@ -53,7 +53,7 @@ class Tools(QMainWindow):
         # Then, we'll add a redo button to go with our undo button.
         button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "redo_icon_2.png"))
+        button.setIcon(QIcon(self.icons_path + "redo_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting the button's clicked signal to our redo method.
@@ -63,7 +63,7 @@ class Tools(QMainWindow):
         # Our fill tool will be next.
         button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "fill_icon_1.png"))
+        button.setIcon(QIcon(self.icons_path + "fill_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set the canvas's fill mode to True.
@@ -83,7 +83,7 @@ class Tools(QMainWindow):
         # Our cursor tool:
         button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "drag_icon_1.png"))
+        button.setIcon(QIcon(self.icons_path + "drag_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set our drag state to True.
