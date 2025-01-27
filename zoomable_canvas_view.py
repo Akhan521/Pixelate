@@ -17,7 +17,7 @@ class ZoomableCanvasView(QGraphicsView):
 
         # Setting the zoom factor and the min/max zoom factors.
         self.zoom_factor = 1.0
-        self.min_zoom_factor = 0.5
+        self.min_zoom_factor = 1.0
         self.max_zoom_factor = 4.0
 
         # For dragging functionality, we'll need to store the last mouse position (to calculate how much we've dragged our mouse).
@@ -45,8 +45,13 @@ class ZoomableCanvasView(QGraphicsView):
 
     # We'll override the mousePressEvent method to handle dragging functionality.
     def mousePressEvent(self, event):
-        # If our canvas is draggable, we'll need to store our mouse position.
+
+        # If our canvas is draggable, we'll need to update our cursor and store our mouse position.
         if self.canvas.is_draggable:
+
+            # We'll set our canvas cursor to a closed hand cursor to indicate that it's being dragged.
+            self.canvas.setCursor(Qt.CursorShape.ClosedHandCursor)
+
             # We'll store the current mouse position to calculate how much we've dragged our mouse.
             self.last_mouse_pos = event.pos()
 
@@ -80,8 +85,13 @@ class ZoomableCanvasView(QGraphicsView):
     # We'll override the mouseReleaseEvent method to handle dragging functionality.
     def mouseReleaseEvent(self, event):
         
-        # Clearing the last mouse position to stop dragging.
+        # To stop dragging, we'll need to reset our cursor and clear the last mouse position.
         if self.canvas.is_draggable:
+
+            # We'll set our canvas cursor back to an open hand cursor.
+            self.canvas.setCursor(Qt.CursorShape.OpenHandCursor)
+
+            # Clearing the last mouse position.
             self.last_mouse_pos = None
 
         # Otherwise, we'll fall back to the default behavior.
