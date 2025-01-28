@@ -16,7 +16,7 @@ class ColorSelectionWindow(QMainWindow):
         self.rows    = 6
         self.columns = 5
         
-        # Defining an offset for our main window border (12.5 pixels of padding on either side).
+        # Defining an offset for our main window border.
         self.window_border_offset = 25
 
         # Defining variables to store our primary and secondary colors.
@@ -25,12 +25,6 @@ class ColorSelectionWindow(QMainWindow):
 
         # Setting the window title and size (using the button size and grid dimensions).
         self.setWindowTitle("Color Selection")
-        
-        # Our width will be the size of each button multiplied by the number of columns.
-        # Our height will be a quarter of our canvas height (grid height) + the window border offset.
-        width = self.button_size * self.columns + self.window_border_offset
-        height = pixel_size * (grid_height // 4) + self.window_border_offset
-        self.setFixedSize(width, height)
 
         # Defining a list of 30 default colors to choose from.
         self.colors = [
@@ -93,6 +87,11 @@ class ColorSelectionWindow(QMainWindow):
 
         # Fixing the size of our color selection grid widget.
         color_grid.setFixedSize(self.button_size * self.columns, self.button_size * self.rows)
+
+        # Our width will be the size of each button multiplied by the number of columns.
+        self.width = self.button_size * self.columns + self.window_border_offset
+        self.height = self.button_size * (self.rows + 2) + self.window_border_offset
+        self.setFixedSize(self.width, self.height)
         
         # Setting the central widget of our application.
         self.setCentralWidget(window)
