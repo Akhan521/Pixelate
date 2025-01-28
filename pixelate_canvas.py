@@ -54,6 +54,9 @@ class PixelateCanvas(QWidget):
         # This grid will be drawn only once. All subsequent drawings will be on top of this grid.
         self.init_grid()
 
+        # When in fill mode, we'll need to keep track of visited pixels to avoid redundant operations.
+        self.visited = set()
+
     # This method will create a grid for our canvas. It will be implemented as a QPixmap object.
     # We'll initialize the grid with a white background and draw grid lines on top of it.
     def init_grid(self):
@@ -197,6 +200,8 @@ class PixelateCanvas(QWidget):
             target_color = self.pixels.get((x, y), QColor("white"))
             replacement_color = self.color_selection_window.get_primary_color()
             self.fill(x, y, target_color, replacement_color)
+            # Once we've filled in the area, we'll clear the visited set.
+            self.visited.clear()
             return
 
         #If we are in eyedropper mode, we will copy the selected color onto the primary color.
@@ -236,8 +241,14 @@ class PixelateCanvas(QWidget):
 
         # As long as we have pixels to process, we'll continue.
         while stack:
-            # Getting the coordinates of the pixel we'll be processing as well as its color.
+            # Getting the coordinates of the pixel we'll be processing.
             x, y = stack.pop()
+
+            # If we've already visited/processed the pixel, we'll skip it.
+            if (x, y) in self.visited:
+                continue
+
+            # Otherwise, we'll get the color of the pixel and continue w/ processing it.
             color = self.pixels.get((x, y), QColor("white"))
 
             ''' We'll handle our base cases first.
@@ -251,9 +262,12 @@ class PixelateCanvas(QWidget):
             # Otherwise, we'll draw the pixel with the replacement color.
             self.draw_pixel(x, y, replacement_color)
 
+            # We'll mark the pixel as visited/processed.
+            self.visited.add((x, y))
+
             # We'll now process the neighboring pixels.
             stack.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
-
+            
     # The following method will allow us to preview pixels on our canvas before drawing them.
     # As we hover over the canvas, we'll see a preview of the pixels we're about to draw.
     # We provide a QPainter object to handle all drawing operations.

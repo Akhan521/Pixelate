@@ -16,26 +16,24 @@ class MainWindow(QMainWindow):
         # Setting the window title.
         self.setWindowTitle("Pixelate")
         
-        # # Our application's window will be maximized when shown. The sizes of our widgets will depend on the window's size when maximized.
-        # # For starters, we'll be storing the primary screen (to get its dimensions).
-        # self.screen = QGuiApplication.primaryScreen()
+        # Our application's window will be maximized when shown. The sizes of our widgets will depend on the window's size when maximized.
+        # For starters, we'll be storing the primary screen (to get its dimensions).
+        self.screen = QGuiApplication.primaryScreen()
         
-        # # Retrieving the dimensions of our maximized window (the available geometry of our screen, which excludes the taskbar).
-        # self.screen_geometry = self.screen.availableGeometry()
+        # Retrieving the dimensions of our maximized window (the available geometry of our screen, which excludes the taskbar).
+        self.screen_geometry = self.screen.availableGeometry()
 
-        # # We don't want our canvas to fill the entire screen, so we'll offset the width and height using the following values.
-        # self.width_offset = 300
-        # self.height_offset = 100
+        # We don't want our canvas to fill the entire screen, so we'll offset the width and height using the following values.
+        self.width_offset = 300
+        self.height_offset = 100
 
         # Finally, we'll set the values of our pixel size, grid width, and grid height.
         self.pixel_size = 15
-        # self.grid_width = (self.screen_geometry.width() - self.width_offset) // self.pixel_size
-        # self.grid_height = (self.screen_geometry.height() - self.height_offset) // self.pixel_size
-        self.grid_width = 32
-        self.grid_height = 32
+        self.grid_width = (self.screen_geometry.width() - self.width_offset) // self.pixel_size
+        self.grid_height = (self.screen_geometry.height() - self.height_offset) // self.pixel_size
 
-        # # We'll fix the width and height of our window to its maximized size (to prevent resizing).
-        # self.setFixedSize(self.screen_geometry.width(), self.screen_geometry.height())
+        # We'll fix the width and height of our window to its maximized size (to prevent resizing).
+        self.setFixedSize(self.screen_geometry.width(), self.screen_geometry.height())
         
         # Using a horizontal layout for our program.
         layout = QHBoxLayout()
