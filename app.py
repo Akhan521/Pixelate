@@ -32,8 +32,8 @@ class MainWindow(QMainWindow):
         self.pixel_size = 15
         self.grid_width = (self.screen_geometry.width() - canvas_width_offset) // self.pixel_size
         self.grid_height = (self.screen_geometry.height() - canvas_height_offset) // self.pixel_size
-        # self.grid_width = 32
-        # self.grid_height = 32
+        # self.grid_width = 256
+        # self.grid_height = 256
 
         # We'll fix the width and height of our window to its maximized size (to prevent resizing).
         self.setFixedSize(self.screen_geometry.width(), self.screen_geometry.height())

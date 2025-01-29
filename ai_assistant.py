@@ -1,5 +1,5 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QHBoxLayout
+from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QHBoxLayout, QApplication, QListWidget, QListWidgetItem, QLabel
 # Importing the necessary modules to work with canvas drawings.
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import Qt
@@ -32,57 +32,44 @@ class AIAssistant(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        # Creating a text box for our chat widget.
-        self.text_box = QTextEdit(self)
+        # Creating a list widget to display our chat messages.
+        self.chat_messages = QListWidget(self)
+        self.chat_messages.setAlternatingRowColors(True)
+        self.chat_messages.setSpacing(2)
 
-        # Enabling line wrapping.
-        self.text_box.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+        # An introductory message to welcome the user.
+        welcome_message = "Pixi: Welcome to Pixelate! Feel free to ask me about anything related to your art."
+        welcome_item = QListWidgetItem(welcome_message)
 
-        # Our initial welcome message.
-        initial_message = "Welcome to Pixelate! Feel free to ask me about anything related to your art."
-        self.text_box.setPlaceholderText(initial_message)
+        # Adding the welcome message to our chat messages list widget.
+        self.chat_messages.addItem(welcome_item)
 
-        self.text_box.setStyleSheet(f'''
+        # To enable line wrapping, we'll set the word wrap property to True.
+        self.chat_messages.setWordWrap(True)
+
+        # Adding our chat messages list widget to our main layout.
+        main_layout.addWidget(self.chat_messages)
+
+        # We'll specify the height of our input field.
+        input_field_height = 50
+
+        # Creating a text edit widget for our input field. This is where the user will type their messages.
+        self.input_field = QTextEdit(self)
+        self.input_field.setFixedHeight(input_field_height)
+        self.input_field.setPlaceholderText("Type your message here...")
+        main_layout.addWidget(self.input_field)
+
+        self.send_button = QPushButton("Send")
+        self.send_button.clicked.connect(self.send_message)
+        main_layout.addWidget(self.send_button)
+
+        self.setStyleSheet(f'''
             background-color: {QColor(240, 240, 240, 255).name()};
-            border: 1px solid black;
         ''')
-
-        # Adding the text box to our main layout.
-        main_layout.addWidget(self.text_box)
-
-        # Our submit button will be used to send messages to our AI assistant.
-        button_layout = QHBoxLayout()
-        self.submit_button = QPushButton("Submit")
-        self.submit_button.clicked.connect(self.submit_message)
-
-        self.submit_button.setStyleSheet(f'''
-            background-color: {QColor(240, 240, 240, 255).name()};
-            border: 1px solid black;
-        ''')
-
-        # Our clear button will be used to clear the chat.
-        self.clear_button = QPushButton("Clear")
-        self.clear_button.clicked.connect(self.clear)
-
-        self.clear_button.setStyleSheet(f'''
-            background-color: {QColor(240, 240, 240, 255).name()};
-            border: 1px solid black;
-        ''')
-
-        # Adding our buttons to the button layout.
-        button_layout.addWidget(self.clear_button)
-        button_layout.addWidget(self.submit_button)
-
-        # Adding our button layout to our main layout.
-        main_layout.addLayout(button_layout)
-
+        
         # Finally, we'll set the main layout of our chat widget.
         self.setLayout(main_layout)
 
-    # A function to clear the chat.
-    def clear(self):
-        self.text_box.clear()
-        self.text_box.setPlaceholderText("Feel free to ask me about anything related to your art!")
         
     # A function to send a request to the OpenAI API and receive a response.
     def get_response(self, message):
@@ -105,10 +92,61 @@ class AIAssistant(QWidget):
         
         return super().keyPressEvent(event)
 
-    # A function to submit a message.
-    def submit_message(self):
-        message = self.text_box.toPlainText()
-        response = self.get_response(message)
-        self.text_box.append(f"\nPixAI: {response}\n\n")
+    # A function to send a message to our AI assistant, Pixi.
+    def send_message(self):
+        # Getting the message from our text edit widget.
+        message = self.input_field.toPlainText().strip()
+
+        # If our message isn't empty, we'll send it to our AI assistant.
+        if message:
+            # Creating a list item to display our message.
+            message_item = QListWidgetItem(f"You: {message}")
+
+            # Adding the message to our chat messages list widget.
+            self.chat_messages.addItem(message_item)
+
+            # Clearing the input field.
+            self.input_field.clear()
+
+            # Getting a response from our AI assistant, Pixi.
+            response = self.get_response(message)
+
+            # Creating a list item to display Pixi's response.
+            response_item = QListWidgetItem(f"Pixi: {response}")
+
+            # Adding Pixi's response to our chat messages list widget.
+            self.chat_messages.addItem(response_item)
+
+    # A function to create a list item for our chat messages list widget.
+    def create_list_item(self, message):
+
+        # Creating an empty list item.
+        list_item = QListWidgetItem(self.chat_messages)
+
+        # A widget to hold our message.
+        message_widget = QWidget()
+
+        # Using a horizontal layout for our message widget.
+        message_layout = QHBoxLayout()
+
+        # Creating a label to display our message.
+        message_label = QLabel(message)
+        message_label.setWordWrap(True)
+
+        # Adding the label to our message layout.
+        message_layout.addWidget(message_label)
+
+        # Setting the layout of our message widget.
+        message_widget.setLayout(message_layout)
+
+        # Setting the widget of our list item.
+        list_item.setSizeHint(message_widget.sizeHint())
+
+        self.chat_messages.addItem(list_item)
+        self.chat_messages.setItemWidget(list_item, message_widget)
 
     
+# app = QApplication([])
+# window = AIAssistant(125, 400)
+# window.show()
+# app.exec()
