@@ -1,9 +1,8 @@
-# Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QHBoxLayout, QApplication, QListWidget, QListWidgetItem, QLabel
-# Importing the necessary modules to work with canvas drawings.
+# Importing the required libraries.
+from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QApplication, QListWidget, QListWidgetItem
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import Qt
-# Importing necessary modules for our AI assistant.
+from chat_bubble_widget import ChatBubbleWidget
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
@@ -34,18 +33,16 @@ class AIAssistant(QWidget):
 
         # Creating a list widget to display our chat messages.
         self.chat_messages = QListWidget(self)
-        self.chat_messages.setAlternatingRowColors(True)
-        self.chat_messages.setSpacing(2)
+        self.chat_messages.setSpacing(5)
 
-        # An introductory message to welcome the user.
-        welcome_message = "Pixi: Welcome to Pixelate! Feel free to ask me about anything related to your art."
-        welcome_item = QListWidgetItem(welcome_message)
-
-        # Adding the welcome message to our chat messages list widget.
-        self.chat_messages.addItem(welcome_item)
+        # Hiding the vertical scroll bar of the chat messages list widget.
+        self.chat_messages.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # To enable line wrapping, we'll set the word wrap property to True.
         self.chat_messages.setWordWrap(True)
+
+        # An introductory message to welcome the user (added to the chat messages list widget).
+        self.create_list_item("Welcome to Pixelate! I'm Pixi, your AI assistant. Feel free to ask me anything.", is_user=False)        
 
         # Adding our chat messages list widget to our main layout.
         main_layout.addWidget(self.chat_messages)
@@ -57,8 +54,11 @@ class AIAssistant(QWidget):
         self.input_field = QTextEdit(self)
         self.input_field.setFixedHeight(input_field_height)
         self.input_field.setPlaceholderText("Type your message here...")
+
+        # Adding our input field to our main layout.
         main_layout.addWidget(self.input_field)
 
+        # Creating a send button to send the user's message to Pixi.
         self.send_button = QPushButton("Send")
         self.send_button.clicked.connect(self.send_message)
         main_layout.addWidget(self.send_button)
@@ -73,24 +73,22 @@ class AIAssistant(QWidget):
         
     # A function to send a request to the OpenAI API and receive a response.
     def get_response(self, message):
-        response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {
-                    "role": "user",
-                    "content": message
-                }
-            ]
-        )
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": message
+                    }
+                ]
+            )
 
-        return response.choices[0].message.content
-    
-    # If the user presses Ctrl + Enter, we'll submit the message.
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Return and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            self.submit_message()
+            return response.choices[0].message.content
         
-        return super().keyPressEvent(event)
+        except Exception as e:
+            return f"An error occurred: {e}"
+
 
     # A function to send a message to our AI assistant, Pixi.
     def send_message(self):
@@ -99,11 +97,9 @@ class AIAssistant(QWidget):
 
         # If our message isn't empty, we'll send it to our AI assistant.
         if message:
-            # Creating a list item to display our message.
-            message_item = QListWidgetItem(f"You: {message}")
 
-            # Adding the message to our chat messages list widget.
-            self.chat_messages.addItem(message_item)
+            # Creating a list item to display the user's message and adding it to our chat messages list widget.
+            self.create_list_item(f"You: {message}", is_user=True)
 
             # Clearing the input field.
             self.input_field.clear()
@@ -111,42 +107,44 @@ class AIAssistant(QWidget):
             # Getting a response from our AI assistant, Pixi.
             response = self.get_response(message)
 
-            # Creating a list item to display Pixi's response.
-            response_item = QListWidgetItem(f"Pixi: {response}")
+            # Creating a list item to display Pixi's response and adding it to our chat messages list widget.
+            self.create_list_item(f"Pixi: {response}", is_user=False)
 
-            # Adding Pixi's response to our chat messages list widget.
-            self.chat_messages.addItem(response_item)
+            # Automatically scrolling to the bottom of our chat messages list widget.
+            self.chat_messages.scrollToBottom()
+
 
     # A function to create a list item for our chat messages list widget.
-    def create_list_item(self, message):
+    def create_list_item(self, message, is_user=False):
+
+        # Creating a chat bubble widget to hold our message. (Will be added to the list widget.)
+        chat_bubble = ChatBubbleWidget(message, is_user, list_widget=self.chat_messages)
 
         # Creating an empty list item.
-        list_item = QListWidgetItem(self.chat_messages)
+        list_item = QListWidgetItem()
 
-        # A widget to hold our message.
-        message_widget = QWidget()
+        # To ensure that our list item can hold our chat bubble widget, we'll set its size hint.
+        list_item.setSizeHint(chat_bubble.sizeHint())
 
-        # Using a horizontal layout for our message widget.
-        message_layout = QHBoxLayout()
-
-        # Creating a label to display our message.
-        message_label = QLabel(message)
-        message_label.setWordWrap(True)
-
-        # Adding the label to our message layout.
-        message_layout.addWidget(message_label)
-
-        # Setting the layout of our message widget.
-        message_widget.setLayout(message_layout)
-
-        # Setting the widget of our list item.
-        list_item.setSizeHint(message_widget.sizeHint())
-
+        # Adding our list item to the chat messages list widget.
         self.chat_messages.addItem(list_item)
-        self.chat_messages.setItemWidget(list_item, message_widget)
+
+        # Setting our chat bubble widget as the list item.
+        self.chat_messages.setItemWidget(list_item, chat_bubble)
+
+        # Automatically scrolling to the bottom of our chat messages list widget.
+        self.chat_messages.scrollToBottom()
+
+    # If the user presses Ctrl + Enter, we'll send their message to Pixi.
+    def keyPressEvent(self, event):
+
+        if event.key() == Qt.Key.Key_Return and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+
+            # Sending the user's message to Pixi.
+            self.send_message()
 
     
 # app = QApplication([])
-# window = AIAssistant(125, 400)
+# window=  AIAssistant(125, 475)
 # window.show()
 # app.exec()
