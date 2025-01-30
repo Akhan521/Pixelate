@@ -29,7 +29,7 @@ class AIAssistant(QWidget):
 
         # To provide some context to our AI assistant, we'll store some messages.
         self.chat_context = []   # Each message will be stored as a dictionary (to work with the OpenAI API).
-        self.context_limit = 5  # The maximum number of messages to store.
+        self.context_limit = 10  # The maximum number of messages to store.
 
         # Using a vertical layout for our chat widget's main layout.
         main_layout = QVBoxLayout()
