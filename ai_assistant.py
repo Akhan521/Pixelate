@@ -10,6 +10,10 @@ import os
 # Loading the environment variables.
 load_dotenv()
 
+# Reading the system prompt for Pixi from a text file.
+with open("Pixi_System_Prompt.txt", "r") as file:
+    system_prompt = file.read()
+
 # Our AI assistant will be implemented as a chat widget.
 class AIAssistant(QWidget):
 
@@ -30,6 +34,9 @@ class AIAssistant(QWidget):
         # To provide some context to our AI assistant, we'll store some messages.
         self.chat_context = []   # Each message will be stored as a dictionary (to work with the OpenAI API).
         self.context_limit = 10  # The maximum number of messages to store.
+
+        # Adding our system prompt to the chat context.
+        self.chat_context.append({"role": "system", "content": system_prompt})
 
         # Using a vertical layout for our chat widget's main layout.
         main_layout = QVBoxLayout()
