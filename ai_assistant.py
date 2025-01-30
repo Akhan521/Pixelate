@@ -27,6 +27,10 @@ class AIAssistant(QWidget):
         self.height = height
         self.setFixedSize(self.width, self.height)
 
+        # To provide some context to our AI assistant, we'll store some messages.
+        self.chat_context = []   # Each message will be stored as a dictionary (to work with the OpenAI API).
+        self.context_limit = 5  # The maximum number of messages to store.
+
         # Using a vertical layout for our chat widget's main layout.
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -42,7 +46,9 @@ class AIAssistant(QWidget):
         self.chat_messages.setWordWrap(True)
 
         # An introductory message to welcome the user (added to the chat messages list widget).
-        self.create_list_item("Welcome to Pixelate! I'm Pixi, your AI assistant. Feel free to ask me anything.", is_user=False)        
+        welcome_message = "Welcome to Pixelate! I'm Pixi, your AI assistant. Feel free to ask me anything."
+        self.chat_context.append({"role": "assistant", "content": welcome_message})
+        self.create_list_item(welcome_message, is_user=False)        
 
         # Adding our chat messages list widget to our main layout.
         main_layout.addWidget(self.chat_messages)
@@ -71,17 +77,23 @@ class AIAssistant(QWidget):
         self.setLayout(main_layout)
 
         
-    # A function to send a request to the OpenAI API and receive a response.
-    def get_response(self, message):
+    # A function to send a request to the OpenAI API and receive a response. 
+    def get_response(self):
+
+        # We'll provide a limited number of messages to Pixi to generate a response.
+        chat_context = self.chat_context
+
+        # If we've exceeded the context limit, we'll only provide the most recent messages.
+        if len(self.chat_context) > self.context_limit:
+
+            # We'll only provide the most recent messages to Pixi.
+            chat_context = self.chat_context[-self.context_limit:]
+
+        # Now, we'll send a request to the OpenAI API w/ our chat context to get a response.
         try:
             response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": message
-                    }
-                ]
+                messages=chat_context
             )
 
             return response.choices[0].message.content
@@ -98,6 +110,9 @@ class AIAssistant(QWidget):
         # If our message isn't empty, we'll send it to our AI assistant.
         if message:
 
+            # Adding the user's message to our chat context.
+            self.chat_context.append({"role": "user", "content": message})
+
             # Creating a list item to display the user's message and adding it to our chat messages list widget.
             self.create_list_item(f"You: {message}", is_user=True)
 
@@ -105,7 +120,10 @@ class AIAssistant(QWidget):
             self.input_field.clear()
 
             # Getting a response from our AI assistant, Pixi.
-            response = self.get_response(message)
+            response = self.get_response()
+
+            # Adding Pixi's response to our chat context.
+            self.chat_context.append({"role": "assistant", "content": response})
 
             # Creating a list item to display Pixi's response and adding it to our chat messages list widget.
             self.create_list_item(f"Pixi: {response}", is_user=False)
