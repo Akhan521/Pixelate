@@ -11,13 +11,15 @@ class Tools(QMainWindow):
     
     # Our constructor will initialize our tools window.
     # We provide our canvas to handle canvas operations with our tools.
-    def __init__(self, canvas, pixel_size=15, grid_width=32, grid_height=32):
+    def __init__(self, canvas, width, height):
 
         super().__init__()
         self.canvas = canvas
+        self.width = width
+        self.height = height
 
-        # Fixing the size of our tools window to 100 pixels wide and the height of our canvas.
-        self.setFixedSize(100, pixel_size * grid_height)
+        # Fixing the size of our tools window.
+        self.setFixedSize(self.width, self.height)
 
         # Setting the background color of our window to light gray.
         self.setStyleSheet("background-color: lightgray;")
@@ -188,3 +190,5 @@ class Tools(QMainWindow):
 
         # Setting the eyedropper mode of our canvas to True.
         self.canvas.set_eyedropper_mode(True)
+
+        

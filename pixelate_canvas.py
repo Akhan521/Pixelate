@@ -54,6 +54,9 @@ class PixelateCanvas(QWidget):
         # This grid will be drawn only once. All subsequent drawings will be on top of this grid.
         self.init_grid()
 
+        # When in fill mode, we'll need to keep track of visited pixels to avoid redundant operations.
+        self.visited = set()
+
     # This method will create a grid for our canvas. It will be implemented as a QPixmap object.
     # We'll initialize the grid with a white background and draw grid lines on top of it.
     def init_grid(self):
@@ -178,6 +181,22 @@ class PixelateCanvas(QWidget):
         x, y = self.preview_pixel
         painter.fillRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size, preview_color)
 
+    # A function to convert our pixels dictionary to a dictionary of the form {(x, y): rgba_tuple}.
+    def convert_to_rgba_format(self):
+        
+        # Creating an empty dictionary that we'll populate with RGBA tuples.
+        rgba_pixels = {}
+
+        # Iterating over the pixels dictionary.
+        for (x, y), color in self.pixels.items():
+
+            # Converting the QColor object to an RGBA tuple.
+            rgba_tuple = (color.red(), color.green(), color.blue(), color.alpha())
+
+            # Adding the RGBA tuple to our dictionary.
+            rgba_pixels[(x, y)] = rgba_tuple
+
+        return rgba_pixels
 
     # Overriding the mousePressEvent method to draw pixels on our canvas.
     def mousePressEvent(self, event):
@@ -197,6 +216,8 @@ class PixelateCanvas(QWidget):
             target_color = self.pixels.get((x, y), QColor("white"))
             replacement_color = self.color_selection_window.get_primary_color()
             self.fill(x, y, target_color, replacement_color)
+            # Once we've filled in the area, we'll clear the visited set.
+            self.visited.clear()
             return
 
         #If we are in eyedropper mode, we will copy the selected color onto the primary color.
@@ -206,8 +227,16 @@ class PixelateCanvas(QWidget):
             self.color_selection_window.update_selected_colors()
             return
 
-        # Otherwise, we'll draw a pixel at the given coordinates.
-        self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
+        # If the left mouse button was clicked, we'll draw with the primary color.
+        if event.button() == Qt.MouseButton.LeftButton:
+            color = self.color_selection_window.get_primary_color()
+            self.draw_pixel(x, y, color)
+        
+        # If the right mouse button was clicked, we'll draw with the secondary color.
+        elif event.button() == Qt.MouseButton.RightButton:
+            color = self.color_selection_window.get_secondary_color()
+            self.draw_pixel(x, y, color)
+
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
     def mouseMoveEvent(self, event):
@@ -217,8 +246,16 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
         
-        # For now, we'll draw a pixel at the given coordinates.
-        self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
+        # If the left mouse button is being dragged, we'll draw with the primary color.
+        if event.buttons() == Qt.MouseButton.LeftButton:
+            color = self.color_selection_window.get_primary_color()
+            self.draw_pixel(x, y, color)
+
+        # If the right mouse button is being dragged, we'll draw with the secondary color.
+        elif event.buttons() == Qt.MouseButton.RightButton:
+            color = self.color_selection_window.get_secondary_color()
+            self.draw_pixel(x, y, color)
+        
 
     # To set our canvas to fill mode, we'll use the following method.
     def set_fill_mode(self, fill_mode):
@@ -236,8 +273,14 @@ class PixelateCanvas(QWidget):
 
         # As long as we have pixels to process, we'll continue.
         while stack:
-            # Getting the coordinates of the pixel we'll be processing as well as its color.
+            # Getting the coordinates of the pixel we'll be processing.
             x, y = stack.pop()
+
+            # If we've already visited/processed the pixel, we'll skip it.
+            if (x, y) in self.visited:
+                continue
+
+            # Otherwise, we'll get the color of the pixel and continue w/ processing it.
             color = self.pixels.get((x, y), QColor("white"))
 
             ''' We'll handle our base cases first.
@@ -251,9 +294,12 @@ class PixelateCanvas(QWidget):
             # Otherwise, we'll draw the pixel with the replacement color.
             self.draw_pixel(x, y, replacement_color)
 
+            # We'll mark the pixel as visited/processed.
+            self.visited.add((x, y))
+
             # We'll now process the neighboring pixels.
             stack.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
-
+            
     # The following method will allow us to preview pixels on our canvas before drawing them.
     # As we hover over the canvas, we'll see a preview of the pixels we're about to draw.
     # We provide a QPainter object to handle all drawing operations.

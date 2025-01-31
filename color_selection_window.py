@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout,
 # Importing the necessary modules to work with canvas drawings.
 from PyQt6.QtGui import QPainter, QColor
 from PyQt6.QtCore import Qt
+from color_button import ColorButton
 
 class ColorSelectionWindow(QMainWindow):
     def __init__(self, pixel_size=15, grid_width=32, grid_height=32):
@@ -16,7 +17,7 @@ class ColorSelectionWindow(QMainWindow):
         self.rows    = 6
         self.columns = 5
         
-        # Defining an offset for our main window border (12.5 pixels of padding on either side).
+        # Defining an offset for our main window border.
         self.window_border_offset = 25
 
         # Defining variables to store our primary and secondary colors.
@@ -25,8 +26,6 @@ class ColorSelectionWindow(QMainWindow):
 
         # Setting the window title and size (using the button size and grid dimensions).
         self.setWindowTitle("Color Selection")
-        # Here, we also provide the window border offset to have some padding in our window.
-        self.setFixedSize(self.button_size * self.columns + self.window_border_offset, pixel_size * grid_height)
 
         # Defining a list of 30 default colors to choose from.
         self.colors = [
@@ -55,9 +54,7 @@ class ColorSelectionWindow(QMainWindow):
         # Creating a button for each color.
         for i, color in enumerate(self.colors):
             # Creating a button w/ the given background color + a border.
-            button = QPushButton()
-            # Connecting the button's clicked signal to a lambda function that sets the current color.
-            button.clicked.connect(lambda _, color=color: self.set_current_color(color))
+            button = ColorButton(color_selection_window=self)
             button.setStyleSheet(f"background-color: {color.name()}; border: 1.5px solid black;")
             # Adding the button to our grid layout. We'll need to specify the row and column for each button.
             grid_layout.addWidget(button, i // self.columns, i % self.columns)
@@ -65,10 +62,10 @@ class ColorSelectionWindow(QMainWindow):
             button.setFixedSize(self.button_size, self.button_size)
         
         # We'll then add our primary and secondary color boxes below.
-        button = QPushButton()
+        button = ColorButton(color_selection_window=self)
         button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 1.5px solid black;")
         selected_colors_layout.addWidget(button)
-        button = QPushButton()
+        button = ColorButton(color_selection_window=self)
         button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 1.5px solid black;")
         selected_colors_layout.addWidget(button)
 
@@ -89,6 +86,11 @@ class ColorSelectionWindow(QMainWindow):
 
         # Fixing the size of our color selection grid widget.
         color_grid.setFixedSize(self.button_size * self.columns, self.button_size * self.rows)
+
+        # Our width will be the size of each button multiplied by the number of columns.
+        self.width = self.button_size * self.columns + self.window_border_offset
+        self.height = self.button_size * (self.rows + 2) + self.window_border_offset
+        self.setFixedSize(self.width, self.height)
         
         # Setting the central widget of our application.
         self.setCentralWidget(window)
@@ -111,16 +113,6 @@ class ColorSelectionWindow(QMainWindow):
         # Next, we'll do the same for our secondary color button (at index 1).
         secondary_color_button = layout.itemAt(1).widget() 
         secondary_color_button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 1.5px solid black;")
-
-
-    # The following method will set the primary color to the given color and update the secondary color.
-    def set_current_color(self, color):
-
-        #We'll update our primary/secondary colors.
-        self.set_secondary_color(self.get_primary_color())
-        self.set_primary_color(color)
-        self.update_selected_colors()
-        
 
     # The following method will return the primary color.
     def get_primary_color(self):
