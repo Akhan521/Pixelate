@@ -42,14 +42,17 @@ class ChatBubbleWidget(QWidget):
         # Setting our style sheet.
         self.setStyleSheet(self.get_style())
 
+        # Adjusting the size of our chat bubble widget.
+        self.adjustSize()
+
     # A function to return the size hint of our chat bubble widget (to dynamically adjust its size based on the message).
     def sizeHint(self):
 
         # The width of our chat bubble widget will be the width of the list widget that holds it.
-        width = self.list_widget.width() - 15  # Subtracting 15 to account for padding.
+        width = self.list_widget.width() - 10 # Subtracting 10 to account for padding.
 
         # The height of our chat bubble widget will be the height required to display the message.
-        height = self.message_label.heightForWidth(width)
+        height = self.message_label.heightForWidth(width) 
 
         return QSize(width, height)
 

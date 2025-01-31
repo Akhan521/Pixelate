@@ -1,9 +1,8 @@
 # Importing the required libraries.
-from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QApplication, QListWidget, QListWidgetItem
-from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QApplication, QListWidget, QListWidgetItem, QScrollArea
+from PyQt6.QtGui import QColor, QImage
 from PyQt6.QtCore import Qt
 from chat_bubble_widget import ChatBubbleWidget
-from popup_dialog import PopUpDialog
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
@@ -40,12 +39,12 @@ class AIAssistant(QWidget):
         self.chat_context.append({"role": "system", "content": system_prompt})
 
         # Using a vertical layout for our chat widget's main layout.
-        main_layout = QVBoxLayout()
+        main_layout = QVBoxLayout(self)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Creating a list widget to display our chat messages.
         self.chat_messages = QListWidget(self)
-        self.chat_messages.setSpacing(5)
+        self.chat_messages.setSpacing(3)
 
         # Hiding the vertical scroll bar of the chat messages list widget.
         self.chat_messages.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -92,10 +91,10 @@ class AIAssistant(QWidget):
         chat_context = self.chat_context
 
         # If we've exceeded the context limit, we'll only provide the most recent messages.
-        if len(self.chat_context) > self.context_limit:
+        if len(self.chat_context) > self.context_limit + 1: # We add 1 to account for the system prompt.
 
-            # We'll only provide the most recent messages to Pixi.
-            chat_context = self.chat_context[-self.context_limit:]
+            # We'll provide the system prompt and the most recent messages to Pixi.
+            chat_context = self.chat_context[0] + self.chat_context[-self.context_limit:]
 
         # Now, we'll send a request to the OpenAI API w/ our chat context to get a response.
         try:
@@ -147,7 +146,7 @@ class AIAssistant(QWidget):
         chat_bubble = ChatBubbleWidget(message, is_user, list_widget=self.chat_messages)
 
         # Creating an empty list item.
-        list_item = QListWidgetItem()
+        list_item = QListWidgetItem(self.chat_messages)
 
         # To ensure that our list item can hold our chat bubble widget, we'll set its size hint.
         list_item.setSizeHint(chat_bubble.sizeHint())
@@ -169,50 +168,7 @@ class AIAssistant(QWidget):
             # Sending the user's message to Pixi.
             self.send_message()
 
-    # A function to handle image generation requests.
-    def generate_image(self):
-
-        # *** NOTE: THIS FUNCTION DOESN'T WORK YET AS INTENDED. ***
-
-        # Creating a pop-up dialog to handle image generation.
-        # We'll pass along our AI assistant widget to the dialog, so it can access it.
-        dialog = PopUpDialog(self) 
-        dialog.exec()
-
-        try:
-            # If our dialog has an output, we'll process and return it.
-            if dialog.output:
-
-                # Convert the output to a dictionary of QColor objects.
-                qcolor_pixels = self.convert_to_qcolor_format(dialog.output)
-                
-                return qcolor_pixels
-            
-        except Exception as e:
-            print(f"ERROR: {e}")
-            return None
-
-    # A function to convert to a dictionary of the form {(x, y): rgba_tuple} to a dictionary of the form {(x, y): QColor}.
-    # When Pixi returns a dictionary of colors, we'll need to convert it into the proper format to use it.
-    def convert_to_qcolor_format(self, pixels_dict):
-
-        # Creating an empty dictionary that we'll populate with QColor objects.
-        qcolor_pixels = {}
-
-        # Iterating over the pixels dictionary.
-        for (x, y), rgba_tuple in pixels_dict.items():
-
-            # Converting the RGBA tuple to a QColor object.
-            qcolor = QColor(*rgba_tuple)
-
-            # Adding the QColor object to our dictionary.
-            qcolor_pixels[(x, y)] = qcolor
-
-        return qcolor_pixels
-
-
-    
 # app = QApplication([])
-# window=  AIAssistant(125, 475)
-# window.show()
+# assistant = AIAssistant(125, 400)
+# assistant.show()
 # app.exec()

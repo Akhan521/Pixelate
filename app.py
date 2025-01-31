@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         tool_window_width = 100
         # The height of our tools window will be the same as our left window.
         tool_window_height = left_window_height
-        self.tools = Tools(self.canvas, self.ai_assistant, tool_window_width, tool_window_height)
+        self.tools = Tools(self.canvas, tool_window_width, tool_window_height)
         layout.addWidget(self.tools)
         
         # Creating an intermediary widget to hold our layout + setting the layout.
