@@ -11,10 +11,11 @@ class Tools(QMainWindow):
     
     # Our constructor will initialize our tools window.
     # We provide our canvas to handle canvas operations with our tools.
-    def __init__(self, canvas, width, height):
+    def __init__(self, canvas, ai_assistant, width, height):
 
         super().__init__()
         self.canvas = canvas
+        self.ai_assistant = ai_assistant
         self.width = width
         self.height = height
 
@@ -100,6 +101,15 @@ class Tools(QMainWindow):
         # Connecting its signal to a function that will set the eyedropper tool.
         button.clicked.connect(self.use_eyedropper_tool)
         button.setIconSize(self.icon_size)
+        layout.addWidget(button)
+
+        # Our AI image generation tool:
+        button = QPushButton("AI Image Gen")
+        button.setStyleSheet("background-color: white;")
+        # button.setIcon(QIcon(self.icons_path + "pencil.png"))
+
+        # Connecting it to a function that will handle AI image generation.
+        button.clicked.connect(self.generate_image)
         layout.addWidget(button)
 
         # Creating an intermediary widget to hold our layout.
@@ -190,3 +200,20 @@ class Tools(QMainWindow):
 
         # Setting the eyedropper mode of our canvas to True.
         self.canvas.set_eyedropper_mode(True)
+
+    def generate_image(self):
+        pass
+
+        # # Calling the generate_image method of our AI assistant (will open a dialog).
+        # # It will eventually return a dictionary of colors that we'll use to draw on our canvas.
+        # generated_pixels = self.ai_assistant.generate_image()
+   
+        # if generated_pixels:
+
+        #     # Updating our pixels dictionary with the generated pixels.
+        #     self.canvas.pixels.update(generated_pixels)
+
+        #     # Redrawing our canvas.
+        #     self.canvas.update()
+
+        

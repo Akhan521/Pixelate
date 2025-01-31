@@ -181,6 +181,22 @@ class PixelateCanvas(QWidget):
         x, y = self.preview_pixel
         painter.fillRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size, preview_color)
 
+    # A function to convert our pixels dictionary to a dictionary of the form {(x, y): rgba_tuple}.
+    def convert_to_rgba_format(self):
+        
+        # Creating an empty dictionary that we'll populate with RGBA tuples.
+        rgba_pixels = {}
+
+        # Iterating over the pixels dictionary.
+        for (x, y), color in self.pixels.items():
+
+            # Converting the QColor object to an RGBA tuple.
+            rgba_tuple = (color.red(), color.green(), color.blue(), color.alpha())
+
+            # Adding the RGBA tuple to our dictionary.
+            rgba_pixels[(x, y)] = rgba_tuple
+
+        return rgba_pixels
 
     # Overriding the mousePressEvent method to draw pixels on our canvas.
     def mousePressEvent(self, event):
@@ -214,6 +230,7 @@ class PixelateCanvas(QWidget):
         # Otherwise, we'll draw a pixel at the given coordinates.
         self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
 
+
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
     def mouseMoveEvent(self, event):
         
@@ -224,6 +241,7 @@ class PixelateCanvas(QWidget):
         
         # For now, we'll draw a pixel at the given coordinates.
         self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
+        
 
     # To set our canvas to fill mode, we'll use the following method.
     def set_fill_mode(self, fill_mode):

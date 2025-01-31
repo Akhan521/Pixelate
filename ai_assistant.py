@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QAppli
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import Qt
 from chat_bubble_widget import ChatBubbleWidget
+from popup_dialog import PopUpDialog
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
@@ -167,6 +168,48 @@ class AIAssistant(QWidget):
 
             # Sending the user's message to Pixi.
             self.send_message()
+
+    # A function to handle image generation requests.
+    def generate_image(self):
+
+        # *** NOTE: THIS FUNCTION DOESN'T WORK YET AS INTENDED. ***
+
+        # Creating a pop-up dialog to handle image generation.
+        # We'll pass along our AI assistant widget to the dialog, so it can access it.
+        dialog = PopUpDialog(self) 
+        dialog.exec()
+
+        try:
+            # If our dialog has an output, we'll process and return it.
+            if dialog.output:
+
+                # Convert the output to a dictionary of QColor objects.
+                qcolor_pixels = self.convert_to_qcolor_format(dialog.output)
+                
+                return qcolor_pixels
+            
+        except Exception as e:
+            print(f"ERROR: {e}")
+            return None
+
+    # A function to convert to a dictionary of the form {(x, y): rgba_tuple} to a dictionary of the form {(x, y): QColor}.
+    # When Pixi returns a dictionary of colors, we'll need to convert it into the proper format to use it.
+    def convert_to_qcolor_format(self, pixels_dict):
+
+        # Creating an empty dictionary that we'll populate with QColor objects.
+        qcolor_pixels = {}
+
+        # Iterating over the pixels dictionary.
+        for (x, y), rgba_tuple in pixels_dict.items():
+
+            # Converting the RGBA tuple to a QColor object.
+            qcolor = QColor(*rgba_tuple)
+
+            # Adding the QColor object to our dictionary.
+            qcolor_pixels[(x, y)] = qcolor
+
+        return qcolor_pixels
+
 
     
 # app = QApplication([])
