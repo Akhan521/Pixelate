@@ -227,8 +227,15 @@ class PixelateCanvas(QWidget):
             self.color_selection_window.update_selected_colors()
             return
 
-        # Otherwise, we'll draw a pixel at the given coordinates.
-        self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
+        # If the left mouse button was clicked, we'll draw with the primary color.
+        if event.button() == Qt.MouseButton.LeftButton:
+            color = self.color_selection_window.get_primary_color()
+            self.draw_pixel(x, y, color)
+        
+        # If the right mouse button was clicked, we'll draw with the secondary color.
+        elif event.button() == Qt.MouseButton.RightButton:
+            color = self.color_selection_window.get_secondary_color()
+            self.draw_pixel(x, y, color)
 
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
@@ -239,8 +246,15 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
         
-        # For now, we'll draw a pixel at the given coordinates.
-        self.draw_pixel(x, y, self.color_selection_window.get_primary_color())
+        # If the left mouse button is being dragged, we'll draw with the primary color.
+        if event.buttons() == Qt.MouseButton.LeftButton:
+            color = self.color_selection_window.get_primary_color()
+            self.draw_pixel(x, y, color)
+
+        # If the right mouse button is being dragged, we'll draw with the secondary color.
+        elif event.buttons() == Qt.MouseButton.RightButton:
+            color = self.color_selection_window.get_secondary_color()
+            self.draw_pixel(x, y, color)
         
 
     # To set our canvas to fill mode, we'll use the following method.
