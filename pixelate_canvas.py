@@ -214,6 +214,12 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
 
+        # If we press the left mouse button, we'll draw with the primary color.
+        if event.button() == Qt.MouseButton.LeftButton:
+            color = self.color_selection_window.get_primary_color()
+        elif event.button() == Qt.MouseButton.RightButton:
+            color = self.color_selection_window.get_secondary_color()
+
         # If we're in erase mode, we'll delete the pixel at the given coordinates.
         if self.erase_mode:
             if (x, y) in self.pixels:
@@ -224,7 +230,7 @@ class PixelateCanvas(QWidget):
         # If we're in fill mode, we'll use the fill method to fill in areas.
         if self.fill_mode:
             target_color = self.pixels.get((x, y), QColor("white"))
-            replacement_color = self.color_selection_window.get_primary_color()
+            replacement_color = color
             self.fill(x, y, target_color, replacement_color)
             # Once we've filled in the area, we'll clear the visited set.
             self.visited.clear()
