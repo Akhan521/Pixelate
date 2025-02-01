@@ -44,6 +44,9 @@ class PixelateCanvas(QWidget):
         # To store whether our canvas is draggable.
         self.is_draggable = False
 
+        # To store whether our canvas is in erase mode.
+        self.erase_mode = False
+
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
 
@@ -211,6 +214,13 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
 
+        # If we're in erase mode, we'll delete the pixel at the given coordinates.
+        if self.erase_mode:
+            if (x, y) in self.pixels:
+                del self.pixels[(x, y)]
+                self.update(QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size))
+            return
+
         # If we're in fill mode, we'll use the fill method to fill in areas.
         if self.fill_mode:
             target_color = self.pixels.get((x, y), QColor("white"))
@@ -245,6 +255,13 @@ class PixelateCanvas(QWidget):
         x, y = event.pos().x(), event.pos().y()
         x = x // self.pixel_size
         y = y // self.pixel_size
+
+        # If we're in erase mode, we'll delete the pixel at the given coordinates.
+        if self.erase_mode:
+            if (x, y) in self.pixels:
+                del self.pixels[(x, y)]
+                self.update(QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size))
+            return
         
         # If the left mouse button is being dragged, we'll draw with the primary color.
         if event.buttons() == Qt.MouseButton.LeftButton:
@@ -264,6 +281,10 @@ class PixelateCanvas(QWidget):
     # To set our canvas to fill mode, we'll use the following method.
     def set_eyedropper_mode(self, eyedropper_mode):
         self.eyedropper_mode = eyedropper_mode
+
+    # To set our canvas to erase mode, we'll use the following method.
+    def set_erase_mode(self, erase_mode):
+        self.erase_mode = erase_mode
 
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):
@@ -305,8 +326,13 @@ class PixelateCanvas(QWidget):
     # We provide a QPainter object to handle all drawing operations.
     def preview(self, painter):
 
-        # Getting our primary color (with some transparency).
-        preview_color = self.color_selection_window.get_primary_color()
+        # If we're in erase mode, the preview pixel will be the same color as the background.
+        if self.erase_mode:
+            preview_color = QColor(240, 240, 240, 255)
+
+        # Getting our primary color.
+        else:
+            preview_color = self.color_selection_window.get_primary_color()
 
         # Drawing the preview pixels on our canvas.
         self.draw_preview_pixel(painter, preview_color)
