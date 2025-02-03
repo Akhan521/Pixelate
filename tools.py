@@ -83,13 +83,13 @@ class Tools(QMainWindow):
         layout.addWidget(button)
 
         # Our eraser tool:
-        button = QPushButton("Eraser")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        # button.setIcon(QIcon(self.icons_path + "eraser.png"))
+        button.setIcon(QIcon(self.icons_path + "eraser_icon.png"))
 
         # Connecting its signal to a function that will allow us to erase (drawing w/ our background color).
         button.clicked.connect(self.use_erase_tool)
-        # button.setIconSize(self.icon_size)
+        button.setIconSize(self.icon_size)
         layout.addWidget(button)
 
         # Our cursor tool:
@@ -103,9 +103,9 @@ class Tools(QMainWindow):
         layout.addWidget(button)
 
         # Our eyedropper tool:
-        button = QPushButton("Eye Dropper")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        # button.setIcon(QIcon(self.icons_path + "pencil.png"))
+        button.setIcon(QIcon(self.icons_path + "eyedropper_icon.png"))
 
         # Connecting its signal to a function that will set the eyedropper tool.
         button.clicked.connect(self.use_eyedropper_tool)
@@ -217,6 +217,9 @@ class Tools(QMainWindow):
         self.canvas.set_erase_mode(False)
 
     def use_eyedropper_tool(self):
+        # Setting our cursor to be an open hand cursor to indicate that it's draggable.
+        self.canvas.setCursor(Qt.CursorShape.CrossCursor)
+
         # Setting the fill mode of our canvas to False.
         self.canvas.set_fill_mode(False)
 
