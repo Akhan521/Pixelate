@@ -92,7 +92,10 @@ class MainWindow(QMainWindow):
         tool_window_height = left_window_height
         self.tools = Tools(self.canvas, tool_window_width, tool_window_height)
         layout.addWidget(self.tools)
-        
+
+        # Giving our main window a gray background.
+        self.setStyleSheet("background-color: #BBBBBB;")
+
         # Creating an intermediary widget to hold our layout + setting the layout.
         window = QWidget()
         window.setLayout(layout)

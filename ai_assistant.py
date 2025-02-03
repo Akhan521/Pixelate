@@ -78,6 +78,7 @@ class AIAssistant(QWidget):
 
         self.setStyleSheet(f'''
             background-color: {QColor(240, 240, 240, 255).name()};
+            color: black;
         ''')
         
         # Finally, we'll set the main layout of our chat widget.

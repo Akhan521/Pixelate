@@ -112,6 +112,8 @@ class Tools(QMainWindow):
         button.setIconSize(self.icon_size)
         layout.addWidget(button)
 
+        self.setStyleSheet("color: black;")
+
         # Creating an intermediary widget to hold our layout.
         window = QWidget()
         window.setLayout(layout)
