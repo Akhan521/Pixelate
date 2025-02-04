@@ -21,7 +21,7 @@ class StartScreen(QMainWindow):
         self.screen_geometry = self.screen.geometry()
 
         # Defining an offset for our logo, so that it doesn't take up the entire screen.
-        logo_offset = 400
+        logo_offset = 300
         logo_width = self.screen_geometry.width() - logo_offset
         logo_height = self.screen_geometry.height() - logo_offset
         logo_size = QSize(logo_width, logo_height)
