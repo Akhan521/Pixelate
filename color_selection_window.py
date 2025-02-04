@@ -60,7 +60,7 @@ class ColorSelectionWindow(QMainWindow):
         for i, color in enumerate(self.colors):
             # Creating a button w/ the given background color + a border.
             button = ColorButton(color_selection_window=self)
-            button.setStyleSheet(f"background-color: {color.name()}; border: 2px solid black;")
+            button.setStyleSheet(f"background-color: {color.name()}; border: 1px solid black;")
             # Adding the button to our grid layout. We'll need to specify the row and column for each button.
             grid_layout.addWidget(button, i // self.columns, i % self.columns)
             # Fixing the size of each button.
@@ -68,10 +68,10 @@ class ColorSelectionWindow(QMainWindow):
         
         # We'll then add our primary and secondary color boxes below.
         button = ColorButton(color_selection_window=self)
-        button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 2px solid black;")
+        button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 1px solid black;")
         selected_colors_layout.addWidget(button)
         button = ColorButton(color_selection_window=self)
-        button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 2px solid black;")
+        button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 1px solid black;")
         selected_colors_layout.addWidget(button)
 
         # Creating an intermediary widget to hold all of our other widgets.
@@ -115,11 +115,11 @@ class ColorSelectionWindow(QMainWindow):
         # The very first widget is our primary color button (at index 0).
         primary_color_button = layout.itemAt(0).widget()
         # We'll update the background color of our primary color button.
-        primary_color_button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 2px solid black;")
+        primary_color_button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: 1px solid black;")
 
         # Next, we'll do the same for our secondary color button (at index 1).
         secondary_color_button = layout.itemAt(1).widget() 
-        secondary_color_button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 2px solid black;")
+        secondary_color_button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: 1px solid black;")
 
     # The following method will return the primary color.
     def get_primary_color(self):
