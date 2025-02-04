@@ -1,7 +1,7 @@
 # Importing basic widgets from PyQt6.
 from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor, QIcon
+from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor
 from PyQt6.QtCore import Qt, QSize
 # Importing our canvas class.
 from pixelate_canvas import PixelateCanvas
@@ -219,8 +219,13 @@ class Tools(QMainWindow):
         self.canvas.set_erase_mode(False)
 
     def use_eyedropper_tool(self):
-        # Setting our cursor to be an open hand cursor to indicate that it's draggable.
-        self.canvas.setCursor(Qt.CursorShape.CrossCursor)
+        # To set our cursor as an eyedropper icon, we'll use a pixmap.
+        eyedropper_pixmap = QPixmap(self.icons_path + "eyedropper_icon.png")
+        # Resizing our pixmap.
+        eyedropper_pixmap = eyedropper_pixmap.scaled(30, 30, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        # Finally, we'll set our cursor to the pixmap we created and adjust its hotspot (where the click is registered).
+        eyedropper_cursor = QCursor(eyedropper_pixmap, 0, 30) # The hotspot is at the bottom of the cursor.
+        self.canvas.setCursor(eyedropper_cursor)
 
         # Setting the fill mode of our canvas to False.
         self.canvas.set_fill_mode(False)

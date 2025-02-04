@@ -2,6 +2,7 @@
 # Importing the necessary libraries.
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
 from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QFont
 
 # Our chat bubble widget that will hold the user's and Pixi's messages. These will be displayed in our list widget.
 class ChatBubbleWidget(QWidget):
@@ -47,10 +48,10 @@ class ChatBubbleWidget(QWidget):
 
     # A function to return the size hint of our chat bubble widget (to dynamically adjust its size based on the message).
     def sizeHint(self):
-
+        
         # The width of our chat bubble widget will be the width of the list widget that holds it.
-        width = self.list_widget.width() - 15 # Subtracting 15 to account for padding.
-
+        width = self.list_widget.width() - 10 # Subtracting 10 to account for padding.
+        
         # The height of our chat bubble widget will be the height required to display the message.
         height = self.message_label.heightForWidth(width) 
 
@@ -77,3 +78,4 @@ class ChatBubbleWidget(QWidget):
                 color: white;
             }}
         '''
+    

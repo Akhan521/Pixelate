@@ -17,6 +17,9 @@ class PixelateCanvas(QWidget):
         # Invoking the parent class constructor.
         super().__init__()
 
+        # Our default color will be a light, transparent gray.
+        self.default_color = QColor(240, 240, 240, 255)
+
         # Storing the color selection window to access the chosen colors.
         self.color_selection_window = color_selection_window
 
@@ -26,7 +29,7 @@ class PixelateCanvas(QWidget):
         self.grid_height = grid_height # The number of pixels tall the canvas will be.
 
         # We'll also need to store the color of each pixel.
-        # Our dictionary will map the (x, y) coordinates of each pixel to a color. By default, all pixels are white.
+        # Our dictionary will map the (x, y) coordinates of each pixel to a color.
         self.pixels = {}
 
         # We'll have a preview pixel to show the pixel we're about to draw. (The (x, y) coordinates of the pixel.)
@@ -61,7 +64,7 @@ class PixelateCanvas(QWidget):
         self.visited = set()
 
     # This method will create a grid for our canvas. It will be implemented as a QPixmap object.
-    # We'll initialize the grid with a white background and draw grid lines on top of it.
+    # We'll initialize the grid with a light gray background and draw grid lines on top of it.
     def init_grid(self):
 
         # Creating a QPixmap object to store our grid. (This will serve as our canvas's base layer.)
@@ -74,7 +77,7 @@ class PixelateCanvas(QWidget):
         painter.setPen(QColor(0, 0, 0, 50))
 
         # First, we'll fill our grid with a light, transparent gray background.
-        self.grid.fill(QColor(240, 240, 240, 255))
+        self.grid.fill(self.default_color)
 
         # Drawing vertical lines.
         for x in range(self.grid_width + 1):
@@ -216,8 +219,27 @@ class PixelateCanvas(QWidget):
 
         # If we press the left mouse button, we'll draw with the primary color.
         if event.button() == Qt.MouseButton.LeftButton:
+            color = None
+            # If we're in eyedropper mode, we'll get the color of the pixel we're clicking on.
+            if self.eyedropper_mode:
+                color = self.pixels.get((x, y), self.default_color)
+                # Then, we'll update our primary color w/ the color of the pixel we're clicking on.
+                self.color_selection_window.set_primary_color(color)
+                self.color_selection_window.update_selected_colors()
+                return
+            # Otherwise, we'll get the primary color from the color selection window.
             color = self.color_selection_window.get_primary_color()
+
         elif event.button() == Qt.MouseButton.RightButton:
+            color = None
+            # If we're in eyedropper mode, we'll get the color of the pixel we're clicking on.
+            if self.eyedropper_mode:
+                color = self.pixels.get((x, y), self.default_color)
+                # Then, we'll update our secondary color w/ the color of the pixel we're clicking on.
+                self.color_selection_window.set_secondary_color(color)
+                self.color_selection_window.update_selected_colors()
+                return
+            # Otherwise, we'll get the secondary color from the color selection window.
             color = self.color_selection_window.get_secondary_color()
 
         # If we're in erase mode, we'll delete the pixel at the given coordinates.
@@ -229,29 +251,15 @@ class PixelateCanvas(QWidget):
 
         # If we're in fill mode, we'll use the fill method to fill in areas.
         if self.fill_mode:
-            target_color = self.pixels.get((x, y), QColor("white"))
+            target_color = self.pixels.get((x, y), self.default_color)
             replacement_color = color
             self.fill(x, y, target_color, replacement_color)
             # Once we've filled in the area, we'll clear the visited set.
             self.visited.clear()
             return
 
-        #If we are in eyedropper mode, we will copy the selected color onto the primary color.
-        if self.eyedropper_mode:
-            target_color = self.pixels.get((x, y), QColor("white"))
-            self.color_selection_window.set_primary_color(target_color)
-            self.color_selection_window.update_selected_colors()
-            return
-
-        # If the left mouse button was clicked, we'll draw with the primary color.
-        if event.button() == Qt.MouseButton.LeftButton:
-            color = self.color_selection_window.get_primary_color()
-            self.draw_pixel(x, y, color)
-        
-        # If the right mouse button was clicked, we'll draw with the secondary color.
-        elif event.button() == Qt.MouseButton.RightButton:
-            color = self.color_selection_window.get_secondary_color()
-            self.draw_pixel(x, y, color)
+        # Drawing the pixel at the given coordinates with the selected color.
+        self.draw_pixel(x, y, color)
 
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
@@ -308,7 +316,7 @@ class PixelateCanvas(QWidget):
                 continue
 
             # Otherwise, we'll get the color of the pixel and continue w/ processing it.
-            color = self.pixels.get((x, y), QColor("white"))
+            color = self.pixels.get((x, y), self.default_color)
 
             ''' We'll handle our base cases first.
                     1. If the pixel is out of bounds, we'll skip it.
@@ -334,7 +342,7 @@ class PixelateCanvas(QWidget):
 
         # If we're in erase mode, the preview pixel will be the same color as the background.
         if self.erase_mode:
-            preview_color = QColor(240, 240, 240, 255)
+            preview_color = self.default_color
 
         # Getting our primary color.
         else:
