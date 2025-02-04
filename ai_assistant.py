@@ -1,6 +1,6 @@
 # Importing the required libraries.
 from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QApplication, QListWidget, QListWidgetItem, QScrollArea
-from PyQt6.QtGui import QColor, QImage
+from PyQt6.QtGui import QColor, QImage, QFont
 from PyQt6.QtCore import Qt
 from chat_bubble_widget import ChatBubbleWidget
 from openai import OpenAI
@@ -44,6 +44,7 @@ class AIAssistant(QWidget):
 
         # Creating a list widget to display our chat messages.
         self.chat_messages = QListWidget(self)
+        self.chat_messages.setFixedWidth(self.width - 20) # Subtracting 20 to account for padding.
         self.chat_messages.setSpacing(3)
 
         # Hiding the vertical scroll bar of the chat messages list widget.
@@ -55,7 +56,7 @@ class AIAssistant(QWidget):
         # An introductory message to welcome the user (added to the chat messages list widget).
         welcome_message = "Welcome to Pixelate! I'm Pixi, your AI assistant. Feel free to ask me anything."
         self.chat_context.append({"role": "assistant", "content": welcome_message})
-        self.create_list_item(welcome_message, is_user=False)        
+        self.create_list_item(welcome_message, is_user=False)     
 
         # Adding our chat messages list widget to our main layout.
         main_layout.addWidget(self.chat_messages)
@@ -74,6 +75,7 @@ class AIAssistant(QWidget):
         # Creating a send button to send the user's message to Pixi.
         self.send_button = QPushButton("Send")
         self.send_button.clicked.connect(self.send_message)
+        self.send_button.setFont(QFont("Press Start 2P", 10))
         main_layout.addWidget(self.send_button)
 
         self.setStyleSheet(f'''
@@ -148,7 +150,7 @@ class AIAssistant(QWidget):
 
         # Creating an empty list item.
         list_item = QListWidgetItem(self.chat_messages)
-
+        
         # To ensure that our list item can hold our chat bubble widget, we'll set its size hint.
         list_item.setSizeHint(chat_bubble.sizeHint())
 

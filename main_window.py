@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QGraphicsScene, QGraphicsProxyWidget
-from PyQt6.QtGui import QGuiApplication, QColor
+from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase
 from PyQt6.QtCore import Qt
 from tools import Tools
 from pixelate_canvas import PixelateCanvas
@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
 
         # Using a vertical layout for our left window.
         left_layout = QVBoxLayout()
-        left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        left_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         left_layout.setSpacing(0)
 
         # Creating our color selection window + adding it to our layout.
@@ -93,7 +93,9 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.tools)
 
         # Giving our main window a gray background.
-        self.setStyleSheet("background-color: #BBBBBB;")
+        self.setStyleSheet(f'''
+            background-color: #BBBBBB;      
+        ''')
 
         # Creating an intermediary widget to hold our layout + setting the layout.
         window = QWidget()
