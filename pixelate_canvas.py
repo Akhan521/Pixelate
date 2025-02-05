@@ -203,6 +203,23 @@ class PixelateCanvas(QWidget):
             rgba_pixels[(x, y)] = rgba_tuple
 
         return rgba_pixels
+    
+    # A function to convert our pixels dictionary to a dictionary of the form {(x, y): QColor}.
+    def convert_to_qcolor_format(self, rgba_pixels):
+
+        # Creating an empty dictionary that we'll populate with QColor objects.
+        qcolor_pixels = {}
+
+        # Iterating over the pixels dictionary.
+        for (x, y), rgba_tuple in rgba_pixels.items():
+
+            # Creating a QColor object from the RGBA tuple.
+            color = QColor(*rgba_tuple)
+
+            # Adding the QColor object to our dictionary.
+            qcolor_pixels[(x, y)] = color
+
+        return qcolor_pixels
 
     # Overriding the mousePressEvent method to draw pixels on our canvas.
     def mousePressEvent(self, event):
@@ -355,5 +372,13 @@ class PixelateCanvas(QWidget):
     # To set the draggable state of our canvas, we'll use the following method.
     def set_draggable(self, draggable):
         self.is_draggable = draggable
+
+    # A getter method to retrieve the current state of our canvas.
+    def get_pixels(self):
+        return self.pixels
+    
+    # A method to set the pixels of our canvas.
+    def set_pixels(self, pixels):
+        self.pixels = pixels
         
         

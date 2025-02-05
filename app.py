@@ -1,7 +1,13 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QLabel
+from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout, 
+                              QVBoxLayout, QWidget, QGraphicsScene, 
+                              QGraphicsProxyWidget, QMenuBar, QMenu,
+                              QFileDialog, QMessageBox, QPushButton, 
+                              QLabel )
+
 from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDatabase
 from PyQt6.QtCore import Qt, QSize
 from main_window import MainWindow
+import ast
 
 # Our starting screen.
 class StartScreen(QMainWindow):
@@ -46,6 +52,12 @@ class StartScreen(QMainWindow):
         # Adding the logo button to our layout.
         layout.addWidget(logo_label)
 
+        # Creating an open button to allow users to continue from previous projects.
+        open_button = QPushButton("OPEN", self)
+        open_button.setStyleSheet(self.get_button_style())
+        open_button.clicked.connect(self.open)
+        layout.addWidget(open_button)
+
         # Creating a new button to start our application.
         new_button = QPushButton("NEW", self)
         new_button.setStyleSheet(self.get_button_style())
@@ -63,7 +75,7 @@ class StartScreen(QMainWindow):
             background-color: #BBBBBB;
         ''')
 
-        # Storing a reference to a MainWindow instance.
+        # Storing a reference to a MainWindow instance (our main application window).
         self.main_window = MainWindow()
 
         # Creating a widget to hold our layout.
@@ -77,6 +89,78 @@ class StartScreen(QMainWindow):
     def start(self):
         self.main_window.showMaximized()
         self.hide()
+
+    # A method to open a previous project (by loading a text file w/ our pixels data).
+    def open(self):
+
+        # Prompting the user to select a file to open.
+        filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Open Project", "", "Text Files (*.txt)")
+
+        if filepath:
+
+            pixels = None  # To store our pixels dictionary data.
+
+            try:
+
+                # Reading the contents of our text file.
+                with open(filepath, "r") as file:
+                    pixels = file.read()
+
+                # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
+                pixels = ast.literal_eval(pixels)
+
+                # Validating our pixels data to ensure that it's in the correct format.
+                if not self.validate_imported_data(pixels):
+                    QMessageBox.warning(self, "ERROR: invalid data format/type", "The data in the selected file is not in the correct format.")
+                    return
+                
+                # If our pixels data is valid, we'll set up our canvas with the imported data.
+                else:
+                    QMessageBox.information(self, "Success", "Project opened successfully.")
+
+                    # Converting our pixels data to a dictionary of the form {(x,y): QColor}.
+                    pixels = self.main_window.canvas.convert_to_qcolor_format(pixels)
+
+                    # Setting the pixels data of our canvas.
+                    self.main_window.canvas.set_pixels(pixels)
+
+                    # Starting our application.
+                    self.start()
+
+            except Exception as e:
+                QMessageBox.warning(self, f"ERROR: failed to open project", str(e))
+
+    # A method to validate our imported data (used to check whether our data is in the correct format).
+    # Ideally, our data (pixels dict.) should be in the form: {(x,y): rgba_tuple}.
+    def validate_imported_data(self, pixels):
+        
+        # If our data is not a dictionary, we'll return False.
+        if not isinstance(pixels, dict):
+            return False
+
+        # Our pixels dict. must be in the form: {(x,y): rgba_tuple}.
+        for pixel_coords, rgba_tuple in pixels.items():
+
+            # If the pixel coordinates are not a tuple of size 2, we'll return False.
+            if not isinstance(pixel_coords, tuple) or len(pixel_coords) != 2:
+                return False
+
+            # If any of the pixel coordinates are not integers, we'll return False.
+            for pixel_coord in pixel_coords:
+                if not isinstance(pixel_coord, int):
+                    return False
+
+            # If the rgba tuple is not a tuple of size 4, we'll return False.
+            if not isinstance(rgba_tuple, tuple) or len(rgba_tuple) != 4:
+                return False
+
+            # If any of the rgba values are not integers, we'll return False.
+            for rgba_value in rgba_tuple:
+                if not isinstance(rgba_value, int):
+                    return False
+
+        return True
+            
 
     def get_button_style(self):
 

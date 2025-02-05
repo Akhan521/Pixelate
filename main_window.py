@@ -1,7 +1,12 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QGraphicsScene, QGraphicsProxyWidget
-from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase
+from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout, 
+                              QVBoxLayout, QWidget, QGraphicsScene, 
+                              QGraphicsProxyWidget, QMenuBar, QMenu,
+                              QFileDialog, QMessageBox )
+
+from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
 from tools import Tools
+
 from pixelate_canvas import PixelateCanvas
 from color_selection_window import ColorSelectionWindow
 from zoomable_canvas_view import ZoomableCanvasView
@@ -15,6 +20,19 @@ class MainWindow(QMainWindow):
         
         # Setting the window title.
         self.setWindowTitle("Pixelate")
+
+        # Creating a menu bar for our application.
+        menubar = self.menuBar()
+        menubar.setStyleSheet(self.get_menubar_style())
+
+        # Creating a file menu for our menu bar.
+        file_menu = menubar.addMenu("File")
+
+        # Creating a save action for our file menu.
+        save_action = QAction("Save", self)
+        save_action.setShortcut("Ctrl+S")
+        save_action.triggered.connect(self.save_canvas)
+        file_menu.addAction(save_action)
         
         # Our application's window will be maximized when shown. The sizes of our widgets will depend on the window's size when maximized.
         # For starters, we'll be storing the primary screen (to get its dimensions).
@@ -103,3 +121,52 @@ class MainWindow(QMainWindow):
 
         # Setting the central widget of our application.
         self.setCentralWidget(window)
+
+    # A method to save our canvas to a text file (saving the pixels dictionary).
+    def save_canvas(self):
+
+        # Retrieving our pixels dictionary (which contains the color of each pixel).
+        # We'd like to have our dictionary in the form {(x,y): rgba_tuple}.
+        pixels = self.canvas.convert_to_rgba_format()
+        pixels = pixels.__str__()
+
+        # Opening a file dialog to prompt to the user to specify where they'd like to save their work.
+        filepath, _ = QFileDialog.getSaveFileName(self, "Pixelate: Save File", "", "Text Files (*.txt)")
+
+        if filepath:
+
+            try:
+                with open(filepath, "w") as file:
+                    file.write(pixels)
+
+            except Exception as e:
+                QMessageBox.warning(self, f"ERROR: failed to save file - {str(e)}")
+
+
+    # A method to retrieve the style of our menu bar.
+    def get_menubar_style(self):
+
+        pixelated_font = QFont("Press Start 2P")
+        pixelated_font.setPointSize(16)
+
+        return f'''
+            QMenuBar {{
+                background-color: lightgray;
+                color: black;
+                font-family: {pixelated_font.family()};
+            }}
+            QMenuBar::item:selected {{
+                background-color: gray;
+                color: black;
+            }}
+
+            QMenu {{
+                background-color: lightgray;
+                color: black;
+                font-family: {pixelated_font.family()};
+            }}
+            QMenu::item:selected {{
+                background-color: gray;
+                color: black;
+            }}
+        '''
