@@ -17,6 +17,10 @@ class PixelateCanvas(QWidget):
         # Invoking the parent class constructor.
         super().__init__()
 
+        # The start and end points for the line tools
+        self.line_tool_start_point = 0
+        self.line_tool_end_point = 0
+
         # Our default color will be a light, transparent gray.
         self.default_color = QColor(240, 240, 240, 255)
 
@@ -49,6 +53,9 @@ class PixelateCanvas(QWidget):
 
         # To store whether our canvas is in erase mode.
         self.erase_mode = False
+
+        # To store whether our canvas is in Line Tool.
+        self.line_mode = False
 
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
@@ -157,6 +164,11 @@ class PixelateCanvas(QWidget):
         # If our eyedropper mode is enabled, return since we're not drawing.
         if self.eyedropper_mode:
             return
+
+        # If line mode is enabled, return since we're not drawing.
+        if self.line_mode:
+            return
+
 
         # Otherwise, we'll ensure that the pixel is within bounds.
         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
@@ -316,6 +328,11 @@ class PixelateCanvas(QWidget):
     # To set our canvas to erase mode, we'll use the following method.
     def set_erase_mode(self, erase_mode):
         self.erase_mode = erase_mode
+
+    # To set our canvas to line mode, we'll use the following method.
+    def set_line_mode(self, line_mode):
+        self.line_mode = line_mode
+
 
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):

@@ -112,6 +112,17 @@ class Tools(QMainWindow):
         button.setIconSize(self.icon_size)
         layout.addWidget(button)
 
+        # Our line tool:
+        button = QPushButton("Line Tool")
+        button.setStyleSheet("background-color: white;")
+        # button.setIcon(QIcon(self.icons_path + "drag_icon.png"))
+        button.setIconSize(self.icon_size)
+
+        # Connecting its signal to a function that will set our drag state to True.
+        button.clicked.connect(self.use_line_tool)
+        button.setIconSize(self.icon_size)
+        layout.addWidget(button)
+
         self.setStyleSheet("color: black;")
 
         # Creating an intermediary widget to hold our layout.
@@ -240,3 +251,21 @@ class Tools(QMainWindow):
         self.canvas.set_erase_mode(False)
 
         
+    def use_line_tool(self):
+        # Setting our cursor to be an arrow cursor.
+        self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
+
+        # Setting the fill mode of our canvas to False.
+        self.canvas.set_fill_mode(False)
+
+        # Setting the drag state of our canvas to False.
+        self.canvas.set_draggable(False)
+
+        # Setting eyedropper mode to False.
+        self.canvas.set_eyedropper_mode(False)
+
+        # Setting the erase mode of our canvas to False.
+        self.canvas.set_erase_mode(False)
+
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(True)
