@@ -19,7 +19,7 @@ class StartScreen(QMainWindow):
         # Setting the window title.
         self.setWindowTitle("Pixelate")
 
-        # Our application's window will be maximized when shown. The sizes of our widgets will depend on the window's size when maximized.
+        # Our application's window will be fullscreen when shown. The sizes of our widgets will depend on the window's size.
         # For starters, we'll be storing the primary screen (to get its dimensions).
         self.screen = QGuiApplication.primaryScreen()
         
@@ -31,9 +31,6 @@ class StartScreen(QMainWindow):
         logo_width = self.screen_geometry.width() - logo_offset
         logo_height = self.screen_geometry.height() - logo_offset
         logo_size = QSize(logo_width, logo_height)
-
-        # We'll fix the width and height of our window to its maximized size (to prevent resizing).
-        self.setFixedSize(self.screen_geometry.width(), self.screen_geometry.height())
 
         # Using a vertical layout for our screen.
         layout = QVBoxLayout()
@@ -87,7 +84,7 @@ class StartScreen(QMainWindow):
 
     # A method to start our application using the main window.
     def start(self):
-        self.main_window.showMaximized()
+        self.main_window.showFullScreen()
         self.hide()
 
     # A method to open a previous project (by loading a text file w/ our pixels data).
@@ -199,5 +196,5 @@ class StartScreen(QMainWindow):
 
 app = QApplication([])
 window = StartScreen()
-window.showMaximized()
+window.showFullScreen()
 app.exec()

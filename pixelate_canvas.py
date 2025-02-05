@@ -234,9 +234,12 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
 
+        # The color we'll be drawing with. By default, it's the primary color.
+        color = self.color_selection_window.get_primary_color() 
+
         # If we press the left mouse button, we'll draw with the primary color.
         if event.button() == Qt.MouseButton.LeftButton:
-            color = None
+            
             # If we're in eyedropper mode, we'll get the color of the pixel we're clicking on.
             if self.eyedropper_mode:
                 color = self.pixels.get((x, y), self.default_color)
@@ -248,7 +251,7 @@ class PixelateCanvas(QWidget):
             color = self.color_selection_window.get_primary_color()
 
         elif event.button() == Qt.MouseButton.RightButton:
-            color = None
+            
             # If we're in eyedropper mode, we'll get the color of the pixel we're clicking on.
             if self.eyedropper_mode:
                 color = self.pixels.get((x, y), self.default_color)
@@ -294,12 +297,12 @@ class PixelateCanvas(QWidget):
                 self.update(QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size))
             return
         
-        # If the left mouse button is being dragged, we'll draw with the primary color.
-        if event.buttons() == Qt.MouseButton.LeftButton:
+        # If the left or middle mouse button is being pressed, we'll draw with the primary color.
+        if event.buttons() == Qt.MouseButton.LeftButton or event.buttons() == Qt.MouseButton.MiddleButton:
             color = self.color_selection_window.get_primary_color()
             self.draw_pixel(x, y, color)
 
-        # If the right mouse button is being dragged, we'll draw with the secondary color.
+        # If the right mouse button is being pressed, we'll draw with the secondary color.
         elif event.buttons() == Qt.MouseButton.RightButton:
             color = self.color_selection_window.get_secondary_color()
             self.draw_pixel(x, y, color)

@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout, 
                               QVBoxLayout, QWidget, QGraphicsScene, 
                               QGraphicsProxyWidget, QMenuBar, QMenu,
-                              QFileDialog, QMessageBox )
+                              QFileDialog, QMessageBox, QSizePolicy,
+                              QWidgetAction )
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
@@ -21,20 +22,10 @@ class MainWindow(QMainWindow):
         # Setting the window title.
         self.setWindowTitle("Pixelate")
 
-        # Creating a menu bar for our application.
-        menubar = self.menuBar()
-        menubar.setStyleSheet(self.get_menubar_style())
-
-        # Creating a file menu for our menu bar.
-        file_menu = menubar.addMenu("File")
-
-        # Creating a save action for our file menu.
-        save_action = QAction("Save", self)
-        save_action.setShortcut("Ctrl+S")
-        save_action.triggered.connect(self.save_canvas)
-        file_menu.addAction(save_action)
+        # Setting up our menu bar.
+        self.init_menubar()
         
-        # Our application's window will be maximized when shown. The sizes of our widgets will depend on the window's size when maximized.
+        # Our application's window will be fullscreen. The sizes of our widgets will depend on the window's size.
         # For starters, we'll be storing the primary screen (to get its dimensions).
         self.screen = QGuiApplication.primaryScreen()
         
@@ -42,7 +33,7 @@ class MainWindow(QMainWindow):
         self.screen_geometry = self.screen.geometry()
 
         # We don't want our canvas to fill the entire screen, so we'll offset the width and height using the following values.
-        canvas_width_offset = 300
+        canvas_width_offset = 325
         canvas_height_offset = 200
 
         # Finally, we'll set the values of our pixel size, grid width, and grid height.
@@ -51,14 +42,11 @@ class MainWindow(QMainWindow):
         self.grid_height = (self.screen_geometry.height() - canvas_height_offset) // self.pixel_size
         # self.grid_width = 32
         # self.grid_height = 32
-
-        # We'll fix the width and height of our window to its maximized size (to prevent resizing).
-        self.setFixedSize(self.screen_geometry.width(), self.screen_geometry.height())
         
         # Using a horizontal layout for our program's main layout.
         layout = QHBoxLayout()
 
-        # Creating a left window to hold our color selection window and chat widget.
+        # Creating a left window widget to hold our color selection window and chat widget.
         left_window = QWidget()
         # Defining an offset for our left window border (to prevent it from cutting off the color selection window).
         left_window_offset = 15
@@ -142,6 +130,27 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.warning(self, f"ERROR: failed to save file - {str(e)}")
 
+    # A method to setup our menubar:
+    def init_menubar(self):
+
+        # Creating a menu bar for our application.
+        menubar = self.menuBar()
+        menubar.setStyleSheet(self.get_menubar_style())
+
+        # Creating a file menu for our menu bar.
+        file_menu = menubar.addMenu("File")
+
+        # Creating a save action for our file menu.
+        save_action = QAction("Save", self)
+        save_action.setShortcut("Ctrl+S")
+        save_action.triggered.connect(self.save_canvas)
+        file_menu.addAction(save_action)
+
+        # Adding a close button to our menu bar.
+        close_action = QAction("Close", self)
+        close_action.setShortcut("Ctrl+Q")
+        close_action.triggered.connect(self.close)
+        menubar.addAction(close_action)
 
     # A method to retrieve the style of our menu bar.
     def get_menubar_style(self):
