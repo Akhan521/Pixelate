@@ -178,6 +178,9 @@ class Tools(QMainWindow):
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
 
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
+
     def use_pencil_tool(self):
 
         # Setting our cursor to be an arrow cursor.
@@ -194,6 +197,9 @@ class Tools(QMainWindow):
 
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
+
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
 
     def use_erase_tool(self):
         
@@ -212,6 +218,9 @@ class Tools(QMainWindow):
         # Setting the erase mode of our canvas to True.
         self.canvas.set_erase_mode(True)
 
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
+
     def use_cursor_tool(self):
 
         # Setting our cursor to be an open hand cursor to indicate that it's draggable.
@@ -228,6 +237,9 @@ class Tools(QMainWindow):
 
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
+
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
 
     def use_eyedropper_tool(self):
         # To set our cursor as an eyedropper icon, we'll use a pixmap.
@@ -250,6 +262,9 @@ class Tools(QMainWindow):
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
 
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
+
         
     def use_line_tool(self):
         # Setting our cursor to be an arrow cursor.
@@ -267,5 +282,5 @@ class Tools(QMainWindow):
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
 
-        # Setting the line tool mode of our canvas to False.
+        # Setting the line tool mode of our canvas to True.
         self.canvas.set_line_mode(True)

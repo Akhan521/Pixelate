@@ -18,8 +18,8 @@ class PixelateCanvas(QWidget):
         super().__init__()
 
         # The start and end points for the line tools
-        self.line_tool_start_point = 0
-        self.line_tool_end_point = 0
+        self.line_tool_start_point = (0,0)
+        self.line_tool_end_point = (0,0)
 
         # Our default color will be a light, transparent gray.
         self.default_color = QColor(240, 240, 240, 255)
@@ -246,6 +246,11 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
 
+        if self.line_mode:
+            self.line_tool_start_point = (x, y)  # Store the starting point
+            # print(f"START POINT: {self.line_tool_start_point}")
+            return  # Avoid drawing a single pixel immediately
+
         # If we press the left mouse button, we'll draw with the primary color.
         if event.button() == Qt.MouseButton.LeftButton:
             color = None
@@ -289,6 +294,22 @@ class PixelateCanvas(QWidget):
 
         # Drawing the pixel at the given coordinates with the selected color.
         self.draw_pixel(x, y, color)
+
+    def mouseReleaseEvent(self, event):
+        if self.line_mode:
+            x, y = event.pos().x(), event.pos().y()
+            x = x // self.pixel_size
+            y = y // self.pixel_size
+
+            self.line_tool_end_point = (x, y)
+            # print(f"END POINT: {self.line_tool_end_point}")
+
+            # Retrieve the selected color
+            color = self.color_selection_window.get_primary_color()
+
+            # Draw the line
+            self.draw_line(self.line_tool_start_point, self.line_tool_end_point, color)
+            return
 
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
@@ -382,6 +403,9 @@ class PixelateCanvas(QWidget):
         else:
             preview_color = self.color_selection_window.get_primary_color()
 
+        # if self.line_mode:
+        #     return
+
         # Drawing the preview pixels on our canvas.
         self.draw_preview_pixel(painter, preview_color)
 
@@ -397,5 +421,37 @@ class PixelateCanvas(QWidget):
     # A method to set the pixels of our canvas.
     def set_pixels(self, pixels):
         self.pixels = pixels
-        
-        
+
+    def draw_line(self, start, end, color):
+        x1, y1 = start
+        x2, y2 = end
+
+        # print("ENTER DRAW LINE")
+
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = 1 if x1 < x2 else -1
+        sy = 1 if y1 < y2 else -1
+        err = dx - dy
+
+        while True:
+            # self.draw_pixel(x1, y1, color)  # Draw at the current position
+
+            # Otherwise, we'll ensure that the pixel is within bounds.
+            if 0 <= x1 < self.grid_width and 0 <= y1 < self.grid_height:
+                # Updating the color of the pixel at (x, y).
+                self.pixels[(x1, y1)] = color
+
+                # Repainting only the area where the pixel color was updated.
+                # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
+                self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+            if x1 == x2 and y1 == y2:
+                break  # Stop when reaching the end point
+            e2 = 2 * err
+            if e2 > -dy:
+                err -= dy
+                x1 += sx
+            if e2 < dx:
+                err += dx
+                y1 += sy
