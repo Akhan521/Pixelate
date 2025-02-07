@@ -152,6 +152,20 @@ class PixelateCanvas(QWidget):
         if self.preview_pixel:
             self.preview(painter)
 
+        # Draw the preview line while dragging in line mode
+        # if self.line_mode and self.line_tool_start_point and self.line_tool_end_point:
+        #     x1, y1 = self.line_tool_start_point
+        #     x2, y2 = self.line_tool_end_point
+        #
+        #     self.line_tool_end_point = (x2, y2)
+        #     # print(f"END POINT: {self.line_tool_end_point}")
+        #
+        #     # Retrieve the selected color
+        #     color = self.color_selection_window.get_primary_color()
+        #
+        #     # Draw Line
+        #     self.draw_line(self.line_tool_start_point, self.line_tool_end_point, color)
+
         painter.end()
 
     # The following method will draw a pixel @ the given (x, y) coordinates with the given color (QColor object).
@@ -307,7 +321,7 @@ class PixelateCanvas(QWidget):
             # Retrieve the selected color
             color = self.color_selection_window.get_primary_color()
 
-            # Draw the line
+            # Draw Line
             self.draw_line(self.line_tool_start_point, self.line_tool_end_point, color)
             return
 
@@ -319,6 +333,11 @@ class PixelateCanvas(QWidget):
         x, y = event.pos().x(), event.pos().y()
         x = x // self.pixel_size
         y = y // self.pixel_size
+
+        # If in line mode, we will draw a preview if mouse is clicked and moving
+        if self.line_mode and event.buttons() == Qt.MouseButton.LeftButton:
+            self.line_tool_end_point = (x, y)  # Update the temporary end point
+            self.update()  # Trigger repaint for preview
 
         # If we're in erase mode, we'll delete the pixel at the given coordinates.
         if self.erase_mode:
@@ -403,8 +422,6 @@ class PixelateCanvas(QWidget):
         else:
             preview_color = self.color_selection_window.get_primary_color()
 
-        # if self.line_mode:
-        #     return
 
         # Drawing the preview pixels on our canvas.
         self.draw_preview_pixel(painter, preview_color)
