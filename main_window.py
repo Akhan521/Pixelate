@@ -15,7 +15,7 @@ from ai_assistant import AIAssistant
 
 class MainWindow(QMainWindow):
     # Our constructor will invoke QMainWindow's constructor.
-    def __init__(self):
+    def __init__(self, dimensions):
 
         super().__init__()
         
@@ -36,12 +36,13 @@ class MainWindow(QMainWindow):
         canvas_width_offset = 325
         canvas_height_offset = 200
 
+        chatbox_height_offset = 200
+
         # Finally, we'll set the values of our pixel size, grid width, and grid height.
         self.pixel_size = 15
-        self.grid_width = (self.screen_geometry.width() - canvas_width_offset) // self.pixel_size
-        self.grid_height = (self.screen_geometry.height() - canvas_height_offset) // self.pixel_size
-        # self.grid_width = 32
-        # self.grid_height = 32
+        width, height = dimensions
+        self.grid_width = width
+        self.grid_height = height
         
         # Using a horizontal layout for our program's main layout.
         layout = QHBoxLayout()
@@ -62,13 +63,13 @@ class MainWindow(QMainWindow):
         
         # Creating our AI assistant widget + adding it to our layout. It should be as wide as our color selection window.
         chat_box_width = self.color_selection_window.width
-        chat_box_height = (self.pixel_size * self.grid_height) - self.color_selection_window.height
+        chat_box_height = self.screen_geometry.height() - self.color_selection_window.height - chatbox_height_offset
         self.ai_assistant = AIAssistant(chat_box_width, chat_box_height)
         left_layout.addWidget(self.ai_assistant)
 
         # Our left window should be as wide as our color selection window + the offset.
         left_window_width = self.color_selection_window.width + left_window_offset
-        left_window_height = self.pixel_size * self.grid_height + left_window_offset
+        left_window_height = self.color_selection_window.height + chat_box_height + left_window_offset
         left_window.setFixedSize(left_window_width, left_window_height)
         left_window.setStyleSheet("background-color: lightgray;")
 
@@ -125,6 +126,9 @@ class MainWindow(QMainWindow):
 
             try:
                 with open(filepath, "w") as file:
+                    # Writing the dimensions of our canvas to the file.
+                    file.write(f"({self.grid_width},{self.grid_height})\n")
+                    # Writing the pixels dictionary to the file.
                     file.write(pixels)
 
             except Exception as e:

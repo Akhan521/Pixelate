@@ -66,7 +66,7 @@ class AIAssistant(QWidget):
 
         # Creating a text edit widget for our input field. This is where the user will type their messages.
         self.input_field = QTextEdit(self)
-        self.input_field.setFixedHeight(input_field_height)
+        self.input_field.setFixedSize(self.width - 20, input_field_height) # Subtracting 20 to account for padding.
         self.input_field.setPlaceholderText("Type your message here...")
 
         # Adding our input field to our main layout.
