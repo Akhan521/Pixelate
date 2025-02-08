@@ -1,5 +1,5 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QApplication, QHBoxLayout
 # Importing the necessary modules to work with canvas drawings.
 from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor
 from PyQt6.QtCore import Qt, QSize
@@ -28,9 +28,12 @@ class Tools(QMainWindow):
         self.icons_path = "icons/"
         self.icon_size = QSize(30, 30)
 
-        # Using a vertical layout for our tools window.
+        # Using a vertical layout as our main layout.
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # A horizontal layout to hold the following tools: clear, undo, and redo.
+        top_row_layout = QHBoxLayout()
 
         # Creating our very first tool/button: the clear button.
         button = QPushButton()
@@ -40,7 +43,7 @@ class Tools(QMainWindow):
 
         # Connecting the button's clicked signal to a method that clears the canvas.
         button.clicked.connect(self.clear_canvas)
-        layout.addWidget(button)
+        top_row_layout.addWidget(button)
 
         # Our next tool/button will be the undo button.
         button = QPushButton()
@@ -50,7 +53,7 @@ class Tools(QMainWindow):
 
         # Connecting the button's clicked signal to our undo method.
         button.clicked.connect(self.undo)
-        layout.addWidget(button)
+        top_row_layout.addWidget(button)
 
         # Then, we'll add a redo button to go with our undo button.
         button = QPushButton()
@@ -60,7 +63,10 @@ class Tools(QMainWindow):
 
         # Connecting the button's clicked signal to our redo method.
         button.clicked.connect(self.redo)
-        layout.addWidget(button)
+        top_row_layout.addWidget(button)
+
+        # Adding our top row layout to our main layout.
+        layout.addLayout(top_row_layout)
 
         # Our fill tool will be next.
         button = QPushButton()
@@ -70,6 +76,26 @@ class Tools(QMainWindow):
 
         # Connecting its signal to a function that will set the canvas's fill mode to True.
         button.clicked.connect(lambda: self.set_fill_mode(True))
+        layout.addWidget(button)
+
+        # Our eyedropper tool:
+        button = QPushButton()
+        button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "eyedropper_icon.png"))
+
+        # Connecting its signal to a function that will set the eyedropper tool.
+        button.clicked.connect(self.use_eyedropper_tool)
+        button.setIconSize(self.icon_size)
+        layout.addWidget(button)
+
+        # Our cursor tool:
+        button = QPushButton()
+        button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "drag_icon.png"))
+        button.setIconSize(self.icon_size)
+
+        # Connecting its signal to a function that will set our drag state to True.
+        button.clicked.connect(self.use_cursor_tool)
         layout.addWidget(button)
 
         # Our pencil tool:
@@ -89,26 +115,6 @@ class Tools(QMainWindow):
 
         # Connecting its signal to a function that will allow us to erase (drawing w/ our background color).
         button.clicked.connect(self.use_erase_tool)
-        button.setIconSize(self.icon_size)
-        layout.addWidget(button)
-
-        # Our cursor tool:
-        button = QPushButton()
-        button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "drag_icon.png"))
-        button.setIconSize(self.icon_size)
-
-        # Connecting its signal to a function that will set our drag state to True.
-        button.clicked.connect(self.use_cursor_tool)
-        layout.addWidget(button)
-
-        # Our eyedropper tool:
-        button = QPushButton()
-        button.setStyleSheet("background-color: white;")
-        button.setIcon(QIcon(self.icons_path + "eyedropper_icon.png"))
-
-        # Connecting its signal to a function that will set the eyedropper tool.
-        button.clicked.connect(self.use_eyedropper_tool)
         button.setIconSize(self.icon_size)
         layout.addWidget(button)
 
@@ -154,6 +160,9 @@ class Tools(QMainWindow):
         self.canvas.update()
 
     def set_fill_mode(self, fill_mode):
+
+        # Setting our cursor to be an arrow cursor.
+        self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
 
         # Setting the fill mode of our canvas.
         self.canvas.set_fill_mode(fill_mode)
@@ -240,3 +249,7 @@ class Tools(QMainWindow):
         self.canvas.set_erase_mode(False)
 
         
+# app = QApplication([])
+# tools = Tools(None, 300, 500)
+# tools.show()
+# app.exec()

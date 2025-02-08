@@ -32,10 +32,7 @@ class MainWindow(QMainWindow):
         # Retrieving the dimensions of our window.
         self.screen_geometry = self.screen.geometry()
 
-        # We don't want our canvas to fill the entire screen, so we'll offset the width and height using the following values.
-        canvas_width_offset = 325
-        canvas_height_offset = 200
-
+        # An offset for our chatbox height (to prevent the window from cutting off the chatbox).
         chatbox_height_offset = 200
 
         # Finally, we'll set the values of our pixel size, grid width, and grid height.
@@ -93,7 +90,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.canvas_view)
 
         # Creating and sizing our tools window:
-        tool_window_width = 100
+        tool_window_width = 300
         # The height of our tools window will be the same as our left window.
         tool_window_height = left_window_height
         self.tools = Tools(self.canvas, tool_window_width, tool_window_height)
