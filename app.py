@@ -2,11 +2,13 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QVBoxLayout, QWidget, QGraphicsScene, 
                               QGraphicsProxyWidget, QMenuBar, QMenu,
                               QFileDialog, QMessageBox, QPushButton, 
-                              QLabel )
+                              QLabel, QDialog, QInputDialog, QLineEdit,
+                              QFormLayout )
 
 from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDatabase
 from PyQt6.QtCore import Qt, QSize
 from main_window import MainWindow
+from new_sprite_dialog import NewSpriteDialog
 import ast
 
 # Our starting screen.
@@ -19,7 +21,7 @@ class StartScreen(QMainWindow):
         # Setting the window title.
         self.setWindowTitle("Pixelate")
 
-        # Our application's window will be maximized when shown. The sizes of our widgets will depend on the window's size when maximized.
+        # Our application's window will be fullscreen when shown. The sizes of our widgets will depend on the window's size.
         # For starters, we'll be storing the primary screen (to get its dimensions).
         self.screen = QGuiApplication.primaryScreen()
         
@@ -31,9 +33,6 @@ class StartScreen(QMainWindow):
         logo_width = self.screen_geometry.width() - logo_offset
         logo_height = self.screen_geometry.height() - logo_offset
         logo_size = QSize(logo_width, logo_height)
-
-        # We'll fix the width and height of our window to its maximized size (to prevent resizing).
-        self.setFixedSize(self.screen_geometry.width(), self.screen_geometry.height())
 
         # Using a vertical layout for our screen.
         layout = QVBoxLayout()
@@ -75,9 +74,6 @@ class StartScreen(QMainWindow):
             background-color: #BBBBBB;
         ''')
 
-        # Storing a reference to a MainWindow instance (our main application window).
-        self.main_window = MainWindow()
-
         # Creating a widget to hold our layout.
         widget = QWidget()
         widget.setLayout(layout)
@@ -87,8 +83,26 @@ class StartScreen(QMainWindow):
 
     # A method to start our application using the main window.
     def start(self):
-        self.main_window.showMaximized()
-        self.hide()
+
+        # Creating a dialog to get the dimensions of our new sprite.
+        dialog = NewSpriteDialog()
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+
+            # Getting the dimensions of our new sprite.
+            dimensions = dialog.get_dimensions()
+
+            # If the dimensions are valid, we'll start our application.
+            if dimensions:
+
+                # Creating our main window.
+                self.main_window = MainWindow(dimensions)
+
+                # Showing our main window in fullscreen.
+                self.main_window.showFullScreen()
+
+                # Closing our start screen.
+                self.close()
 
     # A method to open a previous project (by loading a text file w/ our pixels data).
     def open(self):
@@ -98,13 +112,25 @@ class StartScreen(QMainWindow):
 
         if filepath:
 
-            pixels = None  # To store our pixels dictionary data.
+            dimensions = None  # To store our canvas dimensions.
+            pixels = None      # To store our pixels dictionary data.
 
             try:
 
                 # Reading the contents of our text file.
                 with open(filepath, "r") as file:
+                    # Reading the first line of the file (which should contain the dimensions of our canvas).
+                    dimensions = file.readline().strip()
+                    # Reading the rest of the file (which should contain our pixels dictionary).
                     pixels = file.read()
+
+                # Parsing our canvas dimensions using the ast module. (Converting our string tuple to an actual tuple).
+                dimensions = ast.literal_eval(dimensions)
+
+                # Validating our dimensions to ensure that they're in the correct format.
+                if not self.validate_dimensions(dimensions):
+                    QMessageBox.warning(self, "ERROR: invalid/missing dimensions", "The selected file is missing or has invalid dimensions.")
+                    return
 
                 # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
                 pixels = ast.literal_eval(pixels)
@@ -114,9 +140,12 @@ class StartScreen(QMainWindow):
                     QMessageBox.warning(self, "ERROR: invalid data format/type", "The data in the selected file is not in the correct format.")
                     return
                 
-                # If our pixels data is valid, we'll set up our canvas with the imported data.
+                # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
                 else:
                     QMessageBox.information(self, "Success", "Project opened successfully.")
+
+                    # Creating our main window with the imported dimensions.
+                    self.main_window = MainWindow(dimensions)
 
                     # Converting our pixels data to a dictionary of the form {(x,y): QColor}.
                     pixels = self.main_window.canvas.convert_to_qcolor_format(pixels)
@@ -124,11 +153,28 @@ class StartScreen(QMainWindow):
                     # Setting the pixels data of our canvas.
                     self.main_window.canvas.set_pixels(pixels)
 
-                    # Starting our application.
-                    self.start()
+                    # Jumping straight to the main window.
+                    self.main_window.showFullScreen()
+                    
+                    # Closing our start screen.
+                    self.close()
 
             except Exception as e:
                 QMessageBox.warning(self, f"ERROR: failed to open project", str(e))
+
+    # A method to validate the dimensions of our canvas (provided from a text file).
+    def validate_dimensions(self, dimensions):
+
+        # If the dimensions are not a tuple of size 2, we'll return False.
+        if not isinstance(dimensions, tuple) or len(dimensions) != 2:
+            return False
+
+        # If any of the dimensions are not integers, we'll return False.
+        for dimension in dimensions:
+            if not isinstance(dimension, int):
+                return False
+
+        return True
 
     # A method to validate our imported data (used to check whether our data is in the correct format).
     # Ideally, our data (pixels dict.) should be in the form: {(x,y): rgba_tuple}.
@@ -199,5 +245,5 @@ class StartScreen(QMainWindow):
 
 app = QApplication([])
 window = StartScreen()
-window.showMaximized()
+window.showFullScreen()
 app.exec()

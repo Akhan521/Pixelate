@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout, 
                               QVBoxLayout, QWidget, QGraphicsScene, 
                               QGraphicsProxyWidget, QMenuBar, QMenu,
-                              QFileDialog, QMessageBox )
+                              QFileDialog, QMessageBox, QSizePolicy,
+                              QWidgetAction )
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
@@ -14,51 +15,36 @@ from ai_assistant import AIAssistant
 
 class MainWindow(QMainWindow):
     # Our constructor will invoke QMainWindow's constructor.
-    def __init__(self):
+    def __init__(self, dimensions):
 
         super().__init__()
         
         # Setting the window title.
         self.setWindowTitle("Pixelate")
 
-        # Creating a menu bar for our application.
-        menubar = self.menuBar()
-        menubar.setStyleSheet(self.get_menubar_style())
-
-        # Creating a file menu for our menu bar.
-        file_menu = menubar.addMenu("File")
-
-        # Creating a save action for our file menu.
-        save_action = QAction("Save", self)
-        save_action.setShortcut("Ctrl+S")
-        save_action.triggered.connect(self.save_canvas)
-        file_menu.addAction(save_action)
+        # Setting up our menu bar.
+        self.init_menubar()
         
-        # Our application's window will be maximized when shown. The sizes of our widgets will depend on the window's size when maximized.
+        # Our application's window will be fullscreen. The sizes of our widgets will depend on the window's size.
         # For starters, we'll be storing the primary screen (to get its dimensions).
         self.screen = QGuiApplication.primaryScreen()
         
         # Retrieving the dimensions of our window.
         self.screen_geometry = self.screen.geometry()
 
-        # We don't want our canvas to fill the entire screen, so we'll offset the width and height using the following values.
-        canvas_width_offset = 300
-        canvas_height_offset = 200
+        # An offset for our chatbox height (to prevent the window from cutting off the chatbox).
+        chatbox_height_offset = 200
 
         # Finally, we'll set the values of our pixel size, grid width, and grid height.
         self.pixel_size = 15
-        self.grid_width = (self.screen_geometry.width() - canvas_width_offset) // self.pixel_size
-        self.grid_height = (self.screen_geometry.height() - canvas_height_offset) // self.pixel_size
-        # self.grid_width = 32
-        # self.grid_height = 32
-
-        # We'll fix the width and height of our window to its maximized size (to prevent resizing).
-        self.setFixedSize(self.screen_geometry.width(), self.screen_geometry.height())
+        width, height = dimensions
+        self.grid_width = width
+        self.grid_height = height
         
         # Using a horizontal layout for our program's main layout.
         layout = QHBoxLayout()
 
-        # Creating a left window to hold our color selection window and chat widget.
+        # Creating a left window widget to hold our color selection window and chat widget.
         left_window = QWidget()
         # Defining an offset for our left window border (to prevent it from cutting off the color selection window).
         left_window_offset = 15
@@ -74,13 +60,13 @@ class MainWindow(QMainWindow):
         
         # Creating our AI assistant widget + adding it to our layout. It should be as wide as our color selection window.
         chat_box_width = self.color_selection_window.width
-        chat_box_height = (self.pixel_size * self.grid_height) - self.color_selection_window.height
+        chat_box_height = self.screen_geometry.height() - self.color_selection_window.height - chatbox_height_offset
         self.ai_assistant = AIAssistant(chat_box_width, chat_box_height)
         left_layout.addWidget(self.ai_assistant)
 
         # Our left window should be as wide as our color selection window + the offset.
         left_window_width = self.color_selection_window.width + left_window_offset
-        left_window_height = self.pixel_size * self.grid_height + left_window_offset
+        left_window_height = self.color_selection_window.height + chat_box_height + left_window_offset
         left_window.setFixedSize(left_window_width, left_window_height)
         left_window.setStyleSheet("background-color: lightgray;")
 
@@ -104,7 +90,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.canvas_view)
 
         # Creating and sizing our tools window:
-        tool_window_width = 100
+        tool_window_width = 300
         # The height of our tools window will be the same as our left window.
         tool_window_height = left_window_height
         self.tools = Tools(self.canvas, tool_window_width, tool_window_height)
@@ -137,11 +123,35 @@ class MainWindow(QMainWindow):
 
             try:
                 with open(filepath, "w") as file:
+                    # Writing the dimensions of our canvas to the file.
+                    file.write(f"({self.grid_width},{self.grid_height})\n")
+                    # Writing the pixels dictionary to the file.
                     file.write(pixels)
 
             except Exception as e:
                 QMessageBox.warning(self, f"ERROR: failed to save file - {str(e)}")
 
+    # A method to setup our menubar:
+    def init_menubar(self):
+
+        # Creating a menu bar for our application.
+        menubar = self.menuBar()
+        menubar.setStyleSheet(self.get_menubar_style())
+
+        # Creating a file menu for our menu bar.
+        file_menu = menubar.addMenu("File")
+
+        # Creating a save action for our file menu.
+        save_action = QAction("Save", self)
+        save_action.setShortcut("Ctrl+S")
+        save_action.triggered.connect(self.save_canvas)
+        file_menu.addAction(save_action)
+
+        # Adding a close button to our menu bar.
+        close_action = QAction("Close", self)
+        close_action.setShortcut("Ctrl+Q")
+        close_action.triggered.connect(self.close)
+        menubar.addAction(close_action)
 
     # A method to retrieve the style of our menu bar.
     def get_menubar_style(self):
