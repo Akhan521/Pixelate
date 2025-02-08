@@ -21,6 +21,9 @@ class PixelateCanvas(QWidget):
         self.line_tool_start_point = (0,0)
         self.line_tool_end_point = (0,0)
 
+        #Variable to check if mouse button is clicked
+        self.mouse_button_pressed = False  # Track if the mouse button is pressed
+
         # Our default color will be a light, transparent gray.
         self.default_color = QColor(240, 240, 240, 255)
 
@@ -147,25 +150,10 @@ class PixelateCanvas(QWidget):
             current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
             if pixel_to_update.intersects(current_pixel):
                 painter.fillRect(current_pixel, color)
-        
+
         # If we have any preview pixel, we'll draw it on our canvas.
         if self.preview_pixel:
             self.preview(painter)
-
-        # Draw the preview line while dragging in line mode
-        # if self.line_mode and self.line_tool_start_point and self.line_tool_end_point:
-        #     x1, y1 = self.line_tool_start_point
-        #     x2, y2 = self.line_tool_end_point
-        #
-        #     self.line_tool_end_point = (x2, y2)
-        #     # print(f"END POINT: {self.line_tool_end_point}")
-        #
-        #     # Retrieve the selected color
-        #     color = self.color_selection_window.get_primary_color()
-        #
-        #     # Draw Line
-        #     self.draw_line(self.line_tool_start_point, self.line_tool_end_point, color)
-
         painter.end()
 
     # The following method will draw a pixel @ the given (x, y) coordinates with the given color (QColor object).
@@ -182,7 +170,6 @@ class PixelateCanvas(QWidget):
         # If line mode is enabled, return since we're not drawing.
         if self.line_mode:
             return
-
 
         # Otherwise, we'll ensure that the pixel is within bounds.
         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
@@ -212,6 +199,48 @@ class PixelateCanvas(QWidget):
         # Drawing the preview pixel on our canvas via its coordinates.
         x, y = self.preview_pixel
         painter.fillRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size, preview_color)
+
+        #If we are in line mode, then draw the preview for the line
+        if self.line_mode:
+
+            #store the start and end points of mouse press and release
+            x1, y1 = self.line_tool_start_point
+            x2, y2 = self.line_tool_end_point
+
+            #store distance of start and end points
+            dx = abs(x2 - x1)
+            dy = abs(y2 - y1)
+
+            #stores the step direction (sx positive means move right, sy positive means move up, negatives is opposite direction)
+            sx = 1 if x1 < x2 else -1
+            sy = 1 if y1 < y2 else -1
+
+            #stores error
+            err = dx - dy
+
+            #loop for the entire line
+            while True:
+                # Draw preview of line only when in bounds and when mouse button is pressed.
+                if 0 <= x1 < self.grid_width and 0 <= y1 < self.grid_height and self.mouse_button_pressed:
+
+                    # show the preview for a single pixel
+                    painter.fillRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size,
+                                     preview_color)
+
+                    # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
+                    self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                #Bresenham’s Algorithm
+                if x1 == x2 and y1 == y2:
+                    break
+                e2 = 2 * err
+                if e2 > -dy:
+                    err -= dy
+                    x1 += sx
+                if e2 < dx:
+                    err += dx
+                    y1 += sy
+            return
 
     # A function to convert our pixels dictionary to a dictionary of the form {(x, y): rgba_tuple}.
     def convert_to_rgba_format(self):
@@ -255,6 +284,9 @@ class PixelateCanvas(QWidget):
         # This ensures that we can undo our strokes if needed, but we can't redo any actions.
         self.canvas_history.save_state_and_update(self.pixels)
 
+        #If Mouse Button is clicked, set true
+        self.mouse_button_pressed = True
+
         # Getting the x and y coordinates of our mouse click and converting them to pixel coordinates.
         x, y = event.pos().x(), event.pos().y()
         x = x // self.pixel_size
@@ -262,6 +294,7 @@ class PixelateCanvas(QWidget):
 
         if self.line_mode:
             self.line_tool_start_point = (x, y)  # Store the starting point
+            self.line_tool_end_point = (x, y)
             # print(f"START POINT: {self.line_tool_start_point}")
             return  # Avoid drawing a single pixel immediately
 
@@ -310,13 +343,17 @@ class PixelateCanvas(QWidget):
         self.draw_pixel(x, y, color)
 
     def mouseReleaseEvent(self, event):
+
+        # If Mouse Button is released, set false
+        self.mouse_button_pressed = False
+
+        # If in line mode, get the end point when mouse is released.
         if self.line_mode:
             x, y = event.pos().x(), event.pos().y()
             x = x // self.pixel_size
             y = y // self.pixel_size
 
             self.line_tool_end_point = (x, y)
-            # print(f"END POINT: {self.line_tool_end_point}")
 
             # Retrieve the selected color
             color = self.color_selection_window.get_primary_color()
@@ -336,8 +373,9 @@ class PixelateCanvas(QWidget):
 
         # If in line mode, we will draw a preview if mouse is clicked and moving
         if self.line_mode and event.buttons() == Qt.MouseButton.LeftButton:
-            self.line_tool_end_point = (x, y)  # Update the temporary end point
-            self.update()  # Trigger repaint for preview
+            # Update the temporary end point
+            self.line_tool_end_point = (x, y)
+            self.update()
 
         # If we're in erase mode, we'll delete the pixel at the given coordinates.
         if self.erase_mode:
@@ -439,12 +477,12 @@ class PixelateCanvas(QWidget):
     def set_pixels(self, pixels):
         self.pixels = pixels
 
+    #Method to draw lines from start point to end point on the canvas.
     def draw_line(self, start, end, color):
         x1, y1 = start
         x2, y2 = end
 
-        # print("ENTER DRAW LINE")
-
+        #Store distance, step direction, and error.
         dx = abs(x2 - x1)
         dy = abs(y2 - y1)
         sx = 1 if x1 < x2 else -1
@@ -452,19 +490,16 @@ class PixelateCanvas(QWidget):
         err = dx - dy
 
         while True:
-            # self.draw_pixel(x1, y1, color)  # Draw at the current position
-
-            # Otherwise, we'll ensure that the pixel is within bounds.
+            # While in bounds, draw line
             if 0 <= x1 < self.grid_width and 0 <= y1 < self.grid_height:
-                # Updating the color of the pixel at (x, y).
-                self.pixels[(x1, y1)] = color
 
-                # Repainting only the area where the pixel color was updated.
-                # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
+                #Updating the color of the pixel at (x, y).
+                self.pixels[(x1, y1)] = color
                 self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
 
+            # Bresenham’s Algorithm
             if x1 == x2 and y1 == y2:
-                break  # Stop when reaching the end point
+                break
             e2 = 2 * err
             if e2 > -dy:
                 err -= dy

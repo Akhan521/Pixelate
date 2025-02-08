@@ -113,9 +113,9 @@ class Tools(QMainWindow):
         layout.addWidget(button)
 
         # Our line tool:
-        button = QPushButton("Line Tool")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        # button.setIcon(QIcon(self.icons_path + "drag_icon.png"))
+        button.setIcon(QIcon(self.icons_path + "line_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set our drag state to True.
