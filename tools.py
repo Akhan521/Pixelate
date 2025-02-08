@@ -124,6 +124,9 @@ class Tools(QMainWindow):
         window = QWidget()
         window.setLayout(layout)
 
+        # Setting the background color of our window to light gray.
+        self.setStyleSheet("background-color: lightgray;")
+
         # Setting the central widget of our tools window.
         self.setCentralWidget(window)
 
