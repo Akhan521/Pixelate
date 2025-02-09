@@ -297,8 +297,8 @@ class PixelateCanvas(QWidget):
                 self.update(QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size))
             return
         
-        # If the left or middle mouse button is being pressed, we'll draw with the primary color.
-        if event.buttons() == Qt.MouseButton.LeftButton or event.buttons() == Qt.MouseButton.MiddleButton:
+        # If the left mouse button is being pressed, we'll draw with the primary color.
+        if event.buttons() == Qt.MouseButton.LeftButton:
             color = self.color_selection_window.get_primary_color()
             self.draw_pixel(x, y, color)
 

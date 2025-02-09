@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
         self.scene.addItem(self.proxy_widget)      # Adding the proxy widget to our scene (this embeds our canvas in the scene).
 
         # To finalize our zoom functionality, we'll create a view to display our scene.
-        self.canvas_view = ZoomableCanvasView(self.scene, self.canvas)
+        self.canvas_view = ZoomableCanvasView(self.scene, self.proxy_widget)
         layout.addWidget(self.canvas_view)
 
         # Creating and sizing our tools window:
@@ -180,3 +180,8 @@ class MainWindow(QMainWindow):
                 color: black;
             }}
         '''
+    
+app = QApplication([])
+window = MainWindow((32, 32))
+window.showFullScreen()
+app.exec()
