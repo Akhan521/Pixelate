@@ -231,12 +231,17 @@ class PixelateCanvas(QWidget):
                     self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
 
                 #Bresenham’s Algorithm
+                #stop if current pixel reaches end point
                 if x1 == x2 and y1 == y2:
                     break
                 e2 = 2 * err
+
+                #Horizontal step calculation
                 if e2 > -dy:
                     err -= dy
                     x1 += sx
+
+                #Vertical step calculation
                 if e2 < dx:
                     err += dx
                     y1 += sy
@@ -293,10 +298,10 @@ class PixelateCanvas(QWidget):
         y = y // self.pixel_size
 
         if self.line_mode:
-            self.line_tool_start_point = (x, y)  # Store the starting point
+            # Store the starting point & end point
+            self.line_tool_start_point = (x, y)
             self.line_tool_end_point = (x, y)
-            # print(f"START POINT: {self.line_tool_start_point}")
-            return  # Avoid drawing a single pixel immediately
+            return
 
         # If we press the left mouse button, we'll draw with the primary color.
         if event.button() == Qt.MouseButton.LeftButton:
@@ -349,6 +354,8 @@ class PixelateCanvas(QWidget):
 
         # If in line mode, get the end point when mouse is released.
         if self.line_mode:
+
+            #Get x and y position of mouse
             x, y = event.pos().x(), event.pos().y()
             x = x // self.pixel_size
             y = y // self.pixel_size
@@ -393,7 +400,6 @@ class PixelateCanvas(QWidget):
         elif event.buttons() == Qt.MouseButton.RightButton:
             color = self.color_selection_window.get_secondary_color()
             self.draw_pixel(x, y, color)
-        
 
     # To set our canvas to fill mode, we'll use the following method.
     def set_fill_mode(self, fill_mode):
@@ -410,7 +416,6 @@ class PixelateCanvas(QWidget):
     # To set our canvas to line mode, we'll use the following method.
     def set_line_mode(self, line_mode):
         self.line_mode = line_mode
-
 
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):
@@ -460,10 +465,8 @@ class PixelateCanvas(QWidget):
         else:
             preview_color = self.color_selection_window.get_primary_color()
 
-
         # Drawing the preview pixels on our canvas.
         self.draw_preview_pixel(painter, preview_color)
-
 
     # To set the draggable state of our canvas, we'll use the following method.
     def set_draggable(self, draggable):
@@ -498,12 +501,19 @@ class PixelateCanvas(QWidget):
                 self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
 
             # Bresenham’s Algorithm
+            #break if current point reaches end point
             if x1 == x2 and y1 == y2:
                 break
+
+            #mul error to determine direction of next pixel in line
             e2 = 2 * err
+
+            #Horizontal step decision
             if e2 > -dy:
                 err -= dy
                 x1 += sx
+
+            #Vertical step decision
             if e2 < dx:
                 err += dx
                 y1 += sy
