@@ -10,11 +10,12 @@ from canvas_history import CanvasHistory
 class Tools(QMainWindow):
     
     # Our constructor will initialize our tools window.
-    # We provide our canvas to handle canvas operations with our tools.
-    def __init__(self, canvas, width, height):
+    # We provide our canvas (through our proxy widget) to handle canvas operations with our tools.
+    def __init__(self, proxy_widget, width, height):
 
         super().__init__()
-        self.canvas = canvas
+        self.proxy_widget = proxy_widget
+        self.canvas = self.proxy_widget.widget()
         self.width = width
         self.height = height
 

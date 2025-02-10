@@ -59,8 +59,8 @@ class ZoomableCanvasView(QGraphicsView):
         # If our canvas is draggable, we'll need to update our cursor and store our mouse position.
         if self.canvas.is_draggable:
 
-            # We'll set our canvas cursor to a closed hand cursor to indicate that it's being dragged.
-            self.canvas.setCursor(Qt.CursorShape.ClosedHandCursor)
+            # We'll set our cursor to a closed hand cursor to indicate that it's being dragged.
+            self.proxy_widget.setCursor(Qt.CursorShape.ClosedHandCursor)
 
             # We'll store the current mouse position to calculate how much we've dragged our mouse.
             # Note: We'll store the mouse position in scene coordinates.
@@ -100,13 +100,14 @@ class ZoomableCanvasView(QGraphicsView):
 
             # If our middle mouse button is released, we'll make our canvas non-draggable and allow for drawing.
             if event.button() == Qt.MouseButton.MiddleButton:
+                
                 self.canvas.set_draggable(False)
-                # We'll set our canvas cursor back to an arrow cursor (to indicate that drawing is allowed).
-                self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
+                # We'll set our cursor back to an arrow cursor to indicate that drawing is allowed.
+                self.proxy_widget.setCursor(Qt.CursorShape.ArrowCursor)
 
-            # Otherwise, we'll set our canvas cursor back to an open hand cursor as it's still draggable.
+            # Otherwise, we'll set our cursor back to an open hand cursor as it's still draggable.
             else:
-                self.canvas.setCursor(Qt.CursorShape.OpenHandCursor)
+                self.proxy_widget.setCursor(Qt.CursorShape.OpenHandCursor)
 
             # Clearing the last mouse position.
             self.last_mouse_pos = None
