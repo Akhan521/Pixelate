@@ -181,7 +181,7 @@ class MainWindow(QMainWindow):
             }}
         '''
     
-app = QApplication([])
-window = MainWindow((32, 32))
-window.showFullScreen()
-app.exec()
+# app = QApplication([])
+# window = MainWindow((32, 32))
+# window.showFullScreen()
+# app.exec()
