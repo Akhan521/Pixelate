@@ -118,6 +118,17 @@ class Tools(QMainWindow):
         button.setIconSize(self.icon_size)
         layout.addWidget(button)
 
+        # Our line tool:
+        button = QPushButton()
+        button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "line_icon.png"))
+        button.setIconSize(self.icon_size)
+
+        # Connecting its signal to a function that will set our drag state to True.
+        button.clicked.connect(self.use_line_tool)
+        button.setIconSize(self.icon_size)
+        layout.addWidget(button)
+
         self.setStyleSheet("color: black;")
 
         # Creating an intermediary widget to hold our layout.
@@ -179,6 +190,9 @@ class Tools(QMainWindow):
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
 
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
+
     def use_pencil_tool(self):
 
         # Setting our cursor to be an arrow cursor.
@@ -195,6 +209,9 @@ class Tools(QMainWindow):
 
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
+
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
 
     def use_erase_tool(self):
         
@@ -213,6 +230,9 @@ class Tools(QMainWindow):
         # Setting the erase mode of our canvas to True.
         self.canvas.set_erase_mode(True)
 
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
+
     def use_cursor_tool(self):
 
         # Setting our cursor to be an open hand cursor to indicate that it's draggable.
@@ -229,6 +249,9 @@ class Tools(QMainWindow):
 
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
+
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
 
     def use_eyedropper_tool(self):
         # To set our cursor as an eyedropper icon, we'll use a pixmap.
@@ -251,7 +274,28 @@ class Tools(QMainWindow):
         # Setting the erase mode of our canvas to False.
         self.canvas.set_erase_mode(False)
 
+        # Setting the line tool mode of our canvas to False.
+        self.canvas.set_line_mode(False)
         
+    def use_line_tool(self):
+        # Setting our cursor to be an arrow cursor.
+        self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
+
+        # Setting the fill mode of our canvas to False.
+        self.canvas.set_fill_mode(False)
+
+        # Setting the drag state of our canvas to False.
+        self.canvas.set_draggable(False)
+
+        # Setting eyedropper mode to False.
+        self.canvas.set_eyedropper_mode(False)
+
+        # Setting the erase mode of our canvas to False.
+        self.canvas.set_erase_mode(False)
+
+        # Setting the line tool mode of our canvas to True.
+        self.canvas.set_line_mode(True)
+
 # app = QApplication([])
 # tools = Tools(None, 300, 500)
 # tools.show()
