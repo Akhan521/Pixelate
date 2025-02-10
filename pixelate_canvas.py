@@ -17,7 +17,7 @@ class PixelateCanvas(QWidget):
         # Invoking the parent class constructor.
         super().__init__()
 
-        # The start and end points for the line tools
+        # The start and end points for the line tools.
         self.line_tool_start_point = (0,0)
         self.line_tool_end_point = (0,0)
 
@@ -200,25 +200,25 @@ class PixelateCanvas(QWidget):
         x, y = self.preview_pixel
         painter.fillRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size, preview_color)
 
-        #If we are in line mode, then draw the preview for the line
+        #If we are in line mode, then draw the preview for the line.
         if self.line_mode:
 
-            #store the start and end points of mouse press and release
+            #store the start and end points of mouse press and release.
             x1, y1 = self.line_tool_start_point
             x2, y2 = self.line_tool_end_point
 
-            #store distance of start and end points
+            #store distance of start and end points.
             dx = abs(x2 - x1)
             dy = abs(y2 - y1)
 
-            #stores the step direction (sx positive means move right, sy positive means move up, negatives is opposite direction)
+            #stores the step direction (sx positive means move right, sy positive means move up, negatives is opposite direction).
             sx = 1 if x1 < x2 else -1
             sy = 1 if y1 < y2 else -1
 
-            #stores error
+            #stores error.
             err = dx - dy
 
-            #loop for the entire line
+            #loop for the entire line.
             while True:
                 # Draw preview of line only when in bounds and when mouse button is pressed.
                 if 0 <= x1 < self.grid_width and 0 <= y1 < self.grid_height and self.mouse_button_pressed:
@@ -230,18 +230,18 @@ class PixelateCanvas(QWidget):
                     # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
                     self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
 
-                #Bresenham’s Algorithm
-                #stop if current pixel reaches end point
+                #Bresenham’s Algorithm:
+                #stop if current pixel reaches end point.
                 if x1 == x2 and y1 == y2:
                     break
                 e2 = 2 * err
 
-                #Horizontal step calculation
+                #Horizontal step calculation.
                 if e2 > -dy:
                     err -= dy
                     x1 += sx
 
-                #Vertical step calculation
+                #Vertical step calculation.
                 if e2 < dx:
                     err += dx
                     y1 += sy
@@ -298,7 +298,7 @@ class PixelateCanvas(QWidget):
         y = y // self.pixel_size
 
         if self.line_mode:
-            # Store the starting point & end point
+            # Store the starting point & end point.
             self.line_tool_start_point = (x, y)
             self.line_tool_end_point = (x, y)
             return
@@ -349,7 +349,7 @@ class PixelateCanvas(QWidget):
 
     def mouseReleaseEvent(self, event):
 
-        # If Mouse Button is released, set false
+        # If Mouse Button is released, set false.
         self.mouse_button_pressed = False
 
         # If in line mode, get the end point when mouse is released.
@@ -378,7 +378,7 @@ class PixelateCanvas(QWidget):
         x = x // self.pixel_size
         y = y // self.pixel_size
 
-        # If in line mode, we will draw a preview if mouse is clicked and moving
+        # If in line mode, we will draw a preview if mouse is clicked and moving.
         if self.line_mode and event.buttons() == Qt.MouseButton.LeftButton:
             # Update the temporary end point
             self.line_tool_end_point = (x, y)
@@ -493,27 +493,27 @@ class PixelateCanvas(QWidget):
         err = dx - dy
 
         while True:
-            # While in bounds, draw line
+            # While in bounds, draw line.
             if 0 <= x1 < self.grid_width and 0 <= y1 < self.grid_height:
 
                 #Updating the color of the pixel at (x, y).
                 self.pixels[(x1, y1)] = color
                 self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
 
-            # Bresenham’s Algorithm
-            #break if current point reaches end point
+            # Bresenham’s Algorithm:
+            #break if current point reaches end point.
             if x1 == x2 and y1 == y2:
                 break
 
-            #mul error to determine direction of next pixel in line
+            #mul error to determine direction of next pixel in line.
             e2 = 2 * err
 
-            #Horizontal step decision
+            #Horizontal step decision.
             if e2 > -dy:
                 err -= dy
                 x1 += sx
 
-            #Vertical step decision
+            #Vertical step decision.
             if e2 < dx:
                 err += dx
                 y1 += sy
