@@ -65,6 +65,11 @@ class ColorSelectionWindow(QMainWindow):
             ]
         }
 
+        # To store our palette buttons (for styling purposes).
+        self.palette_buttons = []
+        # To store our active palette button (to style it differently from the rest).
+        self.active_palette_button = None
+
         # Setting the background color of our window to light gray.
         self.setStyleSheet("background-color: lightgray;")
 
@@ -137,6 +142,16 @@ class ColorSelectionWindow(QMainWindow):
     # A method to load our color palette. This will be used to set the colors of our color selection buttons.
     def load_palette(self, palette):
 
+        # Setting the active palette button to the button that triggered the signal.
+        self.active_palette_button = self.sender()
+
+        # We'll style our active palette button differently from the rest.
+        for button in self.palette_buttons:
+            if button == self.active_palette_button:
+                button.setStyleSheet(self.active_palette_button_style())
+            else:
+                button.setStyleSheet(self.palette_button_style())
+
         # We'll need access to our central widget's layout (which holds our color selection widget).
         layout = self.centralWidget().layout()
 
@@ -159,10 +174,19 @@ class ColorSelectionWindow(QMainWindow):
 
         # We'll create a button for each palette.
         for palette in self.color_palettes.keys():
+
             # We'll set the text of our button to be the first letter of the palette name.
             button = QPushButton(palette[:1])
             button.clicked.connect(lambda _, palette=palette: self.load_palette(palette))
-            button.setStyleSheet(self.palette_button_style())
+
+            # We'll set our active palette button to be the first button in our list (Normal).
+            if not self.active_palette_button:
+                self.active_palette_button = button
+                button.setStyleSheet(self.active_palette_button_style())
+            else:
+                button.setStyleSheet(self.palette_button_style())
+                
+            self.palette_buttons.append(button)
             layout.addWidget(button)
 
         return layout
@@ -185,6 +209,42 @@ class ColorSelectionWindow(QMainWindow):
         
         return grid_layout
     
+    # A method to style our active palette button.
+    def active_palette_button_style(self):
+
+        # Setting up our pixelated font:
+        font_path = "fonts/Press_Start_2P/PressStart2P-Regular.ttf"
+
+        # Adding our pixelated font to the QFontDatabase.
+        font_id = QFontDatabase.addApplicationFont(font_path)
+        
+        # If the font was loaded successfully, we'll use it for our button text.
+        if font_id != -1:
+            pixelated_font = QFont("Press Start 2P")
+        else:
+            # If the font wasn't loaded, we'll use the default application font.
+            pixelated_font = QFont()
+
+        # Styling the button of our active palette.
+        if self.active_palette_button:
+            return f'''
+                QPushButton {{
+                    background-color: purple;
+                    color: white;
+                    font-family: {pixelated_font.family()};
+                    padding: 10px;
+                    border: 2px solid white;
+                    border-radius: 10px;
+                }}
+                QPushButton:hover {{
+                    /* A very dark shade of purple. */
+                    background-color: #4B0082;
+                }}
+                QPushButton:pressed {{
+                    background-color: purple;
+                }}
+            '''
+    
     # A method to style our palette selection buttons.
     def palette_button_style(self):
 
@@ -201,12 +261,13 @@ class ColorSelectionWindow(QMainWindow):
             # If the font wasn't loaded, we'll use the default application font.
             pixelated_font = QFont()
 
+        # Otherwise, we'll style the rest of our palette selection buttons differently.
         return f'''
             QPushButton {{
                 background-color: white;
                 border: 1px solid black;
                 color: black;
-                font-family: {QFont("Press Start 2P").family()};
+                font-family: {pixelated_font.family()};
                 border-radius: 5px;
                 padding: 5px;
             }}
