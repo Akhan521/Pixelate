@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, QEvent, QRect
 from color_selection_window import ColorSelectionWindow
 from canvas_history import CanvasHistory
 from collections import deque
+from smart_filter import daltonize
 
 # Defining a custom canvas widget for Pixelate.
 class PixelateCanvas(QWidget):
@@ -59,6 +60,9 @@ class PixelateCanvas(QWidget):
 
         # To store whether our canvas is in Line Tool.
         self.line_mode = False
+
+        # To store whether our canvas is in Filter Mode
+        self.filter_mode = False
 
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
@@ -517,3 +521,23 @@ class PixelateCanvas(QWidget):
             if e2 < dx:
                 err += dx
                 y1 += sy
+
+    def daltonize_canvas(self, cvd_type):
+        if not self.filter_mode:
+            # Add original state to the undo stack
+            self.canvas_history.save_state_and_update(self.pixels)
+
+            # Iterate through every pixel and update its color with the daltonized version
+            for x in range(self.grid_width):
+                for y in range(self.grid_height):
+                    if (x, y) in self.pixels:
+                        self.pixels[(x, y)] = daltonize(self.pixels[(x, y)], cvd_type)
+
+            # Redraw the canvas with the new pixels
+            self.update()
+
+            # Set filter to true
+            self.filter_mode = True
+        
+
+

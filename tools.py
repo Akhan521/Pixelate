@@ -1,7 +1,7 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QApplication, QHBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QApplication, QHBoxLayout, QMenu
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor
+from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor, QFont
 from PyQt6.QtCore import Qt, QSize
 # Importing our canvas class.
 from pixelate_canvas import PixelateCanvas
@@ -130,7 +130,23 @@ class Tools(QMainWindow):
         button.setIconSize(self.icon_size)
         layout.addWidget(button)
 
-        self.setStyleSheet("color: black;")
+        # Our LMS tool:
+        button = QPushButton()
+        button.setStyleSheet("background-color: white;")
+        button.setIcon(QIcon(self.icons_path + "eraser_icon.png"))
+
+        # Create a dropdown menu for the different filters
+        menu = QMenu(self)
+        menu.addAction("Filter Off", lambda: self.undo)
+        menu.addAction("Protanopia", lambda: self.smart_filter("Protanopia"))
+        menu.addAction("Dueteranopia", lambda: self.smart_filter("Deuteranopia"))
+        menu.addAction("Tritanopia", lambda: self.smart_filter("Tritanopia"))
+        menu.setStyleSheet(self.get_menubar_style())
+
+        # Connect smart filter menu to the button
+        button.setMenu(menu)
+        button.setIconSize(self.icon_size)
+        layout.addWidget(button)
 
         # Creating an intermediary widget to hold our layout.
         window = QWidget()
@@ -257,8 +273,10 @@ class Tools(QMainWindow):
     def use_eyedropper_tool(self):
         # To set our cursor as an eyedropper icon, we'll use a pixmap.
         eyedropper_pixmap = QPixmap(self.icons_path + "eyedropper_icon.png")
+
         # Resizing our pixmap.
         eyedropper_pixmap = eyedropper_pixmap.scaled(30, 30, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+
         # Finally, we'll set our cursor to the pixmap we created and adjust its hotspot (where the click is registered).
         eyedropper_cursor = QCursor(eyedropper_pixmap, 0, 30) # The hotspot is at the bottom of the cursor.
         self.canvas.setCursor(eyedropper_cursor)
@@ -297,7 +315,42 @@ class Tools(QMainWindow):
         # Setting the line tool mode of our canvas to True.
         self.canvas.set_line_mode(True)
 
+    def smart_filter(self, cvd_type):
+        self.canvas.daltonize_canvas(cvd_type) 
+        
+        # Redrawing canvas
+        self.canvas.update()
+
+    # A method to retrieve the style of our menu bar.
+    def get_menubar_style(self):
+
+        pixelated_font = QFont("Press Start 2P")
+        pixelated_font.setPointSize(16)
+
+        return f'''
+            QMenuBar {{
+                background-color: white;
+                color: black;
+                font-family: {pixelated_font.family()};
+            }}
+            QMenuBar::item:selected {{
+                background-color: gray;
+                color: black;
+            }}
+
+            QMenu {{
+                background-color: white;
+                color: black;
+                font-family: {pixelated_font.family()};
+            }}
+            QMenu::item:selected {{
+                background-color: gray;
+                color: black;
+            }}
+        '''
+
 # app = QApplication([])
 # tools = Tools(None, 300, 500)
 # tools.show()
 # app.exec()
+

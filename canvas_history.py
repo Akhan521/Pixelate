@@ -1,5 +1,6 @@
 # Importing QColor to work with color objects.
 from PyQt6.QtGui import QColor
+from smart_filter import daltonize
 
 '''
     A class to store the history of our canvas:
@@ -13,6 +14,7 @@ class CanvasHistory:
     def __init__(self):
         self.undo_stack = [] # To store our undo states.
         self.redo_stack = [] # To store our redo states.
+        self.current_state = {} # To store the current state of our canvas.
 
     # This method will save the current state of our canvas to the undo stack.
     def save_state(self, pixels):
