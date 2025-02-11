@@ -1,5 +1,5 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QColorDialog
 # Importing the necessary modules to work with canvas drawings.
 from PyQt6.QtGui import QPainter, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt
@@ -10,9 +10,8 @@ class ColorSelectionWindow(QMainWindow):
 
         super().__init__()
 
-        # Size of each color button: 20x20 pixels.
-        self.button_size = 20
-        self.button_border = 1 # Border size for each button (in pixels).
+        self.button_size   = 20  # Size of each color button (in pixels).
+        self.button_border = 1   # Border size for each button (in pixels).
 
         # Grid dimensions: 6 rows and 5 columns.
         self.rows    = 6
@@ -20,11 +19,11 @@ class ColorSelectionWindow(QMainWindow):
         
         # Defining offsets for our main window border.
         self.width_offset  = 50
-        self.height_offset = 85
+        self.height_offset = 120
 
         # Defining variables to store our primary and secondary colors.
         self.set_primary_color(QColor("black"))
-        self.set_secondary_color(QColor("blue"))
+        self.set_secondary_color(QColor("white"))
 
         # Setting the window title and size (using the button size and grid dimensions).
         self.setWindowTitle("Color Selection")
@@ -36,33 +35,33 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 0), QColor(255, 255, 255), QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255),
                 QColor(255, 255, 0), QColor(255, 0, 255), QColor(0, 255, 255), QColor(128, 0, 0), QColor(0, 128, 0),
                 QColor(0, 0, 128), QColor(128, 128, 0), QColor(128, 0, 128), QColor(0, 128, 128), QColor(192, 192, 192),
-                QColor(128, 128, 128), QColor(255, 128, 128), QColor(128, 255, 128), QColor(128, 128, 255), QColor(255, 255, 128),
-                QColor(255, 128, 255), QColor(128, 255, 255), QColor(0, 0, 64), QColor(0, 64, 0), QColor(64, 0, 0),
-                QColor(0, 64, 64), QColor(64, 0, 64), QColor(64, 64, 0), QColor(64, 64, 64), QColor(255, 255, 255)
+                QColor(128, 128, 128), QColor(200, 100, 100), QColor(100, 200, 100), QColor(100, 100, 200), QColor(220, 220, 100),
+                QColor(220, 100, 220), QColor(100, 220, 220), QColor(50, 50, 100), QColor(50, 100, 50), QColor(100, 50, 50),
+                QColor(50, 100, 100), QColor(100, 50, 100), QColor(100, 100, 50), QColor(75, 75, 75), QColor(180, 90, 90)
             ],
             "Protanopia": [
-                QColor(0, 0, 0), QColor(255, 255, 255), QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255),
-                QColor(255, 255, 0), QColor(255, 0, 255), QColor(0, 255, 255), QColor(128, 0, 0), QColor(0, 128, 0),
-                QColor(0, 0, 128), QColor(128, 128, 0), QColor(128, 0, 128), QColor(0, 128, 128), QColor(192, 192, 192),
-                QColor(128, 128, 128), QColor(255, 128, 128), QColor(128, 255, 128), QColor(128, 128, 255), QColor(255, 255, 128),
-                QColor(255, 128, 255), QColor(128, 255, 255), QColor(0, 0, 64), QColor(0, 64, 0), QColor(64, 0, 0),
-                QColor(0, 64, 64), QColor(64, 0, 64), QColor(64, 64, 0), QColor(64, 64, 64), QColor(255, 255, 255)
+                QColor(0, 0, 0), QColor(255, 255, 255), QColor(0, 0, 255), QColor(255, 255, 0), QColor(0, 128, 255),
+                QColor(0, 128, 128), QColor(255, 180, 0), QColor(0, 128, 0), QColor(180, 180, 0), QColor(90, 90, 90),
+                QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
+                QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
+                QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
             ],
             "Deuteranopia": [
-                QColor(0, 0, 0), QColor(255, 255, 255), QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255),
-                QColor(255, 255, 0), QColor(255, 0, 255), QColor(0, 255, 255), QColor(128, 0, 0), QColor(0, 128, 0),
-                QColor(0, 0, 128), QColor(128, 128, 0), QColor(128, 0, 128), QColor(0, 128, 128), QColor(192, 192, 192),
-                QColor(128, 128, 128), QColor(255, 128, 128), QColor(128, 255, 128), QColor(128, 128, 255), QColor(255, 255, 128),
-                QColor(255, 128, 255), QColor(128, 255, 255), QColor(0, 0, 64), QColor(0, 64, 0), QColor(64, 0, 0),
-                QColor(0, 64, 64), QColor(64, 0, 64), QColor(64, 64, 0), QColor(64, 64, 64), QColor(255, 255, 255)
+                QColor(0, 0, 0), QColor(255, 255, 255), QColor(0, 0, 255), QColor(255, 0, 0), QColor(0, 128, 255),
+                QColor(0, 128, 128), QColor(255, 180, 0), QColor(90, 90, 90), QColor(180, 180, 0), QColor(100, 100, 100),
+                QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
+                QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
+                QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
             ],
             "Tritanopia": [
-                QColor(0, 0, 0), QColor(255, 255, 255), QColor(255, 0, 0), QColor(0, 255, 0), QColor(0, 0, 255),
-                QColor(255, 255, 0), QColor(255, 0, 255), QColor(0, 255, 255), QColor(128, 0, 0), QColor(0, 128, 0),
-                QColor(0, 0, 128), QColor(128, 128, 0), QColor(128, 0, 128), QColor(0, 128, 128), QColor(192, 192, 192),
-                QColor(128, 128, 128), QColor(255, 128, 128), QColor(128, 255, 128), QColor(128, 128, 255), QColor(255, 255, 128),
-                QColor(255, 128, 255), QColor(128, 255, 255), QColor(0, 0, 64), QColor(0, 64, 0), QColor(64, 0, 0),
-                QColor(0, 64, 64), QColor(64, 0, 64), QColor(64, 64, 0), QColor(64, 64, 64), QColor(255, 255, 255)
+                QColor(0, 0, 0), QColor(255, 255, 255), QColor(255, 0, 0), QColor(0, 255, 0), QColor(128, 0, 128),
+                QColor(0, 180, 255), QColor(255, 128, 0), QColor(0, 128, 0), QColor(180, 180, 0), QColor(90, 90, 90),
+                QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
+                QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
+                QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
             ]
         }
 
@@ -77,21 +76,17 @@ class ColorSelectionWindow(QMainWindow):
         palettes_layout = self.setup_palettes()
         main_layout.addLayout(palettes_layout)
 
+        # Adding a button to open the color dialog window (for custom colors).
+        button = QPushButton("Custom")
+        button.clicked.connect(self.open_color_dialog)
+        button.setStyleSheet(self.palette_button_style())
+        main_layout.addWidget(button)
+
         # Using a grid layout for the color selection window: a 6x5 grid.
-        grid_layout = QGridLayout()
+        grid_layout = self.create_grid_layout()
 
         # Using a horizontal layout for our primary and secondary colors row.
         selected_colors_layout = QHBoxLayout()
-
-        # Creating a button for each color.
-        for i, color in enumerate(self.color_palettes["Normal"]):
-            # Creating a button w/ the given background color + a border.
-            button = ColorButton(color_selection_window=self)
-            button.setStyleSheet(f"background-color: {color.name()}; border: {self.button_border}px solid black;")
-            # Adding the button to our grid layout. We'll need to specify the row and column for each button.
-            grid_layout.addWidget(button, i // self.columns, i % self.columns)
-            # Fixing the size of each button.
-            button.setFixedSize(self.button_size - self.button_border, self.button_size - self.button_border)
         
         # We'll then add our primary and secondary color boxes below.
         button = ColorButton(color_selection_window=self)
@@ -105,7 +100,6 @@ class ColorSelectionWindow(QMainWindow):
         window = QWidget()
         # Creating our next widget to hold our grid layout (for color selection).
         color_grid = QWidget()
-        
         # Creating our final widget to hold our primary/secondary color boxes.
         self.selected_colors = QWidget()
 
@@ -127,6 +121,19 @@ class ColorSelectionWindow(QMainWindow):
         # Setting the central widget of our application.
         self.setCentralWidget(window)
 
+    # A method to open the color dialog window (for custom colors).
+    def open_color_dialog(self):
+
+        # We'll create a QColorDialog widget to allow the user to select a custom color.
+        color_dialog = QColorDialog()
+        # We'll set the initial color of the dialog to be the primary color.
+        color_dialog.setCurrentColor(self.get_primary_color())
+
+        # If the user selects a color, we'll update our primary color to reflect this change.
+        if color_dialog.exec() == QColorDialog.DialogCode.Accepted:
+            self.set_primary_color(color_dialog.selectedColor())
+            self.update_selected_colors()
+
     # A method to load our color palette. This will be used to set the colors of our color selection buttons.
     def load_palette(self, palette):
 
@@ -134,7 +141,7 @@ class ColorSelectionWindow(QMainWindow):
         layout = self.centralWidget().layout()
 
         # We'll then access the grid layout of our color selection widget.
-        grid_layout = layout.itemAt(1).widget().layout()
+        grid_layout = layout.itemAt(2).widget().layout()
 
         # We'll then access each button in our grid layout and set its color to the corresponding color in our palette.
         for i, color in enumerate(self.color_palettes[palette]):
@@ -159,6 +166,24 @@ class ColorSelectionWindow(QMainWindow):
             layout.addWidget(button)
 
         return layout
+    
+    # A method to create and return our grid layout (using the default color palette).
+    def create_grid_layout(self):
+
+        # We'll create a grid layout to hold our color selection buttons.
+        grid_layout = QGridLayout()
+
+        # We'll create a button for each color in our default color palette.
+        for i, color in enumerate(self.color_palettes["Normal"]):
+            # Creating a button w/ the given background color + a border.
+            button = ColorButton(color_selection_window=self)
+            button.setStyleSheet(f"background-color: {color.name()}; border: {self.button_border}px solid black;")
+            # Adding the button to our grid layout. We'll need to specify the row and column for each button.
+            grid_layout.addWidget(button, i // self.columns, i % self.columns)
+            # Fixing the size of each button.
+            button.setFixedSize(self.button_size - self.button_border, self.button_size - self.button_border)
+        
+        return grid_layout
     
     # A method to style our palette selection buttons.
     def palette_button_style(self):

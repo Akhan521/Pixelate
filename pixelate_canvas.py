@@ -284,6 +284,10 @@ class PixelateCanvas(QWidget):
     # Overriding the mousePressEvent method to draw pixels on our canvas.
     def mousePressEvent(self, event):
 
+        # If the middle mouse button is pressed, we'll return to avoid drawing.
+        if event.button() == Qt.MouseButton.MiddleButton:
+            return
+
         # Before drawing, we'll save the current state of our canvas in the canvas history object.
         # Since we've begun drawing, we shouldn't be able to redo any actions. Thus, we'll clear the redo stack.
         # This ensures that we can undo our strokes if needed, but we can't redo any actions.
@@ -372,6 +376,10 @@ class PixelateCanvas(QWidget):
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
     def mouseMoveEvent(self, event):
+
+        # If the middle mouse button is pressed, we'll return to avoid drawing.
+        if event.buttons() == Qt.MouseButton.MiddleButton:
+            return
         
         # Getting the x and y coordinates of our mouse click and converting them to pixel coordinates.
         x, y = event.pos().x(), event.pos().y()
@@ -394,12 +402,12 @@ class PixelateCanvas(QWidget):
         # If the left mouse button is being pressed, we'll draw with the primary color.
         if event.buttons() == Qt.MouseButton.LeftButton:
             color = self.color_selection_window.get_primary_color()
-            self.draw_pixel(x, y, color)
 
         # If the right mouse button is being pressed, we'll draw with the secondary color.
         elif event.buttons() == Qt.MouseButton.RightButton:
             color = self.color_selection_window.get_secondary_color()
-            self.draw_pixel(x, y, color)
+
+        self.draw_pixel(x, y, color)
 
     # To set our canvas to fill mode, we'll use the following method.
     def set_fill_mode(self, fill_mode):
