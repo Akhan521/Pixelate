@@ -417,6 +417,10 @@ class PixelateCanvas(QWidget):
     def set_line_mode(self, line_mode):
         self.line_mode = line_mode
 
+    # To set our canvas to square mode, we'll use the following method.
+    def set_square_mode(self, square_mode):
+        self.square_mode = square_mode
+
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):
 
@@ -517,3 +521,6 @@ class PixelateCanvas(QWidget):
             if e2 < dx:
                 err += dx
                 y1 += sy
+
+    # def draw_square(self, start, end, color):
+    #     return
