@@ -479,6 +479,11 @@ class PixelateCanvas(QWidget):
     # A method to set the pixels of our canvas.
     def set_pixels(self, pixels):
         self.pixels = pixels
+    
+    # A method to update the pixels of our canvas (adding new pixels; not replacing the existing ones).
+    # (Will be used to implement import functionality from within the main app window.)
+    def update_pixels(self, pixels):
+        self.pixels.update(pixels)
 
     #Method to draw lines from start point to end point on the canvas.
     def draw_line(self, start, end, color):

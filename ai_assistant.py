@@ -1,8 +1,16 @@
 # Importing the required libraries.
-from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QApplication, QListWidget, QListWidgetItem, QScrollArea
-from PyQt6.QtGui import QColor, QImage, QFont
+from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout, 
+                              QVBoxLayout, QWidget, QGraphicsScene, 
+                              QGraphicsProxyWidget, QMenuBar, QMenu,
+                              QFileDialog, QMessageBox, QPushButton, 
+                              QLabel, QDialog, QInputDialog, QLineEdit,
+                              QTextEdit, QFormLayout, QDialogButtonBox,
+                              QListWidget, QListWidgetItem )
+
+from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter
 from PyQt6.QtCore import Qt
 from chat_bubble_widget import ChatBubbleWidget
+from image_gen_dialog import ImageGenDialog
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
@@ -17,9 +25,12 @@ with open("Pixi_System_Prompt.txt", "r") as file:
 # Our AI assistant will be implemented as a chat widget.
 class AIAssistant(QWidget):
 
-    def __init__(self, width, height):
+    def __init__(self, canvas, width, height):
 
         super().__init__()
+
+        # Storing a reference to the canvas (to handle image generation).
+        self.canvas = canvas
 
         # Creating an instance of the OpenAI class.
         self.client = OpenAI(
@@ -77,6 +88,12 @@ class AIAssistant(QWidget):
         self.send_button.clicked.connect(self.send_message)
         self.send_button.setFont(QFont("Press Start 2P", 10))
         main_layout.addWidget(self.send_button)
+
+        # Creating a generate button to generate an image based on the user's description.
+        self.generate_button = QPushButton("Generate")
+        # self.generate_button.clicked.connect(self.generate_image)
+        self.generate_button.setFont(QFont("Press Start 2P", 10))
+        main_layout.addWidget(self.generate_button)
 
         self.setStyleSheet(f'''
             background-color: {QColor(240, 240, 240, 255).name()};
@@ -170,6 +187,31 @@ class AIAssistant(QWidget):
 
             # Sending the user's message to Pixi.
             self.send_message()
+
+    # Our generate_image method will be implemented here.
+    def generate_image(self):
+        pass
+    
+        # # Creating an ImageGenDialog instance to generate an image based on the user's description.
+        # image_gen_dialog = ImageGenDialog()
+
+        # # If the user clicks OK, we'll generate an image based on their description.
+        # if image_gen_dialog.exec() == QDialog.DialogCode.Accepted:
+
+        #     image_data = image_gen_dialog.get_image_data()
+
+        #     # If the image data isn't empty, we'll create a Pixmap out of it and display it on the canvas.
+        #     if image_data:
+
+        #         image_pixmap = QPixmap()
+        #         image_pixmap.loadFromData(image_data)
+
+        #         # Drawing our image pixmap on the canvas.
+        #         painter = QPainter(self.canvas)
+        #         painter.drawPixmap(0, 0, image_pixmap)
+
+        #         # Updating the canvas.
+        #         self.canvas.update()
 
 # app = QApplication([])
 # assistant = AIAssistant(125, 400)

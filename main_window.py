@@ -7,11 +7,13 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
 from tools import Tools
+import ast
 
 from pixelate_canvas import PixelateCanvas
 from color_selection_window import ColorSelectionWindow
 from zoomable_canvas_view import ZoomableCanvasView
 from ai_assistant import AIAssistant
+from validations import validate_dimensions, validate_imported_data
 
 class MainWindow(QMainWindow):
     # Our constructor will invoke QMainWindow's constructor.
@@ -131,6 +133,60 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.warning(self, f"ERROR: failed to save file - {str(e)}")
 
+    # A method to import a canvas from a text file (loading the pixels dictionary).
+    def import_canvas(self):
+
+        # Prompting the user to select a file to open.
+        filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Import Canvas", "", "Text Files (*.txt)")
+
+        if filepath:
+
+            dimensions = None  # To store our canvas dimensions.
+            pixels = None      # To store our pixels dictionary data.
+
+            try:
+
+                # Reading the contents of our text file.
+                with open(filepath, "r") as file:
+                    # Reading the first line of the file (which should contain the dimensions of our canvas).
+                    dimensions = file.readline().strip()
+                    # Reading the rest of the file (which should contain our pixels dictionary).
+                    pixels = file.read()
+
+                # Parsing our canvas dimensions using the ast module. (Converting our string tuple to an actual tuple).
+                dimensions = ast.literal_eval(dimensions)
+
+                # Validating our dimensions to ensure that they're in the correct format.
+                if not validate_dimensions(dimensions):
+                    QMessageBox.warning(self, "ERROR: invalid/missing dimensions", "The selected file is missing or has invalid dimensions.")
+                    return
+                
+                # If our dimensions are valid, they must match the dimensions of our canvas.
+                if dimensions != (self.grid_width, self.grid_height):
+                    QMessageBox.warning(self, "ERROR: invalid dimensions", "The dimensions of the selected file do not match the dimensions of the current canvas.")
+                    return
+
+                # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
+                pixels = ast.literal_eval(pixels)
+
+                # Validating our pixels data to ensure that it's in the correct format.
+                if not validate_imported_data(pixels):
+                    QMessageBox.warning(self, "ERROR: invalid data format/type", "The data in the selected file is not in the correct format.")
+                    return
+                
+                # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
+                else:
+                    QMessageBox.information(self, "Success", "Project imported successfully.")
+
+                    # Converting our pixels data to a dictionary of the form {(x,y): QColor}.
+                    pixels = self.canvas.convert_to_qcolor_format(pixels)
+
+                    # Updating the pixels data of our canvas.
+                    self.canvas.update_pixels(pixels)
+
+            except Exception as e:
+                QMessageBox.warning(self, f"ERROR: failed to import project", str(e))
+
     # A method to setup our menubar:
     def init_menubar(self):
 
@@ -146,6 +202,12 @@ class MainWindow(QMainWindow):
         save_action.setShortcut("Ctrl+S")
         save_action.triggered.connect(self.save_canvas)
         file_menu.addAction(save_action)
+
+        # Creating an import action for our file menu.
+        import_action = QAction("Import", self)
+        import_action.setShortcut("Ctrl+I")
+        import_action.triggered.connect(self.import_canvas)
+        file_menu.addAction(import_action)
 
         # Adding a close button to our menu bar.
         close_action = QAction("Close", self)
@@ -169,6 +231,9 @@ class MainWindow(QMainWindow):
                 background-color: gray;
                 color: black;
             }}
+            QMenuBar::item:pressed {{
+                background-color: darkgray;
+            }}
 
             QMenu {{
                 background-color: lightgray;
@@ -179,9 +244,12 @@ class MainWindow(QMainWindow):
                 background-color: gray;
                 color: black;
             }}
+            QMenu::item:pressed {{
+                background-color: darkgray;
+            }}
         '''
     
-# app = QApplication([])
-# window = MainWindow((32, 32))
-# window.showFullScreen()
-# app.exec()
+app = QApplication([])
+window = MainWindow((32, 32))
+window.showFullScreen()
+app.exec()
