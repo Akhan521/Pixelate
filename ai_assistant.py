@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QListWidget, QListWidgetItem )
 
 from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QSize
 from chat_bubble_widget import ChatBubbleWidget
 from image_gen_dialog import ImageGenDialog
 from openai import OpenAI
@@ -25,7 +25,7 @@ with open("Pixi_System_Prompt.txt", "r") as file:
 # Our AI assistant will be implemented as a chat widget.
 class AIAssistant(QWidget):
 
-    def __init__(self, canvas, width, height):
+    def __init__(self, width, height, canvas=None):
 
         super().__init__()
 
@@ -91,7 +91,7 @@ class AIAssistant(QWidget):
 
         # Creating a generate button to generate an image based on the user's description.
         self.generate_button = QPushButton("Generate")
-        # self.generate_button.clicked.connect(self.generate_image)
+        self.generate_button.clicked.connect(self.generate_image)
         self.generate_button.setFont(QFont("Press Start 2P", 10))
         main_layout.addWidget(self.generate_button)
 
@@ -104,6 +104,10 @@ class AIAssistant(QWidget):
         self.setLayout(main_layout)
 
         
+    # A function to set the canvas reference for our AI assistant.
+    def set_canvas(self, canvas):
+        self.canvas = canvas
+
     # A function to send a request to the OpenAI API and receive a response. 
     def get_response(self):
 
@@ -190,28 +194,31 @@ class AIAssistant(QWidget):
 
     # Our generate_image method will be implemented here.
     def generate_image(self):
-        pass
-    
-        # # Creating an ImageGenDialog instance to generate an image based on the user's description.
-        # image_gen_dialog = ImageGenDialog()
 
-        # # If the user clicks OK, we'll generate an image based on their description.
-        # if image_gen_dialog.exec() == QDialog.DialogCode.Accepted:
+        # Creating an ImageGenDialog instance to generate an image based on the user's description.
+        image_gen_dialog = ImageGenDialog()
 
-        #     image_data = image_gen_dialog.get_image_data()
+        # If the user clicks OK, we'll generate an image based on their description.
+        if image_gen_dialog.exec() == QDialog.DialogCode.Accepted:
 
-        #     # If the image data isn't empty, we'll create a Pixmap out of it and display it on the canvas.
-        #     if image_data:
+            image_data = image_gen_dialog.get_image_data()
 
-        #         image_pixmap = QPixmap()
-        #         image_pixmap.loadFromData(image_data)
+            # If we have valid image data, we'll store it in our canvas.
+            if image_data and self.canvas:
 
-        #         # Drawing our image pixmap on the canvas.
-        #         painter = QPainter(self.canvas)
-        #         painter.drawPixmap(0, 0, image_pixmap)
+                # Creating a pixmap from the image data.
+                img_pixmap = QPixmap()
+                img_pixmap.loadFromData(image_data)
 
-        #         # Updating the canvas.
-        #         self.canvas.update()
+                # Resizing the pixmap to fit the canvas.
+                canvas_dims = self.canvas.get_dimensions()
+                pixel_size = self.canvas.get_pixel_size()
+                img_dims = QSize(canvas_dims[0] * pixel_size, canvas_dims[1] * pixel_size)
+                img_pixmap = img_pixmap.scaled(img_dims, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+
+                # Saving the image to our canvas.
+                self.canvas.set_generated_image(img_pixmap)
+
 
 # app = QApplication([])
 # assistant = AIAssistant(125, 400)

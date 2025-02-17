@@ -19,8 +19,8 @@ load_dotenv()
 # A dialog that allows users to specify the image they want to generate.
 class ImageGenDialog(QDialog):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
         # Creating a client to interact with DALL-E.
         self.dalle_client = OpenAI(
@@ -85,12 +85,14 @@ class ImageGenDialog(QDialog):
 
     # A method to send a request to DALL-E to generate an image based on the user's description.
     def generate_image(self, description):
+
+        style = "Style: Cartoonish, Pixelated"
         
         try:
             # Attempting to generate a response from DALL-E.
             response = self.dalle_client.images.generate(
                 model="dall-e-2",
-                prompt=description,
+                prompt=description + "\n" + style,
                 n=1,
                 size="256x256",
             )
@@ -205,7 +207,7 @@ class ImageGenDialog(QDialog):
         return pixelated_font
 
 
-app = QApplication([])
-dialog = ImageGenDialog()
-dialog.show()
-app.exec()
+# app = QApplication([])
+# dialog = ImageGenDialog()
+# dialog.show()
+# app.exec()

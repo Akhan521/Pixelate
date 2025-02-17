@@ -91,6 +91,9 @@ class MainWindow(QMainWindow):
         self.canvas_view = ZoomableCanvasView(self.scene, self.proxy_widget)
         layout.addWidget(self.canvas_view)
 
+        # Storing a reference of our canvas in our AI assistant.
+        self.ai_assistant.set_canvas(self.canvas)
+
         # Creating and sizing our tools window:
         tool_window_width = 300
         # The height of our tools window will be the same as our left window.
@@ -251,5 +254,5 @@ class MainWindow(QMainWindow):
     
 app = QApplication([])
 window = MainWindow((32, 32))
-window.showFullScreen()
+window.showMaximized()
 app.exec()

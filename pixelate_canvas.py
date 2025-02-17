@@ -73,6 +73,13 @@ class PixelateCanvas(QWidget):
         # When in fill mode, we'll need to keep track of visited pixels to avoid redundant operations.
         self.visited = set()
 
+        # To store our generated image (from the AI assistant).
+        self.generated_image = None
+
+    # A method to set our generated image.
+    def set_generated_image(self, image):
+        self.generated_image = image
+
     # This method will create a grid for our canvas. It will be implemented as a QPixmap object.
     # We'll initialize the grid with a light gray background and draw grid lines on top of it.
     def init_grid(self):
@@ -140,6 +147,10 @@ class PixelateCanvas(QWidget):
 
         # We'll draw our pre-rendered grid. We're simply reusing the grid we created earlier.
         painter.drawPixmap(0, 0, self.grid)
+
+        # If we have a generated image, we'll draw it on our canvas.
+        if self.generated_image:
+            painter.drawPixmap(0, 0, self.generated_image)
 
         # Now, we'll only redraw the pixel that needs updating. This is given by the event.
         pixel_to_update = event.rect()
@@ -416,6 +427,14 @@ class PixelateCanvas(QWidget):
     # To set our canvas to line mode, we'll use the following method.
     def set_line_mode(self, line_mode):
         self.line_mode = line_mode
+
+    # A method to get our canvas dimensions.
+    def get_dimensions(self):
+        return (self.grid_width, self.grid_height)
+    
+    # A method to get our pixel size.
+    def get_pixel_size(self):
+        return self.pixel_size
 
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):

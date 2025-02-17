@@ -153,6 +153,9 @@ class Tools(QMainWindow):
         # Clearing our preview pixel.
         self.canvas.preview_pixel = None
 
+        # Clearing our generated image.
+        self.canvas.generated_image = None
+
         # Redrawing a brand new canvas.
         self.canvas.update()
 
