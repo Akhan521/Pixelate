@@ -133,10 +133,10 @@ class Tools(QMainWindow):
         self.setStyleSheet("color: black;")
 
         # Our square tool:
-        button = QPushButton("SQUARE TOOL")
+        button = QPushButton()
         button.setStyleSheet("background-color: white;")
-        # button.setIcon(QIcon(self.icons_path + "line_icon.png"))
-        # button.setIconSize(self.icon_size)
+        button.setIcon(QIcon(self.icons_path + "square_icon.png"))
+        button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set our drag state to True.
         button.clicked.connect(self.use_square_tool)
