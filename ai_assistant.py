@@ -206,6 +206,9 @@ class AIAssistant(QWidget):
             # If we have valid image data, we'll store it in our canvas.
             if image_data and self.canvas:
 
+                # We'll save the current state of our canvas before updating it with the generated image.
+                self.canvas.canvas_history.save_state_and_update(self.canvas.pixels, self.canvas.generated_image)
+
                 # Creating a pixmap from the image data.
                 img_pixmap = QPixmap()
                 img_pixmap.loadFromData(image_data)
@@ -216,7 +219,7 @@ class AIAssistant(QWidget):
                 img_dims = QSize(canvas_dims[0] * pixel_size, canvas_dims[1] * pixel_size)
                 img_pixmap = img_pixmap.scaled(img_dims, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
-                # Saving the image to our canvas.
+                # Setting the generated image of our canvas.
                 self.canvas.set_generated_image(img_pixmap)
 
 

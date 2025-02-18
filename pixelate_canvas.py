@@ -298,7 +298,7 @@ class PixelateCanvas(QWidget):
         # Before drawing, we'll save the current state of our canvas in the canvas history object.
         # Since we've begun drawing, we shouldn't be able to redo any actions. Thus, we'll clear the redo stack.
         # This ensures that we can undo our strokes if needed, but we can't redo any actions.
-        self.canvas_history.save_state_and_update(self.pixels)
+        self.canvas_history.save_state_and_update(self.pixels, self.generated_image)
 
         #If Mouse Button is clicked, set true
         self.mouse_button_pressed = True

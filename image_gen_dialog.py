@@ -86,15 +86,18 @@ class ImageGenDialog(QDialog):
     # A method to send a request to DALL-E to generate an image based on the user's description.
     def generate_image(self, description):
 
-        style = "Style: Cartoonish, Pixelated"
+        style_prompt = '''Style: A pixel art image with a cartoonish style, bold outlines, 
+                          and a colorblind-friendly palette. Ensure high contrast and a pixelated look.'''
+                          
         
         try:
             # Attempting to generate a response from DALL-E.
             response = self.dalle_client.images.generate(
-                model="dall-e-2",
-                prompt=description + "\n" + style,
+                model="dall-e-3",
+                prompt=description + "\n" + style_prompt,
                 n=1,
-                size="256x256",
+                size="1024x1024",
+                quality="standard",
             )
 
             # If the response is successful, we'll store the image URL.
