@@ -89,7 +89,6 @@ class ImageGenDialog(QDialog):
         style_prompt = '''Style: A pixel art image with a cartoonish style, bold outlines, 
                           and a colorblind-friendly palette. Ensure high contrast and a pixelated look.'''
                           
-        
         try:
             # Attempting to generate a response from DALL-E.
             response = self.dalle_client.images.generate(
