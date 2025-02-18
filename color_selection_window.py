@@ -316,7 +316,7 @@ class ColorSelectionWindow(QMainWindow):
     def set_secondary_color(self, color):
         self.secondary_color = color
 
-app = QApplication([])
-window = ColorSelectionWindow()
-window.show()
-app.exec()
+# app = QApplication([])
+# window = ColorSelectionWindow()
+# window.show()
+# app.exec()
