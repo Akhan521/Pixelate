@@ -21,6 +21,10 @@ class PixelateCanvas(QWidget):
         self.line_tool_start_point = (0,0)
         self.line_tool_end_point = (0,0)
 
+        # The start and end points for the square tools.
+        self.square_tool_start_point = (0, 0)
+        self.square_tool_end_point = (0, 0)
+
         #Variable to check if mouse button is clicked
         self.mouse_button_pressed = False  # Track if the mouse button is pressed
 
@@ -59,6 +63,9 @@ class PixelateCanvas(QWidget):
 
         # To store whether our canvas is in Line Tool.
         self.line_mode = False
+
+        # To store whether our canvas is in Square Tool.
+        self.square_mode = False
 
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
@@ -171,6 +178,10 @@ class PixelateCanvas(QWidget):
         if self.line_mode:
             return
 
+        # If line mode is enabled, return since we're not drawing.
+        if self.square_mode:
+            return
+
         # Otherwise, we'll ensure that the pixel is within bounds.
         if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
 
@@ -199,6 +210,123 @@ class PixelateCanvas(QWidget):
         # Drawing the preview pixel on our canvas via its coordinates.
         x, y = self.preview_pixel
         painter.fillRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size, preview_color)
+
+        #if we are in square mode and mouse button is pressed, then show preview.
+        if self.square_mode and self.mouse_button_pressed:
+
+            #Get start and end points and store color.
+            start = self.square_tool_start_point
+            end = self.square_tool_end_point
+            x1, y1 = start
+            x2, y2 = end
+            color = preview_color
+
+            # Draw the top of the square
+            while True:
+                #make sure x1 and y1 is in range.
+                if self.is_within_canvas(x1, y1):
+
+                    # show the preview for a single pixel
+                    painter.fillRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size,
+                                     preview_color)
+
+                    # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
+                    self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                    # stop drawing when x1 reaches x2, if has not, increment in the direction of x2.
+                    if x1 == x2:
+                        break
+                    if x1 < x2:
+                        x1 = x1 + 1
+                    else:
+                        x1 = x1 - 1
+                else:
+                    break
+
+            #Reset the coordinates.
+            x1, y1 = start
+            x2, y2 = end
+
+            # Draw the left side of the square.
+            while True:
+                #check if in bounds.
+                if self.is_within_canvas(x1, y1):
+
+                    # show the preview for a single pixel
+                    painter.fillRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size,
+                                     preview_color)
+
+                    # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
+                    self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                    # stop drawing when y1 reaches y2, if has not, increment in the direction of y2.
+                    if y1 == y2:
+                        break
+                    if y1 < y2:
+                        y1 = y1 + 1
+                    else:
+                        y1 = y1 - 1
+                else:
+                    break
+
+            #Reset coordinates.
+            x1, y1 = start
+            x2, y2 = end
+
+            # Offset y coordinates.
+            y1 = y2
+
+            # Draw the bottom side of the square.
+            while True:
+                #Check if in bounds.
+                if self.is_within_canvas(x1, y1):
+
+                    # show the preview for a single pixel
+                    painter.fillRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size,
+                                     preview_color)
+
+                    # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
+                    self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                    # stop drawing when x1 reaches x2, if has not, increment in the direction of x2.
+                    if x1 == x2:
+                        break
+                    if x1 < x2:
+                        x1 = x1 + 1
+                    else:
+                        x1 = x1 - 1
+                else:
+                    break
+
+            #reset coordinates.
+            x1, y1 = start
+            x2, y2 = end
+
+            # Offset x coordinates.
+            x1 = x2
+
+            # Draw the right side of the square.
+            while True:
+                #check bounds.
+                if self.is_within_canvas(x1, y1):
+
+                    # show the preview for a single pixel
+                    painter.fillRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size,
+                                     preview_color)
+
+                    # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
+                    self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                    # stop drawing when y1 reaches y2, if has not, increment in the direction of y2.
+                    if y1 == y2:
+                        break
+                    if y1 < y2:
+                        y1 = y1 + 1
+                    else:
+                        y1 = y1 - 1
+                else:
+                    break
+            return
 
         #If we are in line mode, then draw the preview for the line.
         if self.line_mode:
@@ -303,6 +431,12 @@ class PixelateCanvas(QWidget):
             self.line_tool_end_point = (x, y)
             return
 
+        if self.square_mode:
+            # Store the starting point & end point.
+            self.square_tool_start_point = (x, y)
+            self.square_tool_end_point = (x, y)
+            return
+
         # If we press the left mouse button, we'll draw with the primary color.
         if event.button() == Qt.MouseButton.LeftButton:
             
@@ -347,6 +481,7 @@ class PixelateCanvas(QWidget):
         # Drawing the pixel at the given coordinates with the selected color.
         self.draw_pixel(x, y, color)
 
+    #Happens when the mouse button is released.
     def mouseReleaseEvent(self, event):
 
         # If Mouse Button is released, set false.
@@ -369,6 +504,26 @@ class PixelateCanvas(QWidget):
             self.draw_line(self.line_tool_start_point, self.line_tool_end_point, color)
             return
 
+        if self.square_mode:
+            #Get x and y position of mouse
+            x, y = event.pos().x(), event.pos().y()
+            x = x // self.pixel_size
+            y = y // self.pixel_size
+
+            self.square_tool_end_point = (x, y)
+
+            # Retrieve the selected color
+            color = self.color_selection_window.get_primary_color()
+
+            x1, y1 = self.square_tool_start_point
+            x2, y2 = self.square_tool_end_point
+
+            if self.is_within_canvas(x1,x2) and self.is_within_canvas(x2,y2):
+                # Draw Square
+                self.draw_square(self.square_tool_start_point, self.square_tool_end_point, color)
+                return
+
+            return
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
     def mouseMoveEvent(self, event):
@@ -382,6 +537,11 @@ class PixelateCanvas(QWidget):
         if self.line_mode and event.buttons() == Qt.MouseButton.LeftButton:
             # Update the temporary end point
             self.line_tool_end_point = (x, y)
+            self.update()
+
+        #If in square mode, we will draw a preview if mouse is clicked and moving.
+        if self.square_mode and event.buttons() == Qt.MouseButton.LeftButton:
+            self.square_tool_end_point = (x,y)
             self.update()
 
         # If we're in erase mode, we'll delete the pixel at the given coordinates.
@@ -416,6 +576,10 @@ class PixelateCanvas(QWidget):
     # To set our canvas to line mode, we'll use the following method.
     def set_line_mode(self, line_mode):
         self.line_mode = line_mode
+
+    # To set our canvas to square mode, we'll use the following method.
+    def set_square_mode(self, square_mode):
+        self.square_mode = square_mode
 
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):
@@ -517,3 +681,104 @@ class PixelateCanvas(QWidget):
             if e2 < dx:
                 err += dx
                 y1 += sy
+
+    #Method to check if a coordinate is within the canvas.
+    def is_within_canvas(self, x, y):
+        return 0 <= x < self.grid_width and 0 <= y < self.grid_height
+
+    #Method to draw a square on screen given a color, start, and end point.
+    def draw_square(self, start, end, color):
+
+        #Store coordinates of start and end points.
+        x1, y1 = start
+        x2, y2 = end
+
+        #Draw the top side of the square.
+        while True:
+            # check if coordinates is in bounds.
+            if self.is_within_canvas(x1,y1):
+                # Updating the color of the pixel at (x, y).
+                self.pixels[(x1, y1)] = color
+                self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                # stop drawing when x1 reaches x2, if has not, increment in the direction of x2.
+                if x1 == x2:
+                    break
+                if x1 < x2:
+                    x1 = x1 + 1
+                else:
+                    x1 = x1 - 1
+            else:
+                break
+
+        #reset coordinates.
+        x1, y1 = start
+        x2, y2 = end
+
+        #Draw the left side of the square.
+        while True:
+            # check if coordinates is in bounds.
+            if self.is_within_canvas(x1,y1):
+                # Updating the color of the pixel at (x, y).
+                self.pixels[(x1, y1)] = color
+                self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                # stop drawing when y1 reaches y2, if has not, increment in the direction of y2.
+                if y1 == y2:
+                    break
+                if y1 < y2:
+                    y1 = y1 + 1
+                else:
+                    y1 = y1 - 1
+            else:
+                break
+
+        #reset coordinates.
+        x1, y1 = start
+        x2, y2 = end
+
+        # Offset y coordinates
+        y1 = y2
+
+        #Draw the bottom side of the square
+        while True:
+            # check if coordinates is in bounds.
+            if self.is_within_canvas(x1,y1):
+                # Updating the color of the pixel at (x, y).
+                self.pixels[(x1, y1)] = color
+                self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                # stop drawing when x1 reaches x2, if has not, increment in the direction of x2.
+                if x1 == x2:
+                    break
+                if x1 < x2:
+                    x1 = x1 + 1
+                else:
+                    x1 = x1 - 1
+            else:
+                break
+
+        #reset coordinates.
+        x1, y1 = start
+        x2, y2 = end
+
+        #Offset x coordinates
+        x1 = x2
+
+        #Draw the right side of the square
+        while True:
+            # check if coordinates is in bounds.
+            if self.is_within_canvas(x1,y1):
+                # Updating the color of the pixel at (x, y).
+                self.pixels[(x1, y1)] = color
+                self.update(QRect(x1 * self.pixel_size, y1 * self.pixel_size, self.pixel_size, self.pixel_size))
+
+                # stop drawing when y1 reaches y2, if has not, increment in the direction of y2.
+                if y1 == y2:
+                    break
+                if y1 < y2:
+                    y1 = y1 + 1
+                else:
+                    y1 = y1 - 1
+            else:
+                break
