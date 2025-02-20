@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDatabase
 from PyQt6.QtCore import Qt, QSize
+from custom_messagebox import CustomMessageBox
 
 # A dialog that allows users to create a new project by specifying its dimensions.
 class NewSpriteDialog(QDialog):
@@ -149,25 +150,33 @@ class NewSpriteDialog(QDialog):
     # A method to get our dimensions as a tuple.
     def get_dimensions(self):
 
+        # Defining the minimum and maximum sizes for our sprite.
+        min_size = 2
+        max_size = 512
+
+        # Getting the width and height from our inputs.
         width = self.width_input.text()
         height = self.height_input.text()
 
         if not width or not height:
-            QMessageBox.warning(self, "Warning", "Please enter both dimensions.")
+            CustomMessageBox("Warning", "Please enter both dimensions.", type="warning")
             return None
         
         try:
             width = int(width)
             height = int(height)
 
-            if width <= 0 or height <= 0:
-                QMessageBox.warning(self, "Warning", "Please enter positive dimensions.")
+            if width < min_size or height < min_size:
+                CustomMessageBox("Warning", "The minimum size for a sprite is 2x2.", type="warning")
+                return None
+            elif width > max_size or height > max_size:
+                CustomMessageBox("Warning", "The maximum size for a sprite is 512x512.", type="warning")
                 return None
             
             return (width, height)
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", "Please enter valid dimensions.")
+            CustomMessageBox("Error", f"An error occurred: {str(e)}", type="error")
             return None
 
     # A method to get our pixelated font.
@@ -189,7 +198,7 @@ class NewSpriteDialog(QDialog):
         return pixelated_font
 
 
-# app = QApplication([])
-# dialog = NewSpriteDialog()
-# dialog.show()
-# app.exec()
+app = QApplication([])
+dialog = NewSpriteDialog()
+dialog.show()
+app.exec()

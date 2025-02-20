@@ -26,7 +26,7 @@ class ZoomableCanvasView(QGraphicsView):
 
         # Setting the zoom factor and the min/max zoom factors.
         self.zoom_factor = 1.0
-        self.min_zoom_factor = 1.0
+        self.min_zoom_factor = 0.1
         self.max_zoom_factor = 4.0
 
         # For dragging functionality, we'll need to store the last mouse position (to calculate how much we've dragged our mouse).

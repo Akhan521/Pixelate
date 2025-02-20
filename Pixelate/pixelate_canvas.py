@@ -155,9 +155,24 @@ class PixelateCanvas(QWidget):
         # We'll draw our pre-rendered grid. We're simply reusing the grid we created earlier.
         painter.drawPixmap(0, 0, self.grid)
 
-        # If we have a generated image, we'll draw it on our canvas.
+        # If we have a generated image, we'll draw it directly on our canvas.
         if self.generated_image:
-            painter.drawPixmap(0, 0, self.generated_image)
+            
+            # For every pixel, we'll...
+            for x in range(self.grid_width):
+                for y in range(self.grid_height):
+
+                    # Get the color of the pixel from the generated image.
+                    color = self.generated_image.pixelColor(x, y)
+
+                    # Directly update the pixel on our canvas.
+                    self.pixels[(x, y)] = color
+
+                    # Repaint the pixel on our canvas.
+                    self.update(QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size))
+
+            # Once we've drawn the generated image, we'll clear it to avoid redrawing it.
+            self.generated_image = None
 
         # Now, we'll only redraw the pixel that needs updating. This is given by the event.
         pixel_to_update = event.rect()
@@ -185,11 +200,11 @@ class PixelateCanvas(QWidget):
         if self.eyedropper_mode:
             return
 
-        # If line mode is enabled, return since we're not drawing.
+        # If line mode is enabled, return since we handle it separately.
         if self.line_mode:
             return
 
-        # If line mode is enabled, return since we're not drawing.
+        # If line mode is enabled, return since we handle it separately.
         if self.square_mode:
             return
 
@@ -430,7 +445,7 @@ class PixelateCanvas(QWidget):
         # Before drawing, we'll save the current state of our canvas in the canvas history object.
         # Since we've begun drawing, we shouldn't be able to redo any actions. Thus, we'll clear the redo stack.
         # This ensures that we can undo our strokes if needed, but we can't redo any actions.
-        self.canvas_history.save_state_and_update(self.pixels, self.generated_image)
+        self.canvas_history.save_state_and_update(self.pixels)
 
         #If Mouse Button is clicked, set true
         self.mouse_button_pressed = True

@@ -196,7 +196,7 @@ class StartScreen(QMainWindow):
                 background-color: purple;
             }}
             '''
-            
+        
 # Creating our application.
 app = QApplication([])
 window = StartScreen()

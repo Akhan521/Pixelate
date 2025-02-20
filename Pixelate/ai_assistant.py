@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QTextEdit, QFormLayout, QDialogButtonBox,
                               QListWidget, QListWidgetItem )
 
-from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter
+from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage
 from PyQt6.QtCore import Qt, QSize
 from chat_bubble_widget import ChatBubbleWidget
 from image_gen_dialog import ImageGenDialog
@@ -19,7 +19,7 @@ import os
 load_dotenv()
 
 # Reading the system prompt for Pixi from a text file.
-with open("Pixi_System_Prompt.txt", "r") as file:
+with open("Pixelate/Pixi_System_Prompt.txt", "r") as file:
     system_prompt = file.read()
 
 # Our AI assistant will be implemented as a chat widget.
@@ -207,20 +207,22 @@ class AIAssistant(QWidget):
             if image_data and self.canvas:
 
                 # We'll save the current state of our canvas before updating it with the generated image.
-                self.canvas.canvas_history.save_state_and_update(self.canvas.pixels, self.canvas.generated_image)
+                self.canvas.canvas_history.save_state_and_update(self.canvas.pixels)
 
-                # Creating a pixmap from the image data.
-                img_pixmap = QPixmap()
-                img_pixmap.loadFromData(image_data)
+                # Using our image data, we'll create a QImage object.
+                image = QImage()
+                image.loadFromData(image_data)
 
-                # Resizing the pixmap to fit the canvas.
-                canvas_dims = self.canvas.get_dimensions()
+                # We'll resize the image to match the dimensions of our canvas.
+                # We'll use Nearest Neighbor interpolation for scaling, to achieve a pixelated look.
+                width, height = self.canvas.get_dimensions()
                 pixel_size = self.canvas.get_pixel_size()
-                img_dims = QSize(canvas_dims[0] * pixel_size, canvas_dims[1] * pixel_size)
-                img_pixmap = img_pixmap.scaled(img_dims, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-
-                # Setting the generated image of our canvas.
-                self.canvas.set_generated_image(img_pixmap)
+                image = image.scaled(width, height,
+                                     Qt.AspectRatioMode.IgnoreAspectRatio, 
+                                     Qt.TransformationMode.FastTransformation)
+                
+                # Storing the generated image in our canvas.
+                self.canvas.set_generated_image(image)
 
 
 # app = QApplication([])
