@@ -99,14 +99,15 @@ class ImageGenDialog(QDialog):
         taskbar = QLabel("Image Generator")
         taskbar.setAlignment(Qt.AlignmentFlag.AlignLeft)
         taskbar.setStyleSheet(self.get_taskbar_style())
+        taskbar.setFixedHeight(40)
         layout.addWidget(taskbar)
 
         # Adding a prompt to let users know what to do.
-        prompt = QLabel("Enter a text description of the image you want to generate.")
+        self.prompt = QLabel("Enter a text description of the image you want to generate.")
         
-        prompt.setStyleSheet(self.get_default_style())
-        prompt.setWordWrap(True)
-        layout.addWidget(prompt)
+        self.prompt.setStyleSheet(self.get_default_style())
+        self.prompt.setWordWrap(True)
+        layout.addWidget(self.prompt)
 
         # Creating a text edit widget for the user to enter their description in.
         self.img_description = QTextEdit(self)
@@ -128,7 +129,7 @@ class ImageGenDialog(QDialog):
         # A loading label that will be shown while an image is being generated.
         self.loading_label = QLabel("Generating image...")
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setContentsMargins(0, 0, 0, 10)
+        # self.setContentsMargins(0, 0, 0, 10)
         self.loading_label.setVisible(False)
         self.loading_label.setStyleSheet(self.get_default_style())
         layout.addWidget(self.loading_label)
@@ -172,7 +173,7 @@ class ImageGenDialog(QDialog):
         self.thread.start()
 
     # A slot to handle when an image has been generated.
-    def on_image_generated(self, image_data):
+    def on_image_generated(self, image_data=None):
         # Stopping the loading animation.
         self.movie.stop()
         self.loading_label.setVisible(False)
