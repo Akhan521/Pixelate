@@ -253,7 +253,7 @@ class MainWindow(QMainWindow):
             }}
         '''
     
-app = QApplication([])
-window = MainWindow((64, 64))
-window.showMaximized()
-app.exec()
+# app = QApplication([])
+# window = MainWindow((64, 64))
+# window.showMaximized()
+# app.exec()

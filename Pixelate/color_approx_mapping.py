@@ -79,7 +79,7 @@ class ColorApproximator:
             "Forest": QColor(34, 139, 34), "Sea": QColor(46, 139, 87),
             "Olive": QColor(107, 142, 35), "Sandy": QColor(244, 164, 96),
             "Midnight": QColor(25, 25, 112), "Deep Sky": QColor(0, 191, 255),
-            "Slate": QColor(112, 128, 144), "Pale Turquoise": QColor(175, 238, 238),
+            "Slate": QColor(112, 128, 144), "Pale Turq.": QColor(175, 238, 238),
 
             # Earthy & Neutral Tones
             "Charcoal": QColor(54, 69, 79), "Eggshell": QColor(240, 234, 214),
