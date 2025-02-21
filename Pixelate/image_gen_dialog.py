@@ -191,6 +191,10 @@ class ImageGenDialog(QDialog):
         self.movie.stop()
         self.loading_label.setVisible(False)
 
+        # Enabling user interaction with the dialog.
+        self.buttons.setEnabled(True)
+        self.img_description.setReadOnly(False)
+
         # Showing an error message.
         CustomMessageBox("Error", error_message, type="error")
 

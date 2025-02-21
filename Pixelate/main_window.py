@@ -227,25 +227,33 @@ class MainWindow(QMainWindow):
 
         return f'''
             QMenuBar {{
-                background-color: lightgray;
-                color: black;
+                background-color: purple;
+                color: white;
                 font-family: {pixelated_font.family()};
             }}
             QMenuBar::item:selected {{
-                background-color: gray;
-                color: black;
+                /* A very dark shade of purple. */
+                background-color: #4B0082;
+                color: white;
             }}
             QMenuBar::item:pressed {{
-                background-color: darkgray;
+                /* An even darker shade of purple. */
+                background-color: #2E0854;
             }}
 
             QMenu {{
                 background-color: lightgray;
                 color: black;
                 font-family: {pixelated_font.family()};
+                border: 1px solid black;
+            }}
+            QMenu::item {{
+                padding: 10px 20px;
+                border-bottom: 1px solid darkgray;
             }}
             QMenu::item:selected {{
-                background-color: gray;
+                /* A medium shade of gray. */
+                background-color: #BEBEBE;
                 color: black;
             }}
             QMenu::item:pressed {{
@@ -253,7 +261,7 @@ class MainWindow(QMainWindow):
             }}
         '''
     
-# app = QApplication([])
-# window = MainWindow((64, 64))
-# window.showMaximized()
-# app.exec()
+app = QApplication([])
+window = MainWindow((64, 64))
+window.showMaximized()
+app.exec()

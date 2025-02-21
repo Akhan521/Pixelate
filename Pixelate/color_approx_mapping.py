@@ -73,7 +73,8 @@ class ColorApproximator:
             "Tide": QColor(0, 128, 128), "Umber": QColor(99, 81, 71),
             "Vapor": QColor(240, 248, 255), "Willow": QColor(113, 166, 133),
             "Xanadu": QColor(115, 134, 120), "Yarrow": QColor(255, 204, 0),
-            "Zest": QColor(229, 155, 15),
+            "Zest": QColor(229, 155, 15), "Light Gray": QColor(240, 240, 240),
+            "Dark Gray": QColor(128, 128, 128), "Medium Gray": QColor(192, 192, 192),
 
             # Nature-Inspired Colors
             "Forest": QColor(34, 139, 34), "Sea": QColor(46, 139, 87),
