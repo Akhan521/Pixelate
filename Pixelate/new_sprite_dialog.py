@@ -198,7 +198,7 @@ class NewSpriteDialog(QDialog):
         return pixelated_font
 
 
-app = QApplication([])
-dialog = NewSpriteDialog()
-dialog.show()
-app.exec()
+# app = QApplication([])
+# dialog = NewSpriteDialog()
+# dialog.show()
+# app.exec()

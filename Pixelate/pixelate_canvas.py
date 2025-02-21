@@ -129,6 +129,10 @@ class PixelateCanvas(QWidget):
             # Ensuring that our coordinates are integers.
             x, y = int(x), int(y)
 
+            # To update our color approximation label, we'll get the color of the pixel we're hovering over.
+            color = self.pixels.get((x, y), self.default_color)
+            self.color_selection_window.set_color_approx_label(color)
+
             # We'll clear our preview pixel. We're only interested in previewing the pixel we're hovering over.
             self.preview_pixel = None
 
@@ -142,6 +146,7 @@ class PixelateCanvas(QWidget):
         # If we leave the canvas, we'll clear the preview pixels set and repaint the canvas.
         elif event.type() == QEvent.Type.HoverLeave:
             self.preview_pixel = None
+            self.color_selection_window.set_color_approx_label("None")
             self.update()
 
         # Then, we'll handle the event as usual.

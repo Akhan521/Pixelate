@@ -40,7 +40,7 @@ class AIAssistant(QWidget):
         # Setting the width and height of our chat widget.
         self.width = width
         self.height = height
-        self.setFixedSize(self.width, self.height)
+        self.setFixedWidth(self.width)
 
         # To provide some context to our AI assistant, we'll store some messages.
         self.chat_context = []   # Each message will be stored as a dictionary (to work with the OpenAI API).

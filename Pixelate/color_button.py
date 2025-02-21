@@ -40,3 +40,25 @@ class ColorButton(QPushButton):
 
         super().mousePressEvent(event)
 
+    # Overriding the enterEvent method to set our color selection window's approximation label.
+    def enterEvent(self, event):
+
+        # Getting our mouse button's stylesheet.
+        button_stylesheet = self.styleSheet()
+
+        # Extracting the background color from the stylesheet.
+        button_color = button_stylesheet.split("background-color: ")[1].split(";")[0]
+
+        # Setting the approximation label of our color selection window.
+        self.color_selection_window.set_color_approx_label(QColor(button_color))
+
+        super().enterEvent(event)
+
+    # Overriding the leaveEvent method to clear our color selection window's approximation label.
+    def leaveEvent(self, event):
+
+        # Clearing the approximation label of our color selection window.
+        self.color_selection_window.set_color_approx_label("None")
+
+        super().leaveEvent(event)
+

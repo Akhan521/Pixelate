@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QVBoxLayout, QWidget, QGraphicsScene, 
                               QGraphicsProxyWidget, QMenuBar, QMenu,
                               QFileDialog, QMessageBox, QSizePolicy,
-                              QWidgetAction )
+                              QWidgetAction, QLabel )
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
@@ -69,7 +69,8 @@ class MainWindow(QMainWindow):
         # Our left window should be as wide as our color selection window + the offset.
         left_window_width = self.color_selection_window.width + left_window_offset
         left_window_height = self.color_selection_window.height + chat_box_height + left_window_offset
-        left_window.setFixedSize(left_window_width, left_window_height)
+        # left_window.setFixedSize(left_window_width, left_window_height)
+        left_window.setFixedWidth(left_window_width)
         left_window.setStyleSheet("background-color: lightgray;")
 
         # Adding our left layout to our left window.

@@ -20,7 +20,7 @@ class Tools(QMainWindow):
         self.height = height
 
         # Fixing the size of our tools window.
-        self.setFixedSize(self.width, self.height)
+        self.setFixedWidth(self.width)
 
         # Setting the background color of our window to light gray.
         self.setStyleSheet("background-color: lightgray;")

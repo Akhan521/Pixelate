@@ -278,7 +278,7 @@ class ImageGenDialog(QDialog):
         return pixelated_font
 
 
-app = QApplication([])
-dialog = ImageGenDialog()
-dialog.show()
-app.exec()
+# app = QApplication([])
+# dialog = ImageGenDialog()
+# dialog.show()
+# app.exec()
