@@ -40,7 +40,7 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 128), QColor(128, 128, 0), QColor(128, 0, 128), QColor(0, 128, 128), QColor(192, 192, 192),
                 QColor(128, 128, 128), QColor(200, 100, 100), QColor(100, 200, 100), QColor(100, 100, 200), QColor(220, 220, 100),
                 QColor(220, 100, 220), QColor(100, 220, 220), QColor(50, 50, 100), QColor(50, 100, 50), QColor(100, 50, 50),
-                QColor(50, 100, 100), QColor(100, 50, 100), QColor(100, 100, 50), QColor(75, 75, 75), QColor(180, 90, 90)
+                QColor(50, 100, 100), QColor(100, 50, 100), QColor(100, 100, 50), QColor(54, 69, 79), QColor(180, 90, 90)
             ],
             "Protanopia": [
                 QColor(0, 0, 0), QColor(255, 255, 255), QColor(0, 0, 255), QColor(255, 255, 0), QColor(0, 128, 255),
@@ -48,7 +48,7 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
                 QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
                 QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
-                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(54, 69, 79), QColor(160, 160, 80), QColor(80, 160, 160)
             ],
             "Deuteranopia": [
                 QColor(0, 0, 0), QColor(255, 255, 255), QColor(0, 0, 255), QColor(255, 0, 0), QColor(0, 128, 255),
@@ -56,7 +56,7 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
                 QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
                 QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
-                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(54, 69, 79), QColor(160, 160, 80), QColor(80, 160, 160)
             ],
             "Tritanopia": [
                 QColor(0, 0, 0), QColor(255, 255, 255), QColor(255, 0, 0), QColor(0, 255, 0), QColor(128, 0, 128),
@@ -64,7 +64,7 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
                 QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
                 QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
-                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(54, 69, 79), QColor(160, 160, 80), QColor(80, 160, 160)
             ]
         }
 
@@ -288,7 +288,7 @@ class ColorSelectionWindow(QMainWindow):
                 background-color: lightgray;
             }}
             QPushButton:pressed {{
-                background-color: gray;
+                background-color: darkgray;
             }}
     '''
 
