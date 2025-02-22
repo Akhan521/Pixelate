@@ -253,7 +253,8 @@ class ColorSelectionWindow(QMainWindow):
                     background-color: #4B0082;
                 }}
                 QPushButton:pressed {{
-                    background-color: purple;
+                    /* An even darker shade of purple. */
+                    background-color: #2E0854;
                 }}
             '''
     

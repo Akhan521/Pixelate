@@ -224,8 +224,7 @@ class AIAssistant(QWidget):
                 # Storing the generated image in our canvas.
                 self.canvas.set_generated_image(image)
 
-
 # app = QApplication([])
-# assistant = AIAssistant(125, 400)
+# assistant = AIAssistant(200, 400)
 # assistant.show()
 # app.exec()

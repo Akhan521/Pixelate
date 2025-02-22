@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
 
         # Giving our main window a gray background.
         self.setStyleSheet(f'''
-            background-color: #BBBBBB;      
+            background-color: #BBBBBB;   
         ''')
 
         # Creating an intermediary widget to hold our layout + setting the layout.
