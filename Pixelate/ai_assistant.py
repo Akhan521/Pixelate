@@ -87,12 +87,14 @@ class AIAssistant(QWidget):
         self.send_button = QPushButton("Send")
         self.send_button.clicked.connect(self.send_message)
         self.send_button.setFont(QFont("Press Start 2P", 10))
+        self.send_button.setStyleSheet(self.get_button_style())
         main_layout.addWidget(self.send_button)
 
         # Creating a generate button to generate an image based on the user's description.
         self.generate_button = QPushButton("Generate")
         self.generate_button.clicked.connect(self.generate_image)
         self.generate_button.setFont(QFont("Press Start 2P", 10))
+        self.generate_button.setStyleSheet(self.get_button_style())
         main_layout.addWidget(self.generate_button)
 
         self.setStyleSheet(f'''
@@ -223,6 +225,25 @@ class AIAssistant(QWidget):
                 
                 # Storing the generated image in our canvas.
                 self.canvas.set_generated_image(image)
+
+    # Button Style:
+    def get_button_style(self):
+        return f'''
+            QPushButton {{
+                background-color: white;
+                color: black;
+                border: 1px solid black;
+                border-radius: 5px;
+                padding: 5px;
+            }}
+            QPushButton:hover {{
+                /* A medium shade of gray. */
+                background-color: #BEBEBE;
+            }}
+            QPushButton:pressed {{
+                background-color: darkgray;
+            }}
+        '''
 
 # app = QApplication([])
 # assistant = AIAssistant(200, 400)
