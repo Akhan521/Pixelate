@@ -1,9 +1,10 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QColorDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QColorDialog, QLabel
 # Importing the necessary modules to work with canvas drawings.
 from PyQt6.QtGui import QPainter, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt
 from color_button import ColorButton
+from color_approx_mapping import ColorApproximator
 
 class ColorSelectionWindow(QMainWindow):
     def __init__(self, pixel_size=15, grid_width=32, grid_height=32):
@@ -18,15 +19,17 @@ class ColorSelectionWindow(QMainWindow):
         self.columns = 5
         
         # Defining offsets for our main window border.
-        self.width_offset  = 50
-        self.height_offset = 120
+        self.width_offset  = 75
+        self.height_offset = 150
 
         # Defining variables to store our primary and secondary colors.
         self.set_primary_color(QColor("black"))
         self.set_secondary_color(QColor("white"))
 
-        # Setting the window title and size (using the button size and grid dimensions).
-        self.setWindowTitle("Color Selection")
+        # Fixing the size of our window.
+        self.width = self.button_size * self.columns + self.width_offset
+        self.height = self.button_size * self.rows + self.height_offset
+        self.setFixedSize(self.width, self.height)
 
         # Our predefined color palettes (Normal, Protanopia, Deuteranopia, and Tritanopia).
         # We'll store these palettes in a dictionary; each palette will consist of 30 colors.
@@ -37,7 +40,7 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 128), QColor(128, 128, 0), QColor(128, 0, 128), QColor(0, 128, 128), QColor(192, 192, 192),
                 QColor(128, 128, 128), QColor(200, 100, 100), QColor(100, 200, 100), QColor(100, 100, 200), QColor(220, 220, 100),
                 QColor(220, 100, 220), QColor(100, 220, 220), QColor(50, 50, 100), QColor(50, 100, 50), QColor(100, 50, 50),
-                QColor(50, 100, 100), QColor(100, 50, 100), QColor(100, 100, 50), QColor(75, 75, 75), QColor(180, 90, 90)
+                QColor(50, 100, 100), QColor(100, 50, 100), QColor(100, 100, 50), QColor(54, 69, 79), QColor(180, 90, 90)
             ],
             "Protanopia": [
                 QColor(0, 0, 0), QColor(255, 255, 255), QColor(0, 0, 255), QColor(255, 255, 0), QColor(0, 128, 255),
@@ -45,7 +48,7 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
                 QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
                 QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
-                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(54, 69, 79), QColor(160, 160, 80), QColor(80, 160, 160)
             ],
             "Deuteranopia": [
                 QColor(0, 0, 0), QColor(255, 255, 255), QColor(0, 0, 255), QColor(255, 0, 0), QColor(0, 128, 255),
@@ -53,7 +56,7 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
                 QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
                 QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
-                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(54, 69, 79), QColor(160, 160, 80), QColor(80, 160, 160)
             ],
             "Tritanopia": [
                 QColor(0, 0, 0), QColor(255, 255, 255), QColor(255, 0, 0), QColor(0, 255, 0), QColor(128, 0, 128),
@@ -61,9 +64,12 @@ class ColorSelectionWindow(QMainWindow):
                 QColor(0, 0, 128), QColor(200, 0, 200), QColor(0, 255, 255), QColor(180, 180, 180), QColor(120, 120, 120),
                 QColor(255, 150, 150), QColor(120, 255, 120), QColor(120, 120, 255), QColor(255, 255, 150), QColor(255, 150, 255),
                 QColor(120, 255, 255), QColor(30, 30, 100), QColor(30, 100, 30), QColor(100, 30, 30), QColor(30, 100, 100),
-                QColor(100, 30, 100), QColor(100, 100, 30), QColor(75, 75, 75), QColor(160, 160, 80), QColor(80, 160, 160)
+                QColor(100, 30, 100), QColor(100, 100, 30), QColor(54, 69, 79), QColor(160, 160, 80), QColor(80, 160, 160)
             ]
         }
+
+        # Creating an instance of our color approximator class (to handle our approximation labels).
+        self.color_approximator = ColorApproximator()
 
         # To store our palette buttons (for styling purposes).
         self.palette_buttons = []
@@ -101,6 +107,16 @@ class ColorSelectionWindow(QMainWindow):
         button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: {self.button_border}px solid black;")
         selected_colors_layout.addWidget(button)
 
+        # Our color approximation label which will store the name of the color closest to the selected color.
+        self.color_approx_label = QLabel("Color:\nNone")
+        self.color_approx_label.setFixedWidth(self.width - 20) # Account for padding.
+        self.color_approx_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.color_approx_label.setStyleSheet(f'''
+            font-family: "Press Start 2P";
+            font-size: 12px;
+            color: black;
+        ''')
+
         # Creating an intermediary widget to hold all of our other widgets.
         window = QWidget()
         # Creating our next widget to hold our grid layout (for color selection).
@@ -113,15 +129,11 @@ class ColorSelectionWindow(QMainWindow):
         self.selected_colors.setLayout(selected_colors_layout)
         main_layout.addWidget(color_grid)
         main_layout.addWidget(self.selected_colors)
+        main_layout.addWidget(self.color_approx_label)
         window.setLayout(main_layout)
 
         # Fixing the size of our color selection grid widget and our primary/secondary color boxes.
         # color_grid.setFixedSize(self.button_size * self.columns, self.button_size * self.rows)
-
-        # Fixing the size of our window.
-        self.width = self.button_size * self.columns + self.width_offset
-        self.height = self.button_size * self.rows + self.height_offset
-        self.setFixedSize(self.width, self.height)
         
         # Setting the central widget of our application.
         self.setCentralWidget(window)
@@ -241,7 +253,8 @@ class ColorSelectionWindow(QMainWindow):
                     background-color: #4B0082;
                 }}
                 QPushButton:pressed {{
-                    background-color: purple;
+                    /* An even darker shade of purple. */
+                    background-color: #2E0854;
                 }}
             '''
     
@@ -275,7 +288,7 @@ class ColorSelectionWindow(QMainWindow):
                 background-color: lightgray;
             }}
             QPushButton:pressed {{
-                background-color: gray;
+                background-color: darkgray;
             }}
     '''
 
@@ -315,6 +328,16 @@ class ColorSelectionWindow(QMainWindow):
     # A setter for our secondary color.
     def set_secondary_color(self, color):
         self.secondary_color = color
+
+    # A method to set the color approximation label. Here, we provide the input color (QColor object).
+    # Our color approximator will find the closest color to the input color and set the label accordingly.
+    def set_color_approx_label(self, color):
+        if isinstance(color, QColor):
+            # Our approximator returns the name of the closest color as a string.
+            closest_color = self.color_approximator.closest_color_cie76(color)
+            self.color_approx_label.setText(f"Color:\n{closest_color}")
+        else:
+            self.color_approx_label.setText("Color:\nNone")
 
 # app = QApplication([])
 # window = ColorSelectionWindow()

@@ -1,8 +1,16 @@
 # Importing the required libraries.
-from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QWidget, QTextEdit, QApplication, QListWidget, QListWidgetItem, QScrollArea
-from PyQt6.QtGui import QColor, QImage, QFont
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout, 
+                              QVBoxLayout, QWidget, QGraphicsScene, 
+                              QGraphicsProxyWidget, QMenuBar, QMenu,
+                              QFileDialog, QMessageBox, QPushButton, 
+                              QLabel, QDialog, QInputDialog, QLineEdit,
+                              QTextEdit, QFormLayout, QDialogButtonBox,
+                              QListWidget, QListWidgetItem )
+
+from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage
+from PyQt6.QtCore import Qt, QSize
 from chat_bubble_widget import ChatBubbleWidget
+from image_gen_dialog import ImageGenDialog
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
@@ -11,15 +19,18 @@ import os
 load_dotenv()
 
 # Reading the system prompt for Pixi from a text file.
-with open("Pixi_System_Prompt.txt", "r") as file:
+with open("Pixelate/Pixi_System_Prompt.txt", "r") as file:
     system_prompt = file.read()
 
 # Our AI assistant will be implemented as a chat widget.
 class AIAssistant(QWidget):
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, canvas=None):
 
         super().__init__()
+
+        # Storing a reference to the canvas (to handle image generation).
+        self.canvas = canvas
 
         # Creating an instance of the OpenAI class.
         self.client = OpenAI(
@@ -29,7 +40,7 @@ class AIAssistant(QWidget):
         # Setting the width and height of our chat widget.
         self.width = width
         self.height = height
-        self.setFixedSize(self.width, self.height)
+        self.setFixedWidth(self.width)
 
         # To provide some context to our AI assistant, we'll store some messages.
         self.chat_context = []   # Each message will be stored as a dictionary (to work with the OpenAI API).
@@ -76,7 +87,15 @@ class AIAssistant(QWidget):
         self.send_button = QPushButton("Send")
         self.send_button.clicked.connect(self.send_message)
         self.send_button.setFont(QFont("Press Start 2P", 10))
+        self.send_button.setStyleSheet(self.get_button_style())
         main_layout.addWidget(self.send_button)
+
+        # Creating a generate button to generate an image based on the user's description.
+        self.generate_button = QPushButton("Generate")
+        self.generate_button.clicked.connect(self.generate_image)
+        self.generate_button.setFont(QFont("Press Start 2P", 10))
+        self.generate_button.setStyleSheet(self.get_button_style())
+        main_layout.addWidget(self.generate_button)
 
         self.setStyleSheet(f'''
             background-color: {QColor(240, 240, 240, 255).name()};
@@ -87,6 +106,10 @@ class AIAssistant(QWidget):
         self.setLayout(main_layout)
 
         
+    # A function to set the canvas reference for our AI assistant.
+    def set_canvas(self, canvas):
+        self.canvas = canvas
+
     # A function to send a request to the OpenAI API and receive a response. 
     def get_response(self):
 
@@ -171,7 +194,58 @@ class AIAssistant(QWidget):
             # Sending the user's message to Pixi.
             self.send_message()
 
+    # Our generate_image method will be implemented here.
+    def generate_image(self):
+
+        # Creating an ImageGenDialog instance to generate an image based on the user's description.
+        image_gen_dialog = ImageGenDialog()
+
+        # If the user clicks OK, we'll generate an image based on their description.
+        if image_gen_dialog.exec() == QDialog.DialogCode.Accepted:
+
+            image_data = image_gen_dialog.get_image_data()
+
+            # If we have valid image data, we'll store it in our canvas.
+            if image_data and self.canvas:
+
+                # We'll save the current state of our canvas before updating it with the generated image.
+                self.canvas.canvas_history.save_state_and_update(self.canvas.pixels)
+
+                # Using our image data, we'll create a QImage object.
+                image = QImage()
+                image.loadFromData(image_data)
+
+                # We'll resize the image to match the dimensions of our canvas.
+                # We'll use Nearest Neighbor interpolation for scaling, to achieve a pixelated look.
+                width, height = self.canvas.get_dimensions()
+                pixel_size = self.canvas.get_pixel_size()
+                image = image.scaled(width, height,
+                                     Qt.AspectRatioMode.IgnoreAspectRatio, 
+                                     Qt.TransformationMode.FastTransformation)
+                
+                # Storing the generated image in our canvas.
+                self.canvas.set_generated_image(image)
+
+    # Button Style:
+    def get_button_style(self):
+        return f'''
+            QPushButton {{
+                background-color: white;
+                color: black;
+                border: 1px solid black;
+                border-radius: 5px;
+                padding: 5px;
+            }}
+            QPushButton:hover {{
+                /* A medium shade of gray. */
+                background-color: #BEBEBE;
+            }}
+            QPushButton:pressed {{
+                background-color: darkgray;
+            }}
+        '''
+
 # app = QApplication([])
-# assistant = AIAssistant(125, 400)
+# assistant = AIAssistant(200, 400)
 # assistant.show()
 # app.exec()

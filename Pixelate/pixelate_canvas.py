@@ -80,6 +80,13 @@ class PixelateCanvas(QWidget):
         # When in fill mode, we'll need to keep track of visited pixels to avoid redundant operations.
         self.visited = set()
 
+        # To store our generated image (from the AI assistant).
+        self.generated_image = None
+
+    # A method to set our generated image.
+    def set_generated_image(self, image):
+        self.generated_image = image
+
     # This method will create a grid for our canvas. It will be implemented as a QPixmap object.
     # We'll initialize the grid with a light gray background and draw grid lines on top of it.
     def init_grid(self):
@@ -122,6 +129,10 @@ class PixelateCanvas(QWidget):
             # Ensuring that our coordinates are integers.
             x, y = int(x), int(y)
 
+            # To update our color approximation label, we'll get the color of the pixel we're hovering over.
+            color = self.pixels.get((x, y), self.default_color)
+            self.color_selection_window.set_color_approx_label(color)
+
             # We'll clear our preview pixel. We're only interested in previewing the pixel we're hovering over.
             self.preview_pixel = None
 
@@ -135,6 +146,7 @@ class PixelateCanvas(QWidget):
         # If we leave the canvas, we'll clear the preview pixels set and repaint the canvas.
         elif event.type() == QEvent.Type.HoverLeave:
             self.preview_pixel = None
+            self.color_selection_window.set_color_approx_label("None")
             self.update()
 
         # Then, we'll handle the event as usual.
@@ -147,6 +159,25 @@ class PixelateCanvas(QWidget):
 
         # We'll draw our pre-rendered grid. We're simply reusing the grid we created earlier.
         painter.drawPixmap(0, 0, self.grid)
+
+        # If we have a generated image, we'll draw it directly on our canvas.
+        if self.generated_image:
+            
+            # For every pixel, we'll...
+            for x in range(self.grid_width):
+                for y in range(self.grid_height):
+
+                    # Get the color of the pixel from the generated image.
+                    color = self.generated_image.pixelColor(x, y)
+
+                    # Directly update the pixel on our canvas.
+                    self.pixels[(x, y)] = color
+
+                    # Repaint the pixel on our canvas.
+                    self.update(QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size))
+
+            # Once we've drawn the generated image, we'll clear it to avoid redrawing it.
+            self.generated_image = None
 
         # Now, we'll only redraw the pixel that needs updating. This is given by the event.
         pixel_to_update = event.rect()
@@ -174,11 +205,11 @@ class PixelateCanvas(QWidget):
         if self.eyedropper_mode:
             return
 
-        # If line mode is enabled, return since we're not drawing.
+        # If line mode is enabled, return since we handle it separately.
         if self.line_mode:
             return
 
-        # If line mode is enabled, return since we're not drawing.
+        # If line mode is enabled, return since we handle it separately.
         if self.square_mode:
             return
 
@@ -589,6 +620,14 @@ class PixelateCanvas(QWidget):
     def set_square_mode(self, square_mode):
         self.square_mode = square_mode
 
+    # A method to get our canvas dimensions.
+    def get_dimensions(self):
+        return (self.grid_width, self.grid_height)
+    
+    # A method to get our pixel size.
+    def get_pixel_size(self):
+        return self.pixel_size
+
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
     def fill(self, x, y, target_color, replacement_color):
 
@@ -651,6 +690,11 @@ class PixelateCanvas(QWidget):
     # A method to set the pixels of our canvas.
     def set_pixels(self, pixels):
         self.pixels = pixels
+    
+    # A method to update the pixels of our canvas (adding new pixels; not replacing the existing ones).
+    # (Will be used to implement import functionality from within the main app window.)
+    def update_pixels(self, pixels):
+        self.pixels.update(pixels)
 
     #Method to draw lines from start point to end point on the canvas.
     def draw_line(self, start, end, color):

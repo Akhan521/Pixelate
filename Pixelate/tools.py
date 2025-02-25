@@ -20,7 +20,7 @@ class Tools(QMainWindow):
         self.height = height
 
         # Fixing the size of our tools window.
-        self.setFixedSize(self.width, self.height)
+        self.setFixedWidth(self.width)
 
         # Setting the background color of our window to light gray.
         self.setStyleSheet("background-color: lightgray;")
@@ -164,14 +164,18 @@ class Tools(QMainWindow):
         # Clearing our preview pixel.
         self.canvas.preview_pixel = None
 
+        # Clearing our generated image.
+        self.canvas.generated_image = None
+
         # Redrawing a brand new canvas.
         self.canvas.update()
 
     def undo(self):
 
         # Calling the undo method of our canvas history object.
-        # It will return the last state of our canvas which we'll reassign to our canvas.
-        self.canvas.pixels = self.canvas.canvas_history.undo(self.canvas.pixels)
+        # It will return the last state of our canvas which we'll update our canvas with.
+        last_state = self.canvas.canvas_history.undo(self.canvas.pixels)
+        self.canvas.pixels = last_state
         
         # Redrawing our canvas.
         self.canvas.update()
@@ -179,8 +183,9 @@ class Tools(QMainWindow):
     def redo(self):
         
         # Calling the redo method of our canvas history object.
-        # It will return the last state of our canvas which we'll reassign to our canvas.
-        self.canvas.pixels = self.canvas.canvas_history.redo(self.canvas.pixels)
+        # It will return the last state of our canvas which we'll update our canvas with.
+        last_state = self.canvas.canvas_history.redo(self.canvas.pixels)
+        self.canvas.pixels = last_state
 
         # Redrawing our canvas.
         self.canvas.update()

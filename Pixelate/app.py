@@ -9,6 +9,7 @@ from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDat
 from PyQt6.QtCore import Qt, QSize
 from main_window import MainWindow
 from new_sprite_dialog import NewSpriteDialog
+from validations import validate_dimensions, validate_imported_data
 import ast
 
 # Our starting screen.
@@ -128,7 +129,7 @@ class StartScreen(QMainWindow):
                 dimensions = ast.literal_eval(dimensions)
 
                 # Validating our dimensions to ensure that they're in the correct format.
-                if not self.validate_dimensions(dimensions):
+                if not validate_dimensions(dimensions):
                     QMessageBox.warning(self, "ERROR: invalid/missing dimensions", "The selected file is missing or has invalid dimensions.")
                     return
 
@@ -136,7 +137,7 @@ class StartScreen(QMainWindow):
                 pixels = ast.literal_eval(pixels)
 
                 # Validating our pixels data to ensure that it's in the correct format.
-                if not self.validate_imported_data(pixels):
+                if not validate_imported_data(pixels):
                     QMessageBox.warning(self, "ERROR: invalid data format/type", "The data in the selected file is not in the correct format.")
                     return
                 
@@ -161,52 +162,6 @@ class StartScreen(QMainWindow):
 
             except Exception as e:
                 QMessageBox.warning(self, f"ERROR: failed to open project", str(e))
-
-    # A method to validate the dimensions of our canvas (provided from a text file).
-    def validate_dimensions(self, dimensions):
-
-        # If the dimensions are not a tuple of size 2, we'll return False.
-        if not isinstance(dimensions, tuple) or len(dimensions) != 2:
-            return False
-
-        # If any of the dimensions are not integers, we'll return False.
-        for dimension in dimensions:
-            if not isinstance(dimension, int):
-                return False
-
-        return True
-
-    # A method to validate our imported data (used to check whether our data is in the correct format).
-    # Ideally, our data (pixels dict.) should be in the form: {(x,y): rgba_tuple}.
-    def validate_imported_data(self, pixels):
-        
-        # If our data is not a dictionary, we'll return False.
-        if not isinstance(pixels, dict):
-            return False
-
-        # Our pixels dict. must be in the form: {(x,y): rgba_tuple}.
-        for pixel_coords, rgba_tuple in pixels.items():
-
-            # If the pixel coordinates are not a tuple of size 2, we'll return False.
-            if not isinstance(pixel_coords, tuple) or len(pixel_coords) != 2:
-                return False
-
-            # If any of the pixel coordinates are not integers, we'll return False.
-            for pixel_coord in pixel_coords:
-                if not isinstance(pixel_coord, int):
-                    return False
-
-            # If the rgba tuple is not a tuple of size 4, we'll return False.
-            if not isinstance(rgba_tuple, tuple) or len(rgba_tuple) != 4:
-                return False
-
-            # If any of the rgba values are not integers, we'll return False.
-            for rgba_value in rgba_tuple:
-                if not isinstance(rgba_value, int):
-                    return False
-
-        return True
-            
 
     def get_button_style(self):
 
@@ -241,8 +196,8 @@ class StartScreen(QMainWindow):
                 background-color: purple;
             }}
             '''
-
-
+        
+# Creating our application.
 app = QApplication([])
 window = StartScreen()
 window.showFullScreen()

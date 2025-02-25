@@ -26,7 +26,7 @@ class ZoomableCanvasView(QGraphicsView):
 
         # Setting the zoom factor and the min/max zoom factors.
         self.zoom_factor = 1.0
-        self.min_zoom_factor = 1.0
+        self.min_zoom_factor = 0.1
         self.max_zoom_factor = 4.0
 
         # For dragging functionality, we'll need to store the last mouse position (to calculate how much we've dragged our mouse).
@@ -101,9 +101,27 @@ class ZoomableCanvasView(QGraphicsView):
             # If our middle mouse button is released, we'll make our canvas non-draggable and allow for drawing.
             if event.button() == Qt.MouseButton.MiddleButton:
                 
-                self.canvas.set_draggable(False)
-                # We'll set our cursor back to an arrow cursor to indicate that drawing is allowed.
+                # Setting our cursor to be an arrow cursor.
                 self.proxy_widget.setCursor(Qt.CursorShape.ArrowCursor)
+                self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
+
+                # Setting the fill mode of our canvas to False.
+                self.canvas.set_fill_mode(False)
+
+                # Setting the drag state of our canvas to False.
+                self.canvas.set_draggable(False)
+
+                #Setting eyedropper mode to False.
+                self.canvas.set_eyedropper_mode(False)
+
+                # Setting the erase mode of our canvas to False.
+                self.canvas.set_erase_mode(False)
+
+                # Setting the line tool mode of our canvas to False.
+                self.canvas.set_line_mode(False)
+
+                # Setting the square tool mode of our canvas False.
+                self.canvas.set_square_mode(False)
 
             # Otherwise, we'll set our cursor back to an open hand cursor as it's still draggable.
             else:

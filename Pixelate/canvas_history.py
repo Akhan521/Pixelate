@@ -4,6 +4,7 @@ from PyQt6.QtGui import QColor
 '''
     A class to store the history of our canvas:
     Each state of our canvas will be represented by a dictionary of pixels w/ their respective colors.
+    We'll also store a generated image pixmap for each state of our canvas.
     
     The structure of our dictionary will be as follows:
         (x, y) -> QColor object, where (x, y) are the coordinates of the pixel on the canvas.
@@ -16,13 +17,14 @@ class CanvasHistory:
 
     # This method will save the current state of our canvas to the undo stack.
     def save_state(self, pixels):
-        self.undo_stack.append(pixels.copy())
+        data = (pixels.copy())
+        self.undo_stack.append(data)
 
     # When we draw on our canvas, we'll need to save the current state of our canvas and reset our redo stack.
     # The following method will handle this task.
     def save_state_and_update(self, pixels):
         
-        # Adding our current state to the undo stack, so that we have the ability to undo our actions.
+        # Adding our current state to the undo stack so that we have the ability to undo our actions.
         # The pixels dictionary specifies the current state of our canvas.
         self.save_state(pixels)
 
@@ -34,7 +36,8 @@ class CanvasHistory:
         # If we can undo an action, we'll retrieve the last state of our canvas.
         if self.undo_stack:
             # First, we must save our current state to the redo stack. This will allow us to redo our actions.
-            self.redo_stack.append(pixels.copy())
+            data = (pixels.copy())
+            self.redo_stack.append(data)
 
             # Next, we'll retrieve the last state of our canvas from the undo stack.
             pixels.clear()

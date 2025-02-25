@@ -2,16 +2,18 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QVBoxLayout, QWidget, QGraphicsScene, 
                               QGraphicsProxyWidget, QMenuBar, QMenu,
                               QFileDialog, QMessageBox, QSizePolicy,
-                              QWidgetAction )
+                              QWidgetAction, QLabel )
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
 from tools import Tools
+import ast
 
 from pixelate_canvas import PixelateCanvas
 from color_selection_window import ColorSelectionWindow
 from zoomable_canvas_view import ZoomableCanvasView
 from ai_assistant import AIAssistant
+from validations import validate_dimensions, validate_imported_data
 
 class MainWindow(QMainWindow):
     # Our constructor will invoke QMainWindow's constructor.
@@ -67,7 +69,8 @@ class MainWindow(QMainWindow):
         # Our left window should be as wide as our color selection window + the offset.
         left_window_width = self.color_selection_window.width + left_window_offset
         left_window_height = self.color_selection_window.height + chat_box_height + left_window_offset
-        left_window.setFixedSize(left_window_width, left_window_height)
+        # left_window.setFixedSize(left_window_width, left_window_height)
+        left_window.setFixedWidth(left_window_width)
         left_window.setStyleSheet("background-color: lightgray;")
 
         # Adding our left layout to our left window.
@@ -89,6 +92,9 @@ class MainWindow(QMainWindow):
         self.canvas_view = ZoomableCanvasView(self.scene, self.proxy_widget)
         layout.addWidget(self.canvas_view)
 
+        # Storing a reference of our canvas in our AI assistant.
+        self.ai_assistant.set_canvas(self.canvas)
+
         # Creating and sizing our tools window:
         tool_window_width = 300
         # The height of our tools window will be the same as our left window.
@@ -98,7 +104,7 @@ class MainWindow(QMainWindow):
 
         # Giving our main window a gray background.
         self.setStyleSheet(f'''
-            background-color: #BBBBBB;      
+            background-color: #BBBBBB;   
         ''')
 
         # Creating an intermediary widget to hold our layout + setting the layout.
@@ -131,6 +137,60 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.warning(self, f"ERROR: failed to save file - {str(e)}")
 
+    # A method to import a canvas from a text file (loading the pixels dictionary).
+    def import_canvas(self):
+
+        # Prompting the user to select a file to open.
+        filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Import Canvas", "", "Text Files (*.txt)")
+
+        if filepath:
+
+            dimensions = None  # To store our canvas dimensions.
+            pixels = None      # To store our pixels dictionary data.
+
+            try:
+
+                # Reading the contents of our text file.
+                with open(filepath, "r") as file:
+                    # Reading the first line of the file (which should contain the dimensions of our canvas).
+                    dimensions = file.readline().strip()
+                    # Reading the rest of the file (which should contain our pixels dictionary).
+                    pixels = file.read()
+
+                # Parsing our canvas dimensions using the ast module. (Converting our string tuple to an actual tuple).
+                dimensions = ast.literal_eval(dimensions)
+
+                # Validating our dimensions to ensure that they're in the correct format.
+                if not validate_dimensions(dimensions):
+                    QMessageBox.warning(self, "ERROR: invalid/missing dimensions", "The selected file is missing or has invalid dimensions.")
+                    return
+                
+                # If our dimensions are valid, they must match the dimensions of our canvas.
+                if dimensions != (self.grid_width, self.grid_height):
+                    QMessageBox.warning(self, "ERROR: invalid dimensions", "The dimensions of the selected file do not match the dimensions of the current canvas.")
+                    return
+
+                # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
+                pixels = ast.literal_eval(pixels)
+
+                # Validating our pixels data to ensure that it's in the correct format.
+                if not validate_imported_data(pixels):
+                    QMessageBox.warning(self, "ERROR: invalid data format/type", "The data in the selected file is not in the correct format.")
+                    return
+                
+                # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
+                else:
+                    QMessageBox.information(self, "Success", "Project imported successfully.")
+
+                    # Converting our pixels data to a dictionary of the form {(x,y): QColor}.
+                    pixels = self.canvas.convert_to_qcolor_format(pixels)
+
+                    # Updating the pixels data of our canvas.
+                    self.canvas.update_pixels(pixels)
+
+            except Exception as e:
+                QMessageBox.warning(self, f"ERROR: failed to import project", str(e))
+
     # A method to setup our menubar:
     def init_menubar(self):
 
@@ -147,6 +207,12 @@ class MainWindow(QMainWindow):
         save_action.triggered.connect(self.save_canvas)
         file_menu.addAction(save_action)
 
+        # Creating an import action for our file menu.
+        import_action = QAction("Import", self)
+        import_action.setShortcut("Ctrl+I")
+        import_action.triggered.connect(self.import_canvas)
+        file_menu.addAction(import_action)
+
         # Adding a close button to our menu bar.
         close_action = QAction("Close", self)
         close_action.setShortcut("Ctrl+Q")
@@ -161,27 +227,41 @@ class MainWindow(QMainWindow):
 
         return f'''
             QMenuBar {{
-                background-color: lightgray;
-                color: black;
+                background-color: purple;
+                color: white;
                 font-family: {pixelated_font.family()};
             }}
             QMenuBar::item:selected {{
-                background-color: gray;
-                color: black;
+                /* A very dark shade of purple. */
+                background-color: #4B0082;
+                color: white;
+            }}
+            QMenuBar::item:pressed {{
+                /* An even darker shade of purple. */
+                background-color: #2E0854;
             }}
 
             QMenu {{
                 background-color: lightgray;
                 color: black;
                 font-family: {pixelated_font.family()};
+                border: 1px solid black;
+            }}
+            QMenu::item {{
+                padding: 10px 20px;
+                border-bottom: 1px solid darkgray;
             }}
             QMenu::item:selected {{
-                background-color: gray;
+                /* A medium shade of gray. */
+                background-color: #BEBEBE;
                 color: black;
+            }}
+            QMenu::item:pressed {{
+                background-color: darkgray;
             }}
         '''
     
-# app = QApplication([])
-# window = MainWindow((32, 32))
-# window.showFullScreen()
-# app.exec()
+app = QApplication([])
+window = MainWindow((64, 64))
+window.showMaximized()
+app.exec()
