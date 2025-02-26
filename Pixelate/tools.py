@@ -161,6 +161,9 @@ class Tools(QMainWindow):
         # Clearing our dictionary of pixels.
         self.canvas.pixels = {}
 
+        # Resetting our canvas buffer.
+        self.canvas.canvas_buffer = self.canvas.init_grid()
+
         # Clearing our preview pixel.
         self.canvas.preview_pixel = None
 

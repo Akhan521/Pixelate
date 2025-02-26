@@ -1,7 +1,7 @@
 # Importing basic widgets from PyQt6.
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor, QPixmap
+from PyQt6.QtGui import QPainter, QColor, QPixmap, QRegion
 from PyQt6.QtCore import Qt, QEvent, QRect
 from color_selection_window import ColorSelectionWindow
 from canvas_history import CanvasHistory
@@ -73,9 +73,8 @@ class PixelateCanvas(QWidget):
         # To work with mouse hover events, we'll set the following attribute.
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
-        # Finally, we'll have an underlying grid that will serve as our base layer.
-        # This grid will be drawn only once. All subsequent drawings will be on top of this grid.
-        self.init_grid()
+        # Our grid will be initialized as a QPixmap object (our base layer).
+        self.grid = self.init_grid()
 
         # When in fill mode, we'll need to keep track of visited pixels to avoid redundant operations.
         self.visited = set()
@@ -88,23 +87,36 @@ class PixelateCanvas(QWidget):
 
     # A method to set our generated image.
     def set_generated_image(self, image):
+
+        # # Scaling our image to fit the canvas (each pixel of our generated image will be a pixel square on our canvas).
+        # image = image.scaled(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height, Qt.AspectRatioMode.IgnoreAspectRatio)
+
+        # Storing the scaled image.
         self.generated_image = image
+
+        # # Updating our canvas buffer to display the generated image.
+        # painter = QPainter(self.canvas_buffer)
+        # painter.drawImage(0, 0, self.generated_image)
+        # painter.end()
+
+        # # Repainting our canvas to display the generated image.
+        # self.update()
 
     # This method will create a grid for our canvas. It will be implemented as a QPixmap object.
     # We'll initialize the grid with a light gray background and draw grid lines on top of it.
     def init_grid(self):
 
         # Creating a QPixmap object to store our grid. (This will serve as our canvas's base layer.)
-        self.grid = QPixmap(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
+        grid = QPixmap(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
 
         # Drawing grid lines on our QPixmap object.
-        painter = QPainter(self.grid)
+        painter = QPainter(grid)
         painter.setPen(Qt.PenStyle.SolidLine)
         # Setting our pen color to a more transparent black.
         painter.setPen(QColor(0, 0, 0, 50))
 
         # First, we'll fill our grid with a light, transparent gray background.
-        self.grid.fill(self.default_color)
+        grid.fill(self.default_color)
 
         # Drawing vertical lines.
         for x in range(self.grid_width + 1):
@@ -117,6 +129,7 @@ class PixelateCanvas(QWidget):
             painter.drawLine(0, y * self.pixel_size, self.pixel_size * self.grid_width, y * self.pixel_size)
 
         painter.end()
+        return grid
 
     # Overriding the event method to handle hover events as well.
     def event(self, event):
@@ -171,7 +184,7 @@ class PixelateCanvas(QWidget):
 
         painter = QPainter(self)
 
-        # We'll draw our pre-rendered grid. We're simply reusing the grid we created earlier.
+        # We'll draw our pre-rendered grid on the canvas.
         painter.drawPixmap(0, 0, self.grid)
 
         # If we have a generated image, we'll draw it directly on our canvas.
@@ -193,12 +206,16 @@ class PixelateCanvas(QWidget):
             # Once we've drawn the generated image, we'll clear it to avoid redrawing it.
             self.generated_image = None
 
-        # If we have no modified pixels, we'll exit early.
+        # If we have any preview pixel, we'll draw it on our canvas.
+        if self.preview_pixel:
+            self.preview(painter)
+
+        # # If we have no modified pixels to draw, we'll simply return.
         # if not self.modified_pixels:
         #     painter.end()
         #     return
 
-        # Now, we'll only redraw the pixel that needs updating. This is given by the event.
+        # Otherwise, we'll only redraw the pixel that needs updating. This is provided by the event.
         pixel_to_update = event.rect()
 
         # Going through each pixel:
@@ -208,19 +225,21 @@ class PixelateCanvas(QWidget):
             if pixel_to_update.intersects(current_pixel):
                 painter.fillRect(current_pixel, color)
 
-        # Only updating the modified pixels.
+        # # Only updating the modified pixels.
+        # region = QRegion()
         # for (x, y) in self.modified_pixels:
         #     color = self.pixels.get((x, y), self.default_color)
         #     current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
-        #     if pixel_to_update.intersects(current_pixel):
-        #         painter.fillRect(current_pixel, color)
+        #     region += current_pixel
 
-        # Now that we've updated the modified pixels, we'll clear the set.
+        #     # Updating our canvas buffer instead of the canvas directly.
+        #     buffer_painter = QPainter(self.canvas_buffer)
+        #     buffer_painter.fillRect(current_pixel, color)
+        #     buffer_painter.end()
+
+        # Clearing our modified pixels and updating the modified region.
         # self.modified_pixels.clear()
-
-        # If we have any preview pixel, we'll draw it on our canvas.
-        if self.preview_pixel:
-            self.preview(painter)
+        # self.update(region)
         painter.end()
 
     # The following method will draw a pixel @ the given (x, y) coordinates with the given color (QColor object).
@@ -249,7 +268,7 @@ class PixelateCanvas(QWidget):
             self.pixels[(x, y)] = color
 
             # Adding the current pixel to the modified pixels set.
-            self.modified_pixels.add((x, y))
+            # self.modified_pixels.add((x, y))
             
             # Repainting only the area where the pixel color was updated.
             # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
@@ -526,6 +545,7 @@ class PixelateCanvas(QWidget):
                 self.color_selection_window.set_secondary_color(color)
                 self.color_selection_window.update_selected_colors()
                 return
+            
             # Otherwise, we'll get the secondary color from the color selection window.
             color = self.color_selection_window.get_secondary_color()
 

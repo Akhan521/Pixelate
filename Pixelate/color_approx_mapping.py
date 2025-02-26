@@ -188,6 +188,9 @@ class ColorApproximator:
             "Neon Violet": QColor(85, 0, 255),
         }
 
+        # In advance, we'll convert all predefined colors to the Lab color space and cache them.
+        self.color_mapping_lab = {name: self.qcolor_to_lab(color) for name, color in self.color_mapping.items()}
+        
     # A method to convert a QColor object to a LabColor object (CIELAB color space).
     def qcolor_to_lab(self, color):
 
@@ -206,11 +209,8 @@ class ColorApproximator:
         min_distance = float("inf")
         closest_color = None
 
-        # Iterating over the predefined color mapping. The keys are color names, and the values are QColor objects.
-        for name, color in self.color_mapping.items():
-
-            # Converting the predefined color to the Lab color space.
-            predefined_color = self.qcolor_to_lab(color)
+        # Iterating over the precomputed and predefined colors to find the closest color.
+        for name, predefined_color in self.color_mapping_lab.items():
 
             # Calculating the color difference between the input color and the predefined color using the CIE76 formula.
             distance = delta_e_cie1976(input_color, predefined_color)
