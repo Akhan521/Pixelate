@@ -262,6 +262,7 @@ class MainWindow(QMainWindow):
         '''
     
 app = QApplication([])
-window = MainWindow((64, 64))
+dim = 64
+window = MainWindow((dim, dim))
 window.showMaximized()
 app.exec()

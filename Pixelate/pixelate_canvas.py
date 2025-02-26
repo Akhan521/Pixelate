@@ -83,6 +83,9 @@ class PixelateCanvas(QWidget):
         # To store our generated image (from the AI assistant).
         self.generated_image = None
 
+        # To store our modified pixels (these are the only pixels we'll update).
+        self.modified_pixels = set()
+
     # A method to set our generated image.
     def set_generated_image(self, image):
         self.generated_image = image
@@ -117,37 +120,48 @@ class PixelateCanvas(QWidget):
 
     # Overriding the event method to handle hover events as well.
     def event(self, event):
-        
+
         # If we're hovering over our canvas, we'll preview the pixel we're about to draw.
         if event.type() == QEvent.Type.HoverMove:
 
-            # Getting the x and y coordinates of our mouse hover and converting them to pixel coordinates.
+            # Getting the x and y coordinates of our mouse and converting them to pixel coordinates.
             x, y = event.position().x(), event.position().y()
-            x = x // self.pixel_size
-            y = y // self.pixel_size
+            x = int(x / self.pixel_size)
+            y = int(y / self.pixel_size)
 
-            # Ensuring that our coordinates are integers.
-            x, y = int(x), int(y)
+            # To avoid unnecessary updates, we'll only update the preview pixel if it has changed.
+            if self.preview_pixel == (x, y):
+                return super().event(event)
+
+            # To boost performance, we'll only update the pixels that need updating: the previous preview pixel and the current one.
+            previous_preview = self.preview_pixel
+            self.preview_pixel = (x, y)
+
+            # If the previous preview pixel exists, we'll update it on our canvas.
+            if previous_preview:
+                self.update(QRect(previous_preview[0] * self.pixel_size, previous_preview[1] * self.pixel_size, 
+                                  self.pixel_size, self.pixel_size))
+                
+            # Now, we'll update the current preview pixel on our canvas.
+            self.update(QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size))
 
             # To update our color approximation label, we'll get the color of the pixel we're hovering over.
             color = self.pixels.get((x, y), self.default_color)
             self.color_selection_window.set_color_approx_label(color)
 
-            # We'll clear our preview pixel. We're only interested in previewing the pixel we're hovering over.
-            self.preview_pixel = None
-
-            # If we're simply in pencil mode, we'll preview the pixel we're about to draw.
-            # We'll set the coordinates of the pixel we're hovering over to our preview pixel.
-            self.preview_pixel = (x, y)
-
-            # Repainting our canvas to reflect the changes.
-            self.update()
-
-        # If we leave the canvas, we'll clear the preview pixels set and repaint the canvas.
+        # Upon leaving the canvas, we'll clear the preview pixel and update our canvas.
         elif event.type() == QEvent.Type.HoverLeave:
+            
+            # Before clearing the preview pixel, we'll update it on our canvas.
+            if self.preview_pixel:
+                self.update(QRect(self.preview_pixel[0] * self.pixel_size, self.preview_pixel[1] * self.pixel_size, 
+                                  self.pixel_size, self.pixel_size))
+            
+            # Now, we'll clear the preview pixel.
             self.preview_pixel = None
+
+            # We'll also clear the color approximation label.
             self.color_selection_window.set_color_approx_label("None")
-            self.update()
 
         # Then, we'll handle the event as usual.
         return super().event(event)
@@ -179,6 +193,11 @@ class PixelateCanvas(QWidget):
             # Once we've drawn the generated image, we'll clear it to avoid redrawing it.
             self.generated_image = None
 
+        # If we have no modified pixels, we'll exit early.
+        # if not self.modified_pixels:
+        #     painter.end()
+        #     return
+
         # Now, we'll only redraw the pixel that needs updating. This is given by the event.
         pixel_to_update = event.rect()
 
@@ -188,6 +207,16 @@ class PixelateCanvas(QWidget):
             current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
             if pixel_to_update.intersects(current_pixel):
                 painter.fillRect(current_pixel, color)
+
+        # Only updating the modified pixels.
+        # for (x, y) in self.modified_pixels:
+        #     color = self.pixels.get((x, y), self.default_color)
+        #     current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
+        #     if pixel_to_update.intersects(current_pixel):
+        #         painter.fillRect(current_pixel, color)
+
+        # Now that we've updated the modified pixels, we'll clear the set.
+        # self.modified_pixels.clear()
 
         # If we have any preview pixel, we'll draw it on our canvas.
         if self.preview_pixel:
@@ -218,6 +247,9 @@ class PixelateCanvas(QWidget):
 
             # Updating the color of the pixel at (x, y).
             self.pixels[(x, y)] = color
+
+            # Adding the current pixel to the modified pixels set.
+            self.modified_pixels.add((x, y))
             
             # Repainting only the area where the pixel color was updated.
             # We provide the coordinates of the pixel and its dimensions to trigger a repaint of that area.
