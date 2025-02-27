@@ -72,7 +72,7 @@ class ImageGenDialog(QDialog):
 
         # Creating a client to interact with DALL-E.
         self.dalle_client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY"),
+            api_key=os.getenv("DALLE_API_KEY"),
         )
 
         # Our generated image data.
