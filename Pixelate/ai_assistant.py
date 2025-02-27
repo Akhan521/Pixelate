@@ -209,16 +209,15 @@ class AIAssistant(QWidget):
             if image_data and self.canvas:
 
                 # We'll save the current state of our canvas before updating it with the generated image.
-                self.canvas.canvas_history.save_state_and_update(self.canvas.pixels)
+                self.canvas.canvas_history.save_state_and_update(self.canvas.pixels, self.canvas.canvas_buffer)
 
                 # Using our image data, we'll create a QImage object.
                 image = QImage()
                 image.loadFromData(image_data)
 
-                # We'll resize the image to match the dimensions of our canvas.
+                # We'll scale down the image to match the dimensions of our canvas.
                 # We'll use Nearest Neighbor interpolation for scaling, to achieve a pixelated look.
                 width, height = self.canvas.get_dimensions()
-                pixel_size = self.canvas.get_pixel_size()
                 image = image.scaled(width, height,
                                      Qt.AspectRatioMode.IgnoreAspectRatio, 
                                      Qt.TransformationMode.FastTransformation)
