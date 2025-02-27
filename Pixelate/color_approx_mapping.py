@@ -69,7 +69,6 @@ class ColorApproximator:
             "Quartz": QColor(217, 208, 193), "Slate": QColor(112, 128, 144),
             "Tide": QColor(0, 128, 128), "Umber": QColor(99, 81, 71),
             "Vapor": QColor(240, 248, 255), "Willow": QColor(113, 166, 133),
-            "Xanadu": QColor(115, 134, 120), "Yarrow": QColor(255, 204, 0),
             "Zest": QColor(229, 155, 15), "Light Gray": QColor(180, 180, 180),
             "Medium Gray": QColor(100, 100, 100), "Dark Gray": QColor(90, 90, 90),
             "Saffron": QColor(255, 153, 51), "Plum": QColor(142, 69, 133),
@@ -148,10 +147,10 @@ class ColorApproximator:
             "Onyx": QColor(53, 56, 57), "Graphite": QColor(89, 101, 109),
             
             # Light & Fresh Shades
-            "Pale": QColor(255, 255, 204), "Lavender": QColor(230, 230, 250),
             "Mustard": QColor(255, 241, 118), "Mint": QColor(189, 252, 201),
             "Coral": QColor(240, 128, 128), "Floral": QColor(255, 182, 193),
             "Lemon": QColor(255, 247, 0), "Cream": QColor(255, 249, 220),
+            "Lavender": QColor(230, 230, 250),
 
             # Additional Colors
             "Cobalt": QColor(0, 71, 171), "Emerald": QColor(0, 128, 0),
@@ -189,6 +188,9 @@ class ColorApproximator:
             "Neon Violet": QColor(85, 0, 255),
         }
 
+        # In advance, we'll convert all predefined colors to the Lab color space and cache them.
+        self.color_mapping_lab = {name: self.qcolor_to_lab(color) for name, color in self.color_mapping.items()}
+        
     # A method to convert a QColor object to a LabColor object (CIELAB color space).
     def qcolor_to_lab(self, color):
 
@@ -207,11 +209,8 @@ class ColorApproximator:
         min_distance = float("inf")
         closest_color = None
 
-        # Iterating over the predefined color mapping. The keys are color names, and the values are QColor objects.
-        for name, color in self.color_mapping.items():
-
-            # Converting the predefined color to the Lab color space.
-            predefined_color = self.qcolor_to_lab(color)
+        # Iterating over the precomputed and predefined colors to find the closest color.
+        for name, predefined_color in self.color_mapping_lab.items():
 
             # Calculating the color difference between the input color and the predefined color using the CIE76 formula.
             distance = delta_e_cie1976(input_color, predefined_color)

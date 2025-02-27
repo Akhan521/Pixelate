@@ -167,10 +167,12 @@ class NewSpriteDialog(QDialog):
             height = int(height)
 
             if width < min_size or height < min_size:
-                CustomMessageBox("Warning", "The minimum size for a sprite is 2x2.", type="warning")
+                message = f"The minimum size for a sprite is {min_size}x{min_size}."
+                CustomMessageBox("Warning", message, type="warning")
                 return None
             elif width > max_size or height > max_size:
-                CustomMessageBox("Warning", "The maximum size for a sprite is 512x512.", type="warning")
+                message = f"The maximum size for a sprite is {max_size}x{max_size}."
+                CustomMessageBox("Warning", message, type="warning")
                 return None
             
             return (width, height)

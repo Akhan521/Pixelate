@@ -123,7 +123,7 @@ class MainWindow(QMainWindow):
         pixels = pixels.__str__()
 
         # Opening a file dialog to prompt to the user to specify where they'd like to save their work.
-        filepath, _ = QFileDialog.getSaveFileName(self, "Pixelate: Save File", "", "Text Files (*.txt)")
+        filepath, _ = QFileDialog.getSaveFileName(self, "Pixelate: Save File", "", "Pix Files (*.pix)")
 
         if filepath:
 
@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
     def import_canvas(self):
 
         # Prompting the user to select a file to open.
-        filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Import Canvas", "", "Text Files (*.txt)")
+        filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Import Canvas", "", "Pix Files (*.pix)")
 
         if filepath:
 
@@ -260,8 +260,10 @@ class MainWindow(QMainWindow):
                 background-color: darkgray;
             }}
         '''
-    
+        
 app = QApplication([])
-window = MainWindow((64, 64))
+# dim = 32
+dim = 64
+window = MainWindow((dim, dim))
 window.showMaximized()
 app.exec()

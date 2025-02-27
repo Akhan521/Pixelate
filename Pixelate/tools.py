@@ -156,10 +156,13 @@ class Tools(QMainWindow):
     def clear_canvas(self):
 
         # Saving our current canvas state to allow for undo functionality.
-        self.canvas.canvas_history.save_state_and_update(self.canvas.pixels)
+        self.canvas.canvas_history.save_state_and_update(self.canvas.pixels, self.canvas.canvas_buffer)
         
         # Clearing our dictionary of pixels.
         self.canvas.pixels = {}
+
+        # Resetting our canvas buffer to an empty grid.
+        self.canvas.canvas_buffer = self.canvas.grid.copy()
 
         # Clearing our preview pixel.
         self.canvas.preview_pixel = None
@@ -174,8 +177,9 @@ class Tools(QMainWindow):
 
         # Calling the undo method of our canvas history object.
         # It will return the last state of our canvas which we'll update our canvas with.
-        last_state = self.canvas.canvas_history.undo(self.canvas.pixels)
-        self.canvas.pixels = last_state
+        pixels, last_buffer = self.canvas.canvas_history.undo(self.canvas.pixels, self.canvas.canvas_buffer)
+        self.canvas.pixels = pixels
+        self.canvas.canvas_buffer = last_buffer
         
         # Redrawing our canvas.
         self.canvas.update()
@@ -184,8 +188,9 @@ class Tools(QMainWindow):
         
         # Calling the redo method of our canvas history object.
         # It will return the last state of our canvas which we'll update our canvas with.
-        last_state = self.canvas.canvas_history.redo(self.canvas.pixels)
-        self.canvas.pixels = last_state
+        pixels, last_buffer = self.canvas.canvas_history.redo(self.canvas.pixels, self.canvas.canvas_buffer)
+        self.canvas.pixels = pixels
+        self.canvas.canvas_buffer = last_buffer
 
         # Redrawing our canvas.
         self.canvas.update()

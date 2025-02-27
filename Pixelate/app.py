@@ -109,7 +109,7 @@ class StartScreen(QMainWindow):
     def open(self):
 
         # Prompting the user to select a file to open.
-        filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Open Project", "", "Text Files (*.txt)")
+        filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Open Project", "", "Pix Files (*.pix)")
 
         if filepath:
 
@@ -152,7 +152,7 @@ class StartScreen(QMainWindow):
                     pixels = self.main_window.canvas.convert_to_qcolor_format(pixels)
 
                     # Setting the pixels data of our canvas.
-                    self.main_window.canvas.set_pixels(pixels)
+                    self.main_window.canvas.update_pixels(pixels)
 
                     # Jumping straight to the main window.
                     self.main_window.showFullScreen()
