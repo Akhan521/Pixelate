@@ -19,11 +19,11 @@ class PixelateCanvas(QWidget):
 
         # The start and end points for the line tool.
         self.line_start = (0,0)
-        self.line_end = (0,0)
+        self.line_end   = (0,0)
 
         # The start and end points for the square tool.
         self.square_start = (0, 0)
-        self.square_end = (0, 0)
+        self.square_end   = (0, 0)
 
         # To store the state of the mouse button.
         self.mouse_button_pressed = False  
@@ -35,9 +35,9 @@ class PixelateCanvas(QWidget):
         self.color_selection_window = color_selection_window
 
         # Setting up our canvas:
-        self.pixel_size = pixel_size   # This will be the size of each pixel.
-        self.grid_width = grid_width   # The number of pixels wide the canvas will be.
-        self.grid_height = grid_height # The number of pixels tall the canvas will be.
+        self.pixel_size  = pixel_size   # This will be the size of each pixel.
+        self.grid_width  = grid_width   # The number of pixels wide the canvas will be.
+        self.grid_height = grid_height  # The number of pixels tall the canvas will be.
 
         # We'll also need to store the color of each pixel.
         # Our dictionary will map the (x, y) coordinates of each pixel to a color.
@@ -74,9 +74,6 @@ class PixelateCanvas(QWidget):
 
         # To store our generated image (from the AI assistant).
         self.generated_image = None
-
-        # To store our modified pixels (these are the only pixels we'll update).
-        self.modified_pixels = set()
 
         # To handle our color approximation delay, we'll use a QTimer object.
         # The idea is that we'll only update the color approximation label after a certain delay.
@@ -217,36 +214,27 @@ class PixelateCanvas(QWidget):
         # Displaying our previews.
         self.preview(painter)
 
-        for (x, y) in self.modified_pixels:
-            color = self.pixels.get((x, y), self.default_color)
-            current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
-            painter.fillRect(current_pixel, color)
-
-        # Clearing our modified pixels.
-        self.modified_pixels.clear()
         painter.end()
 
     # The following method will draw a pixel @ the given (x, y) coordinates with the given color (QColor object).
-    def draw_pixel(self, x, y, color):
+    def draw_pixel(self, pixel, color):
+        x, y = pixel
 
         # If our canvas is in any of the following modes, we'll return since we're not drawing.
         if self.is_draggable or self.eyedropper_mode:
             return
 
         # Otherwise, we'll ensure that the pixel is within bounds.
-        if 0 <= x < self.grid_width and 0 <= y < self.grid_height:
+        if self.is_within_canvas(pixel):
 
             # Updating the color of the pixel at (x, y).
-            self.pixels[(x, y)] = color
+            self.pixels[pixel] = color
 
             # Updating the canvas buffer to display the pixel.
             current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
             buffer_painter = QPainter(self.canvas_buffer)
             buffer_painter.fillRect(current_pixel, color)
             buffer_painter.end()
-
-            # Adding the current pixel to the modified pixels set.
-            self.modified_pixels.add((x, y))
             
             # Repainting the pixel we've drawn on our canvas.
             self.update(current_pixel)
@@ -302,12 +290,13 @@ class PixelateCanvas(QWidget):
 
     # A method to "erase" a pixel at the given (x, y) coordinates (for our eraser tool).
     # We update the canvas buffer by repainting the pixel with the default color.
-    def erase_pixel(self, x, y):
+    def erase_pixel(self, pixel):
 
         # Removing the pixel from our pixels dictionary.
-        del self.pixels[(x, y)]
+        del self.pixels[pixel]
 
         # Storing the current pixel.
+        x, y = pixel
         current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
 
         # Repainting the pixel with the default color.
@@ -323,8 +312,6 @@ class PixelateCanvas(QWidget):
             return
 
         # Before drawing, we'll save the current state of our canvas in the canvas history object.
-        # Since we've begun drawing, we shouldn't be able to redo any actions. Thus, we'll clear the redo stack.
-        # This ensures that we can undo our strokes if needed, but we can't redo any actions.
         self.canvas_history.save_state_and_update(self.pixels, self.canvas_buffer)
 
         #If Mouse Button is clicked, set true
@@ -334,17 +321,18 @@ class PixelateCanvas(QWidget):
         x, y = event.pos().x(), event.pos().y()
         x = x // self.pixel_size
         y = y // self.pixel_size
+        pixel = (x, y)
 
         if self.line_mode:
             # Store the starting point & end point.
-            self.line_start = (x, y)
-            self.line_end = (x, y)
+            self.line_start = pixel
+            self.line_end = pixel
             return
 
         if self.square_mode:
             # Store the starting point & end point.
-            self.square_start = (x, y)
-            self.square_end = (x, y)
+            self.square_start = pixel
+            self.square_end = pixel
             return
 
         # If we press the left mouse button, we'll draw with the primary color.
@@ -352,7 +340,7 @@ class PixelateCanvas(QWidget):
             
             # If we're in eyedropper mode, we'll get the color of the pixel we're clicking on.
             if self.eyedropper_mode:
-                color = self.pixels.get((x, y), self.default_color)
+                color = self.pixels.get(pixel, self.default_color)
                 # Then, we'll update our primary color w/ the color of the pixel we're clicking on.
                 self.color_selection_window.set_primary_color(color)
                 self.color_selection_window.update_selected_colors()
@@ -365,7 +353,7 @@ class PixelateCanvas(QWidget):
             
             # If we're in eyedropper mode, we'll get the color of the pixel we're clicking on.
             if self.eyedropper_mode:
-                color = self.pixels.get((x, y), self.default_color)
+                color = self.pixels.get(pixel, self.default_color)
                 # Then, we'll update our secondary color w/ the color of the pixel we're clicking on.
                 self.color_selection_window.set_secondary_color(color)
                 self.color_selection_window.update_selected_colors()
@@ -376,21 +364,21 @@ class PixelateCanvas(QWidget):
 
         # If we're in erase mode, we'll "delete" the pixel at the given coordinates.
         if self.erase_mode:
-            if (x, y) in self.pixels:
-                self.erase_pixel(x, y)
+            if pixel in self.pixels:
+                self.erase_pixel(pixel)
             return
 
         # If we're in fill mode, we'll use the fill method to fill in areas.
         if self.fill_mode:
-            target_color = self.pixels.get((x, y), self.default_color)
+            target_color = self.pixels.get(pixel, self.default_color)
             replacement_color = color
-            self.fill(x, y, target_color, replacement_color)
+            self.fill(pixel, target_color, replacement_color)
             # Once we've filled in the area, we'll clear the visited set.
             self.visited.clear()
             return
 
         # Drawing the pixel at the given coordinates with the selected color.
-        self.draw_pixel(x, y, color)
+        self.draw_pixel(pixel, color)
 
     def mouseReleaseEvent(self, event):
 
@@ -422,11 +410,8 @@ class PixelateCanvas(QWidget):
             # Retrieving the primary color.
             color = self.color_selection_window.get_primary_color()
 
-            x1, y1 = self.square_start
-            x2, y2 = self.square_end
-
             # If the start and end points are within the canvas bounds, we'll draw the square on our canvas buffer.
-            if self.is_within_canvas(x1, y1) and self.is_within_canvas(x2, y2):
+            if self.is_within_canvas(self.square_start) and self.is_within_canvas(self.square_end):
                 self.draw_square(self.square_start, self.square_end, color, is_preview=False)
             return
 
@@ -441,12 +426,13 @@ class PixelateCanvas(QWidget):
         x, y = event.pos().x(), event.pos().y()
         x = x // self.pixel_size
         y = y // self.pixel_size
+        pixel = (x, y)
 
         # Line Preview (if we're in line mode and dragging the mouse).
         if self.line_mode and event.buttons() == Qt.MouseButton.LeftButton:
 
             # Update the end point of the line.
-            self.line_end = (x, y)
+            self.line_end = pixel
 
             # Repaint the canvas to show the new preview line.
             self.update()
@@ -456,7 +442,7 @@ class PixelateCanvas(QWidget):
         if self.square_mode and event.buttons() == Qt.MouseButton.LeftButton:
 
             # Update the end point of the square.
-            self.square_end = (x,y)
+            self.square_end = pixel
 
             # Repaint the canvas to show the new preview square.
             self.update()
@@ -464,8 +450,8 @@ class PixelateCanvas(QWidget):
 
         # If we're in erase mode, we'll "delete" the pixel at the given coordinates.
         if self.erase_mode:
-            if (x, y) in self.pixels:
-                self.erase_pixel(x, y)
+            if pixel in self.pixels:
+                self.erase_pixel(pixel)
             return
         
         # If the left mouse button is being pressed, we'll draw with the primary color.
@@ -476,7 +462,7 @@ class PixelateCanvas(QWidget):
         elif event.buttons() == Qt.MouseButton.RightButton:
             color = self.color_selection_window.get_secondary_color()
 
-        self.draw_pixel(x, y, color)
+        self.draw_pixel(pixel, color)
 
     # To set our canvas to fill mode, we'll use the following method.
     def set_fill_mode(self, fill_mode):
@@ -507,38 +493,39 @@ class PixelateCanvas(QWidget):
         return self.pixel_size
 
     # If the fill mode of our canvas is active, we'll use the following method to fill in areas.
-    def fill(self, x, y, target_color, replacement_color):
+    def fill(self, pixel, target_color, replacement_color):
 
         # Using a stack to simulate recursion.
-        stack = deque([(x, y)])
+        stack = deque([pixel])
 
         # As long as we have pixels to process, we'll continue.
         while stack:
             # Getting the coordinates of the pixel we'll be processing.
-            x, y = stack.pop()
+            next_pixel = stack.pop()
 
             # If we've already visited/processed the pixel, we'll skip it.
-            if (x, y) in self.visited:
+            if next_pixel in self.visited:
                 continue
 
             # Otherwise, we'll get the color of the pixel and continue w/ processing it.
-            color = self.pixels.get((x, y), self.default_color)
+            color = self.pixels.get(next_pixel, self.default_color)
 
             ''' We'll handle our base cases first.
                     1. If the pixel is out of bounds, we'll skip it.
                     2. If the pixel is not the target color, we'll skip it.
                     (We're only interested in the pixels we're targeting.)
             '''
-            if not (0 <= x < self.grid_width and 0 <= y < self.grid_height) or color != target_color:
+            if not self.is_within_canvas(next_pixel) or color != target_color:
                 continue
 
             # Otherwise, we'll draw the pixel with the replacement color.
-            self.draw_pixel(x, y, replacement_color)
+            self.draw_pixel(next_pixel, replacement_color)
 
             # We'll mark the pixel as visited/processed.
-            self.visited.add((x, y))
+            self.visited.add(next_pixel)
 
             # We'll now process the neighboring pixels.
+            x, y = next_pixel
             stack.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
             
     # The following method will allow us to preview pixels on our canvas before drawing them.
@@ -611,7 +598,7 @@ class PixelateCanvas(QWidget):
         while True:
 
             # Within canvas bounds...
-            if self.is_within_canvas(x1, y1):
+            if self.is_within_canvas((x1, y1)):
 
                 if is_preview:
                     # For our preview line, we'll draw it directly onto our canvas, not the canvas buffer.
@@ -619,7 +606,7 @@ class PixelateCanvas(QWidget):
 
                 else:
                     # Otherwise, we'll draw the line on our canvas buffer.
-                    self.draw_pixel(x1, y1, color)
+                    self.draw_pixel((x1, y1), color)
 
             # Bresenham’s Algorithm:
             if x1 == x2 and y1 == y2:
@@ -639,7 +626,8 @@ class PixelateCanvas(QWidget):
                 y1 += sy
 
     # Method to check if a coordinate is within the canvas.
-    def is_within_canvas(self, x, y):
+    def is_within_canvas(self, pixel):
+        x, y = pixel
         return 0 <= x < self.grid_width and 0 <= y < self.grid_height
 
     # Method to draw a square on screen given a color, start, and end point.
