@@ -227,18 +227,19 @@ class MainWindow(QMainWindow):
 
         return f'''
             QMenuBar {{
-                background-color: purple;
+                /* A light shade of purple. */
+                background-color: #9370DB;
                 color: white;
                 font-family: {pixelated_font.family()};
             }}
             QMenuBar::item:selected {{
-                /* A very dark shade of purple. */
-                background-color: #4B0082;
+                /* A darker shade of purple. */
+                background-color: #6A5ACD;
                 color: white;
             }}
             QMenuBar::item:pressed {{
                 /* An even darker shade of purple. */
-                background-color: #2E0854;
+                background-color: #483D8B;
             }}
 
             QMenu {{

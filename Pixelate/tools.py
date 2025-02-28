@@ -417,19 +417,20 @@ class Tools(QMainWindow):
     def get_active_button_style(self):
         return f'''
             QPushButton {{
-                background-color: purple;
+                /* A lighter shade of purple. */
+                background-color: #9370DB;
                 color: white;
                 padding: 5px;
                 border: 2px solid white;
                 border-radius: 10px;
             }}
             QPushButton:hover {{
-                /* A lighter shade of purple. */
+                /* A darker shade of purple. */
                 background-color: #6A5ACD;
             }}
             QPushButton:pressed {{
-                /* An even lighter shade of purple. */
-                background-color: #9370DB;
+                /* An even darker shade of purple. */
+                background-color: #483D8B;
             }}
         '''
     
