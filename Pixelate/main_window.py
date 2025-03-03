@@ -100,6 +100,7 @@ class MainWindow(QMainWindow):
         # The height of our tools window will be the same as our left window.
         tool_window_height = left_window_height
         self.tools = Tools(self.proxy_widget, tool_window_width, tool_window_height)
+        self.canvas_view.set_tools(self.tools)
         layout.addWidget(self.tools)
 
         # Giving our main window a gray background.
