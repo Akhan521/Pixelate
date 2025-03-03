@@ -15,19 +15,20 @@ class Tools(QMainWindow):
 
         super().__init__()
         self.proxy_widget = proxy_widget
-        self.canvas = self.proxy_widget.widget()
-        self.width = width
-        self.height = height
+        self.canvas       = self.proxy_widget.widget()
+        self.width        = width
+        self.height       = height
 
         # Fixing the size of our tools window.
         self.setFixedWidth(self.width)
 
-        # Setting the background color of our window to light gray.
-        self.setStyleSheet("background-color: lightgray;")
-
         # Specifying our icons path and the size of our icons.
         self.icons_path = "icons/"
-        self.icon_size = QSize(30, 30)
+        self.icon_size  = QSize(30, 30)
+
+        # To store our tool buttons (for styling purposes).
+        self.tools = []
+        self.active_tool = None
 
         # Using a vertical layout as our main layout.
         layout = QVBoxLayout()
@@ -38,7 +39,7 @@ class Tools(QMainWindow):
 
         # Creating our very first tool/button: the clear button.
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "clear_icon.png"))
         button.setIconSize(self.icon_size)
 
@@ -48,7 +49,7 @@ class Tools(QMainWindow):
 
         # Our next tool/button will be the undo button.
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "undo_icon.png"))
         button.setIconSize(self.icon_size)
 
@@ -58,7 +59,7 @@ class Tools(QMainWindow):
 
         # Then, we'll add a redo button to go with our undo button.
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "redo_icon.png"))
         button.setIconSize(self.icon_size)
 
@@ -71,76 +72,81 @@ class Tools(QMainWindow):
 
         # Our fill tool will be next.
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "fill_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set the canvas's fill mode to True.
         button.clicked.connect(lambda: self.set_fill_mode(True))
+        self.tools.append(button)
         layout.addWidget(button)
 
         # Our eyedropper tool:
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "eyedropper_icon.png"))
 
         # Connecting its signal to a function that will set the eyedropper tool.
         button.clicked.connect(self.use_eyedropper_tool)
         button.setIconSize(self.icon_size)
+        self.tools.append(button)
         layout.addWidget(button)
 
         # Our cursor tool:
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "drag_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set our drag state to True.
         button.clicked.connect(self.use_cursor_tool)
+        self.tools.append(button)
         layout.addWidget(button)
 
         # Our pencil tool:
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_active_button_style())
         button.setIcon(QIcon(self.icons_path + "pencil.png"))
 
         # Connecting its signal to a function that will allow us to draw.
         button.clicked.connect(self.use_pencil_tool)
         button.setIconSize(self.icon_size)
+        self.tools.append(button)
         layout.addWidget(button)
 
         # Our eraser tool:
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "eraser_icon.png"))
 
         # Connecting its signal to a function that will allow us to erase (drawing w/ our background color).
         button.clicked.connect(self.use_erase_tool)
         button.setIconSize(self.icon_size)
+        self.tools.append(button)
         layout.addWidget(button)
 
         # Our line tool:
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "line_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set our line tool state to True.
         button.clicked.connect(self.use_line_tool)
         button.setIconSize(self.icon_size)
+        self.tools.append(button)
         layout.addWidget(button)
-
-        self.setStyleSheet("color: black;")
 
         # Our square tool:
         button = QPushButton()
-        button.setStyleSheet("background-color: white;")
+        button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "square_icon.png"))
         button.setIconSize(self.icon_size)
 
         # Connecting its signal to a function that will set our drag state to True.
         button.clicked.connect(self.use_square_tool)
         button.setIconSize(self.icon_size)
+        self.tools.append(button)
         layout.addWidget(button)
 
         # Creating an intermediary widget to hold our layout.
@@ -148,7 +154,7 @@ class Tools(QMainWindow):
         window.setLayout(layout)
 
         # Setting the background color of our window to light gray.
-        self.setStyleSheet("background-color: lightgray;")
+        self.setStyleSheet("background-color: lightgray; color: black;")
 
         # Setting the central widget of our tools window.
         self.setCentralWidget(window)
@@ -197,6 +203,10 @@ class Tools(QMainWindow):
 
     def set_fill_mode(self, fill_mode):
 
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tool = self.tools[0]
+        self.update_button_styles()
+
         # Setting our cursor to be an arrow cursor.
         self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
 
@@ -220,6 +230,10 @@ class Tools(QMainWindow):
 
     def use_pencil_tool(self):
 
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tool = self.tools[3]
+        self.update_button_styles()
+
         # Setting our cursor to be an arrow cursor.
         self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
 
@@ -242,6 +256,10 @@ class Tools(QMainWindow):
         self.canvas.set_square_mode(False)
 
     def use_erase_tool(self):
+
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tool = self.tools[4]
+        self.update_button_styles()
         
         # Setting our cursor to be an arrow cursor.
         self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
@@ -266,6 +284,10 @@ class Tools(QMainWindow):
 
     def use_cursor_tool(self):
 
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tool = self.tools[2]
+        self.update_button_styles()
+
         # Setting our cursor to be an open hand cursor to indicate that it's draggable.
         self.canvas.setCursor(Qt.CursorShape.OpenHandCursor)
 
@@ -288,6 +310,11 @@ class Tools(QMainWindow):
         self.canvas.set_square_mode(False)
 
     def use_eyedropper_tool(self):
+
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tool = self.tools[1]
+        self.update_button_styles()
+
         # To set our cursor as an eyedropper icon, we'll use a pixmap.
         eyedropper_pixmap = QPixmap(self.icons_path + "eyedropper_icon.png")
         # Resizing our pixmap.
@@ -315,6 +342,11 @@ class Tools(QMainWindow):
         self.canvas.set_square_mode(False)
         
     def use_line_tool(self):
+
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tool = self.tools[5]
+        self.update_button_styles()
+
         # Setting our cursor to be an arrow cursor.
         self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
 
@@ -337,6 +369,11 @@ class Tools(QMainWindow):
         self.canvas.set_square_mode(False)
 
     def use_square_tool(self):
+
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tool = self.tools[6]
+        self.update_button_styles()
+        
         # Setting our cursor to be an arrow cursor.
         self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
 
@@ -358,7 +395,49 @@ class Tools(QMainWindow):
         #Setting the square tool mode of our canvas True.
         self.canvas.set_square_mode(True)
 
-# app = QApplication([])
-# tools = Tools(None, 300, 500)
-# tools.show()
-# app.exec()
+    # Default button style.
+    def get_default_button_style(self):
+        return f'''
+            QPushButton {{
+                background-color: white;
+                color: black;
+                border-radius: 5px;
+                padding: 5px;
+            }}
+            QPushButton:hover {{
+                /* A medium shade of gray. */
+                background-color: #BEBEBE;
+            }}
+            QPushButton:pressed {{
+                background-color: darkgray;
+            }}
+        '''
+    
+    # Active button style.
+    def get_active_button_style(self):
+        return f'''
+            QPushButton {{
+                /* A lighter shade of purple. */
+                background-color: #9370DB;
+                color: white;
+                padding: 5px;
+                border: 2px solid white;
+                border-radius: 10px;
+            }}
+            QPushButton:hover {{
+                /* A darker shade of purple. */
+                background-color: #6A5ACD;
+            }}
+            QPushButton:pressed {{
+                /* An even darker shade of purple. */
+                background-color: #483D8B;
+            }}
+        '''
+    
+    # A method to update the styles of our buttons.
+    def update_button_styles(self):
+        for button in self.tools:
+            if button == self.active_tool:
+                button.setStyleSheet(self.get_active_button_style())
+            else:
+                button.setStyleSheet(self.get_default_button_style())

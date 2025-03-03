@@ -20,6 +20,9 @@ class ZoomableCanvasView(QGraphicsView):
         # Storing a direct reference to our canvas.
         self.canvas = self.proxy_widget.widget()
 
+        # Storing our tool manager (to access the current tool).
+        self.tools = None
+
         # Disabling scroll bars for our view.
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -31,6 +34,10 @@ class ZoomableCanvasView(QGraphicsView):
 
         # For dragging functionality, we'll need to store the last mouse position (to calculate how much we've dragged our mouse).
         self.last_mouse_pos = None 
+
+    # A method to set our tool manager.
+    def set_tools(self, tools):
+        self.tools = tools
 
     def wheelEvent(self, event):
         zoom_adjustment = 1.1 if event.angleDelta().y() > 0 else 0.9
@@ -103,25 +110,9 @@ class ZoomableCanvasView(QGraphicsView):
                 
                 # Setting our cursor to be an arrow cursor.
                 self.proxy_widget.setCursor(Qt.CursorShape.ArrowCursor)
-                self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
-
-                # Setting the fill mode of our canvas to False.
-                self.canvas.set_fill_mode(False)
-
-                # Setting the drag state of our canvas to False.
-                self.canvas.set_draggable(False)
-
-                #Setting eyedropper mode to False.
-                self.canvas.set_eyedropper_mode(False)
-
-                # Setting the erase mode of our canvas to False.
-                self.canvas.set_erase_mode(False)
-
-                # Setting the line tool mode of our canvas to False.
-                self.canvas.set_line_mode(False)
-
-                # Setting the square tool mode of our canvas False.
-                self.canvas.set_square_mode(False)
+                
+                # Using our tool manager to set the current tool to the pencil tool.
+                self.tools.use_pencil_tool()
 
             # Otherwise, we'll set our cursor back to an open hand cursor as it's still draggable.
             else:

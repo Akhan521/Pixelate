@@ -241,7 +241,8 @@ class ColorSelectionWindow(QMainWindow):
         if self.active_palette_button:
             return f'''
                 QPushButton {{
-                    background-color: purple;
+                    /* A light shade of purple. */
+                    background-color: #9370DB;
                     color: white;
                     font-family: {pixelated_font.family()};
                     padding: 10px;
@@ -249,12 +250,12 @@ class ColorSelectionWindow(QMainWindow):
                     border-radius: 10px;
                 }}
                 QPushButton:hover {{
-                    /* A very dark shade of purple. */
-                    background-color: #4B0082;
+                    /* A darker shade of purple. */
+                    background-color: #6A5ACD;
                 }}
                 QPushButton:pressed {{
                     /* An even darker shade of purple. */
-                    background-color: #2E0854;
+                    background-color: #483D8B;
                 }}
             '''
     
