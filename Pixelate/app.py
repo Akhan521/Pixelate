@@ -9,6 +9,7 @@ from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDat
 from PyQt6.QtCore import Qt, QSize
 from main_window import MainWindow
 from new_sprite_dialog import NewSpriteDialog
+from custom_messagebox import CustomMessageBox
 from validations import validate_dimensions, validate_imported_data
 import ast
 
@@ -130,7 +131,9 @@ class StartScreen(QMainWindow):
 
                 # Validating our dimensions to ensure that they're in the correct format.
                 if not validate_dimensions(dimensions):
-                    QMessageBox.warning(self, "ERROR: invalid/missing dimensions", "The selected file is missing or has invalid dimensions.")
+                    CustomMessageBox(title   = "ERROR: invalid/missing dimensions", 
+                                     message = "The selected file is missing or has invalid dimensions.", 
+                                     type    = "error")
                     return
 
                 # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
@@ -138,12 +141,16 @@ class StartScreen(QMainWindow):
 
                 # Validating our pixels data to ensure that it's in the correct format.
                 if not validate_imported_data(pixels):
-                    QMessageBox.warning(self, "ERROR: invalid data format/type", "The data in the selected file is not in the correct format.")
+                    CustomMessageBox(title   = "ERROR: invalid data format/type", 
+                                     message = "The data in the selected file is not in the correct format.", 
+                                     type    = "error")
                     return
                 
                 # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
                 else:
-                    QMessageBox.information(self, "Success", "Project opened successfully.")
+                    CustomMessageBox(title   = "Success", 
+                                     message = "Project opened successfully.", 
+                                     type    = "info")
 
                     # Creating our main window with the imported dimensions.
                     self.main_window = MainWindow(dimensions)
@@ -161,7 +168,9 @@ class StartScreen(QMainWindow):
                     self.close()
 
             except Exception as e:
-                QMessageBox.warning(self, f"ERROR: failed to open project", str(e))
+                CustomMessageBox(title   = "ERROR: failed to open project", 
+                                 message = str(e), 
+                                 type    = "warning")
 
     def get_button_style(self):
 

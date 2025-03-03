@@ -13,6 +13,7 @@ from pixelate_canvas import PixelateCanvas
 from color_selection_window import ColorSelectionWindow
 from zoomable_canvas_view import ZoomableCanvasView
 from ai_assistant import AIAssistant
+from custom_messagebox import CustomMessageBox
 from validations import validate_dimensions, validate_imported_data
 
 class MainWindow(QMainWindow):
@@ -136,7 +137,9 @@ class MainWindow(QMainWindow):
                     file.write(pixels)
 
             except Exception as e:
-                QMessageBox.warning(self, f"ERROR: failed to save file - {str(e)}")
+                CustomMessageBox(title   = "ERROR: failed to save project", 
+                                 message = str(e), 
+                                 type    = "warning")
 
     # A method to import a canvas from a text file (loading the pixels dictionary).
     def import_canvas(self):
@@ -163,12 +166,16 @@ class MainWindow(QMainWindow):
 
                 # Validating our dimensions to ensure that they're in the correct format.
                 if not validate_dimensions(dimensions):
-                    QMessageBox.warning(self, "ERROR: invalid/missing dimensions", "The selected file is missing or has invalid dimensions.")
+                    CustomMessageBox(title   = "ERROR: invalid/missing dimensions", 
+                                     message = "The selected file is missing or has invalid dimensions.", 
+                                     type    = "error")
                     return
                 
                 # If our dimensions are valid, they must match the dimensions of our canvas.
                 if dimensions != (self.grid_width, self.grid_height):
-                    QMessageBox.warning(self, "ERROR: invalid dimensions", "The dimensions of the selected file do not match the dimensions of the current canvas.")
+                    CustomMessageBox(title   = "ERROR: invalid dimensions", 
+                                     message = "The dimensions of the selected file do not match the dimensions of the current canvas.", 
+                                     type    = "error")
                     return
 
                 # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
@@ -176,12 +183,16 @@ class MainWindow(QMainWindow):
 
                 # Validating our pixels data to ensure that it's in the correct format.
                 if not validate_imported_data(pixels):
-                    QMessageBox.warning(self, "ERROR: invalid data format/type", "The data in the selected file is not in the correct format.")
+                    CustomMessageBox(title   = "ERROR: invalid data format/type", 
+                                     message = "The data in the selected file is not in the correct format.", 
+                                     type    = "error")
                     return
                 
                 # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
                 else:
-                    QMessageBox.information(self, "Success", "Project imported successfully.")
+                    CustomMessageBox(title   = "Success", 
+                                     message = "Project imported successfully.", 
+                                     type    = "info")
 
                     # Converting our pixels data to a dictionary of the form {(x,y): QColor}.
                     pixels = self.canvas.convert_to_qcolor_format(pixels)
@@ -190,7 +201,9 @@ class MainWindow(QMainWindow):
                     self.canvas.update_pixels(pixels)
 
             except Exception as e:
-                QMessageBox.warning(self, f"ERROR: failed to import project", str(e))
+                CustomMessageBox(title   = "ERROR: failed to import project", 
+                                 message = str(e), 
+                                 type    = "warning")
 
     # A method to setup our menubar:
     def init_menubar(self):
