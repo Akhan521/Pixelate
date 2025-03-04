@@ -3,11 +3,11 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QGraphicsProxyWidget, QMenuBar, QMenu,
                               QFileDialog, QMessageBox, QSizePolicy,
                               QWidgetAction, QLabel, QListWidget,
-                                QListWidgetItem, QPushButton)
+                              QListWidgetItem, QPushButton, QDialog)
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
-from gallery_manager import GalleryManager
+from Pixelate.Gallery.gallery_manager import GalleryManager
 from Pixelate.User_Authentication.auth_manager import AuthManager
 
 class GalleryWidget(QWidget):
@@ -43,6 +43,7 @@ class GalleryWidget(QWidget):
 
     # A method to load the gallery of sprites.
     def load_gallery(self):
+
         # Clear the existing sprite list.
         self.sprite_list.clear()
 
@@ -58,7 +59,21 @@ class GalleryWidget(QWidget):
 
     # A method to show the details of a sprite.
     def show_sprite_details(self, item):
-        pass
+        # Get the sprite ID from the item.
+        sprite_id = item.data(Qt.ItemDataRole.UserRole)
+
+        # Get the sprite from the gallery manager.
+        sprite = self.gallery_manager.get_sprite(sprite_id)
+
+#         # Show the sprite details in a dialog.
+#         if sprite:
+#             dialog = SpriteDetailsDialog(sprite, self.gallery_manager)
+#             dialog.exec()
+#             # Reload the gallery after the dialog is closed.
+#             self.load_gallery()
+
+# # Our sprite details dialog.
+# class SpriteDetailsDialog(Q)
 
 if __name__ == "__main__":
     app = QApplication([])

@@ -22,6 +22,13 @@ class GalleryManager:
 
     # A method to upload a sprite to the gallery.
     def upload_sprite(self, title, description, pixels_data):
+        '''
+        Here is the structure of the pixels_data parameter:
+            pixels_data: {
+                "dimensions": (width, height),    # The dimensions are a tuple.
+                "pixels": { (x, y): rgba_tuple }
+            }
+        '''
         try:
             user_id = self.auth_manager.get_user_id()
             # If the user is not logged in, return False.
@@ -32,12 +39,19 @@ class GalleryManager:
             sprite_ref = self.db.collection("sprites").document()
             sprite_id = sprite_ref.id
 
-            # Upload the sprite data to Firebase Storage.
+            # Set up the blob path (storage path) for the sprite.
             blob_path = f"sprites/{user_id}/{sprite_id}.pix"
             blob = self.bucket.blob(blob_path)
-            pixels_data = {f"{x},{y}": color for (x, y), color in pixels_data.items()}
-            pixels_data = json.dumps(pixels_data)
-            blob.upload_from_string(pixels_data, content_type="application/json")
+            
+            # Prepare the sprite data for upload (serializing to JSON).
+            sprite_data = {
+                "dimensions": list(pixels_data["dimensions"]),
+                "pixels": {f"{x},{y}": list(rgba) for (x, y), rgba in pixels_data["pixels"].items()}
+            }
+            sprite_data_json = json.dumps(sprite_data)
+
+            # Upload the sprite data to Firebase Storage.
+            blob.upload_from_string(sprite_data_json, content_type="application/json")
 
             # Make the sprite publicly accessible.
             blob.make_public()
