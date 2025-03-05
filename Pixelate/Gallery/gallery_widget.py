@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QWidgetAction, QLabel, QListWidget,
                               QListWidgetItem, QPushButton, QDialog)
 
-from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
+from PyQt6.QtCore import Qt, QSize
 from gallery_manager import GalleryManager
 from Pixelate.User_Authentication.auth_manager import AuthManager
 
@@ -30,7 +30,7 @@ class GalleryWidget(QWidget):
 
         # A list of sprites in the gallery.
         self.sprite_list = QListWidget()
-        # self.sprite_list.itemDoubleClicked.connect(self.show_sprite_details)
+        self.sprite_list.itemDoubleClicked.connect(self.show_sprite_details)
 
         # Adding our widgets to the layout.
         layout.addWidget(header)
@@ -63,17 +63,80 @@ class GalleryWidget(QWidget):
         sprite_id = item.data(Qt.ItemDataRole.UserRole)
 
         # Get the sprite from the gallery manager.
-        sprite = self.gallery_manager.get_sprite(sprite_id)
+        sprite_data = self.gallery_manager.get_sprite(sprite_id)
 
-#         # Show the sprite details in a dialog.
-#         if sprite:
-#             dialog = SpriteDetailsDialog(sprite, self.gallery_manager)
-#             dialog.exec()
-#             # Reload the gallery after the dialog is closed.
-#             self.load_gallery()
+        # Show the sprite details in a dialog.
+        if sprite_data:
+            dialog = SpriteDetailsDialog(sprite_data, self.gallery_manager)
+            dialog.exec()
+            # Reload the gallery after the dialog is closed.
+            self.load_gallery()
 
-# # Our sprite details dialog.
-# class SpriteDetailsDialog(Q)
+# Our sprite details dialog.
+class SpriteDetailsDialog(QDialog):
+
+    def __init__(self, sprite_data, gallery_manager):
+        super().__init__()
+        self.sprite_data = sprite_data
+        self.gallery_manager = gallery_manager
+        self.setWindowTitle(f"{sprite_data['title']}")
+
+        # Create a layout for the dialog.
+        layout = QVBoxLayout()
+
+        # Display the sprite title and creator.
+        title_label = QLabel(f"Title: {sprite_data['title']} by {sprite_data['creator_username']}")
+
+        # Display the sprite description.
+        desc_label = QLabel(f"Description: {sprite_data.get('description', 'No description')}")
+        desc_label.setWordWrap(True)
+
+        # Display a preview of the sprite.
+        sprite_preview = QLabel()
+        pixels_data = sprite_data.get("pixels_data", {})
+        dimensions = pixels_data.get("dimensions", (512, 512))
+        pixels = pixels_data.get("pixels", {})
+        pixel_size = 5
+        pixmap_size = QSize(dimensions[0] * pixel_size, dimensions[1] * pixel_size)
+        pixmap = QPixmap(pixmap_size)
+        pixmap.fill(QColor(0, 0, 0, 0))
+        
+        painter = QPainter(pixmap)
+        for (x, y), rgba in pixels.items():
+            color = QColor(*rgba)
+            painter.fillRect(x * pixel_size, y * pixel_size, pixel_size, pixel_size, color)
+        painter.end()
+
+        sprite_preview.setPixmap(pixmap)
+        sprite_preview.setFixedSize(pixmap_size)
+
+        # Display likes and a like button.
+        likes_layout = QHBoxLayout()
+        self.likes_label = QLabel(f"Likes: {self.sprite_data.get('likes', 0)}")
+        self.like_button = QPushButton("Like") if self.sprite_data.get('likes', 0) == 0 else QPushButton("Unlike")
+        self.like_button.clicked.connect(self.toggle_like)
+        likes_layout.addWidget(self.likes_label)
+        likes_layout.addWidget(self.like_button)
+
+        # Adding our widgets to the layout.
+        layout.addWidget(title_label)
+        layout.addWidget(desc_label)
+        layout.addWidget(sprite_preview)
+        layout.addLayout(likes_layout)
+        self.setLayout(layout)
+
+    # A method to toggle the like status of the sprite (using the gallery manager).
+    def toggle_like(self):
+
+        like_status = self.gallery_manager.toggle_like(self.sprite_data["id"])
+
+        if like_status == "Liked":
+            self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0) + 1}")
+            self.like_button.setText("Unlike")
+        elif like_status == "Unliked":
+            self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0) - 1}")
+            self.like_button.setText("Like")
+
 
 if __name__ == "__main__":
     app = QApplication([])

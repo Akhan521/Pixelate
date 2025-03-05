@@ -112,7 +112,12 @@ class GalleryManager:
                 return False
             
             # Check if the user has already liked the sprite.
-            like_ref = self.db.collection("likes").where("user_id", "==", user_id).where("sprite_id", "==", sprite_id).limit(1)
+            like_ref = (
+                self.db.collection("likes")
+                .where("user_id", "==", user_id)
+                .where("sprite_id", "==", sprite_id)
+                .limit(1)
+            )
             likes = list(like_ref.stream())
 
             # Storing the sprite reference.
@@ -163,11 +168,28 @@ class GalleryManager:
             # Download the sprite data from Firebase Storage.
             blob_path = sprite_data["storage_path"]
             blob = self.bucket.blob(blob_path)
-            pixels_data = blob.download_as_string().decode("utf-8")
-            pixels_data = json.loads(pixels_data)
+            pixels_data_json = blob.download_as_string().decode("utf-8")
+            pixels_data = json.loads(pixels_data_json)
 
-            # Convert the pixels data to the required format.
-            pixels_data = {tuple(map(int, key.split(","))): value for key, value in pixels_data.items()}
+            '''
+            Here is the structure of pixels_data:
+                pixels_data: {
+                    "dimensions": [width, height],
+                    "pixels": { 'x, y': [r, g, b, a] } # 'x, y' is a string.
+                }
+
+            We want it in this format:
+                pixels_data: {
+                    "dimensions": (width, height),
+                    "pixels": { (x, y): (r, g, b, a) } # (x, y) is a tuple.
+                }
+            '''
+
+            pixels_data = {
+                "dimensions": tuple(pixels_data["dimensions"]),
+                "pixels": {tuple(map(int, key.split(","))): tuple(value) for key, value in pixels_data["pixels"].items()}
+            }
+
             sprite_data["pixels_data"] = pixels_data
 
             return sprite_data

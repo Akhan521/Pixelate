@@ -7,13 +7,67 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QListWidgetItem, QPushButton, QDialog,
                               QLineEdit, QTextEdit, QDialogButtonBox,)
 
-from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QMovie
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from gallery_manager import GalleryManager
 from Pixelate.User_Authentication.auth_manager import AuthManager
 from Pixelate.custom_messagebox import CustomMessageBox
 from Pixelate.validations import validate_dimensions, validate_imported_data
 import ast
+
+# A file loader thread to handle loading .pix files in the background.
+# This ensures that our application remains responsive while loading files.
+class FileLoaderThread(QThread):
+    # Our signals:
+    file_loaded = pyqtSignal(dict, str) # pixels_data, project_name
+    error_occurred = pyqtSignal(str)    # error_message
+
+    def __init__(self, filepath):
+        super().__init__()
+        self.filepath = filepath
+
+    def run(self):
+        # Now, we'll try to load the file.
+        try:
+            # Reading the contents of our .pix file.
+            with open(self.filepath, "r") as file:
+                # Reading the first line of the file (which should contain the dimensions of our canvas).
+                dimensions = file.readline().strip()
+                # Reading the rest of the file (which should contain our pixels dictionary).
+                pixels = file.read()
+
+            # Parsing our canvas dimensions using the ast module. (Converting our string tuple to an actual tuple).
+            dimensions = ast.literal_eval(dimensions)
+
+            # Validating our dimensions to ensure that they're in the correct format.
+            if not validate_dimensions(dimensions):
+                self.error_occurred.emit("The selected file is missing or has invalid dimensions.")
+                return
+
+            # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
+            pixels = ast.literal_eval(pixels)
+
+            # Validating our pixels data to ensure that it's in the correct format.
+            if not validate_imported_data(pixels):
+                self.error_occurred.emit("The data in the selected file is not in the correct format.")
+                return
+
+            # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
+            else:
+                # Storing our pixels data.
+                pixels_data = {
+                    "dimensions": dimensions,
+                    "pixels": pixels
+                }
+
+                # Our project's name (for display purposes).
+                project_name = self.filepath.split("/")[-1]
+
+                # Emitting our file_loaded signal.
+                self.file_loaded.emit(pixels_data, project_name)
+
+        except Exception as e:
+            self.error_occurred.emit(str(e))
 
 # A widget to upload sprites to the gallery.
 class UploadWidget(QWidget):
@@ -22,7 +76,10 @@ class UploadWidget(QWidget):
         super().__init__()
         self.gallery_manager = gallery_manager
         self.pixels_data = None
-        self.setFixedSize(400, 400)
+        self.setFixedSize(400, 460)
+
+        # Hiding our system taskbar and keeping our dialog on top.
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
 
         # Create a layout for the upload widget.
         layout = QVBoxLayout()
@@ -48,6 +105,7 @@ class UploadWidget(QWidget):
         # A label to show if a sprite is selected.
         self.sprite_label = QLabel("Selected Sprite: None")
         self.sprite_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sprite_label.setWordWrap(True)
 
         # A button to select a sprite.
         select_button = QPushButton("Select Sprite")
@@ -61,6 +119,18 @@ class UploadWidget(QWidget):
         self.buttons.rejected.connect(self.close)
         self.buttons.setCenterButtons(True)
 
+        # A loading label that will be shown while a sprite is being uploaded.
+        self.loading_label = QLabel("Uploading Sprite...")
+        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.loading_label.setVisible(False)
+        
+        # A loading animation to show while an image is being generated.
+        self.movie = QMovie("Pixelate/loading.gif")
+        if self.movie.isValid():
+            self.loading_label.setMovie(self.movie)
+        else:
+            CustomMessageBox("Error", "An error occurred while loading the loading animation.", type="error")
+
         # Adding our widgets to the layout.
         layout.addWidget(header)
         layout.addWidget(title_label)
@@ -70,6 +140,7 @@ class UploadWidget(QWidget):
         layout.addWidget(self.sprite_label)
         layout.addWidget(select_button)
         layout.addWidget(self.buttons)
+        layout.addWidget(self.loading_label)
         self.setLayout(layout)
         self.setStyleSheet(self.get_style())
 
@@ -106,69 +177,65 @@ class UploadWidget(QWidget):
 
     # A method to select a sprite to upload (file dialog).
     def select_sprite(self):
-        self.pixels_data = None
-        self.sprite_label.setText("Selected Sprite: None")
         
         # Prompting the user to select a sprite file.
         filepath, _ = QFileDialog.getOpenFileName(self, "Select Sprite", "", "Pix Files (*.pix)")
 
-        if filepath:
+        # If the user hasn't selected a file, we'll return.
+        if not filepath:
+            return
 
-            dimensions = None  # To store our canvas dimensions.
-            pixels = None      # To store our pixels dictionary data.
+        # Disable our UI during file loading to prevent any issues.
+        self.title_input.setReadOnly(True)
+        self.description_input.setReadOnly(True)
+        self.buttons.hide()
 
-            try:
+        # Start our loading animation.
+        self.loading_label.setVisible(True)
+        self.movie.start()
 
-                # Reading the contents of our .pix file.
-                with open(filepath, "r") as file:
-                    # Reading the first line of the file (which should contain the dimensions of our canvas).
-                    dimensions = file.readline().strip()
-                    # Reading the rest of the file (which should contain our pixels dictionary).
-                    pixels = file.read()
+        # Create a file loader thread to load the sprite file in the background.
+        self.file_loader_thread = FileLoaderThread(filepath)
+        self.file_loader_thread.file_loaded.connect(self.on_file_loaded)
+        self.file_loader_thread.error_occurred.connect(self.on_error_occurred)
+        self.file_loader_thread.start()
 
-                # Parsing our canvas dimensions using the ast module. (Converting our string tuple to an actual tuple).
-                dimensions = ast.literal_eval(dimensions)
 
-                # Validating our dimensions to ensure that they're in the correct format.
-                if not validate_dimensions(dimensions):
-                    CustomMessageBox(title   = "ERROR: invalid/missing dimensions", 
-                                     message = "The selected file is missing or has invalid dimensions.", 
-                                     type    = "error")
-                    return
+    # Our file loaded signal handler.
+    def on_file_loaded(self, pixels_data, project_name):
+        # Stop our loading animation.
+        self.movie.stop()
+        self.loading_label.setVisible(False)
 
-                # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
-                pixels = ast.literal_eval(pixels)
+        # Re-enable our UI after file loading.
+        self.title_input.setReadOnly(False)
+        self.description_input.setReadOnly(False)
+        self.buttons.show()
 
-                # Validating our pixels data to ensure that it's in the correct format.
-                if not validate_imported_data(pixels):
-                    CustomMessageBox(title   = "ERROR: invalid data format/type", 
-                                     message = "The data in the selected file is not in the correct format.", 
-                                     type    = "error")
-                    return
-                
-                # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
-                else:
-                    CustomMessageBox(title   = "Success", 
-                                     message = "Sprite selected successfully.", 
-                                     type    = "info")
+        # Storing our pixels data.
+        self.pixels_data = pixels_data
 
-                    # Storing our pixels data.
-                    pixels_data = {
-                        "dimensions": dimensions,
-                        "pixels": pixels
-                    }
-                    self.pixels_data = pixels_data
+        # Updating our sprite label.
+        self.sprite_label.setText(f"Selected Sprite: {project_name}")
 
-                    # Our project's name (for display purposes).
-                    project = filepath.split("/")[-1]
+        # Showing a success message.
+        CustomMessageBox("Success", "Sprite selected successfully.", type="info")
 
-                    # Updating our sprite label.
-                    self.sprite_label.setText(f"Selected Sprite: {project}")
+    # Our error signal handler.
+    def on_error_occurred(self, error_message):
+        # Re-enable our UI.
+        self.title_input.setDisabled(False)
+        self.description_input.setDisabled(False)
+        self.buttons.setDisabled(False)
 
-            except Exception as e:
-                CustomMessageBox(title   = "ERROR: failed to select sprite", 
-                                 message = str(e), 
-                                 type    = "warning")
+        # Clearing the pixels data.
+        self.pixels_data = None
+
+        # Updating our sprite label to show that no sprite is selected.
+        self.sprite_label.setText("Selected Sprite: None")
+
+        # Showing an error message.
+        CustomMessageBox("Error", error_message, type="error")
 
     # Header styling.
     def get_header_style(self):
