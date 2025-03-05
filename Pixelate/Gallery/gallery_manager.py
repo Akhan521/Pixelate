@@ -25,8 +25,8 @@ class GalleryManager:
         '''
         Here is the structure of the pixels_data parameter:
             pixels_data: {
-                "dimensions": (width, height),    # The dimensions are a tuple.
-                "pixels": { (x, y): rgba_tuple }
+                "dimensions": (width, height),
+                "pixels": { (x, y): rgba_tuple } 
             }
         '''
         try:

@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
-from Pixelate.Gallery.gallery_manager import GalleryManager
+from gallery_manager import GalleryManager
 from Pixelate.User_Authentication.auth_manager import AuthManager
 
 class GalleryWidget(QWidget):

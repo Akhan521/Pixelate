@@ -1,3 +1,4 @@
+
 from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout, 
                               QVBoxLayout, QWidget, QGraphicsScene, 
                               QGraphicsProxyWidget, QMenuBar, QMenu,
@@ -8,7 +9,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
-from Pixelate.Gallery.gallery_manager import GalleryManager
+from gallery_manager import GalleryManager
 from Pixelate.User_Authentication.auth_manager import AuthManager
 from Pixelate.custom_messagebox import CustomMessageBox
 from Pixelate.validations import validate_dimensions, validate_imported_data
@@ -153,9 +154,9 @@ class UploadWidget(QWidget):
                                  message = str(e), 
                                  type    = "warning")
 
-# Test the UploadWidget.
-app = QApplication([])
-gallery_manager = GalleryManager(AuthManager())
-upload_widget = UploadWidget(gallery_manager)
-upload_widget.show()
-app.exec()
+# # Test the UploadWidget.
+# app = QApplication([])
+# gallery_manager = GalleryManager(AuthManager())
+# upload_widget = UploadWidget(gallery_manager)
+# upload_widget.show()
+# app.exec()

@@ -18,7 +18,9 @@ class AuthManager:
         self.firebase = pyrebase.initialize_app(firebase_config)
         self.auth = self.firebase.auth()
         self.db = firestore.client()
-        self.user = None
+        # For testing purposes, we'll sign in with a test account.
+        self.user = self.auth.sign_in_with_email_and_password("aamirksfg@gmail.com", "aak365")
+        # self.user = None
 
     def register(self, email, password, username):
         try:
