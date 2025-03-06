@@ -39,6 +39,7 @@ class LoginDialog(QDialog):
         self.password_label = QLabel("Password:")
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText("Enter your password.")
+        self.password_input.setEchoMode(QLineEdit.EchoMode.Password) # Hide the password.
 
         # Create a button to log the user in.
         self.login_button = QPushButton("Login")

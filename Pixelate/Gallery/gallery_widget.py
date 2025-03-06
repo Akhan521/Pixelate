@@ -235,8 +235,14 @@ class SpriteDetailsDialog(QDialog):
         desc_label.setWordWrap(True)
         desc_label.setObjectName("SpriteDescription")
 
-        # Display a preview of the sprite.
+        # Create a container for the sprite preview.
+        preview_container = QWidget()
+        preview_layout = QVBoxLayout(preview_container)
+        preview_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Create a label to display the sprite preview.
         sprite_preview = QLabel()
+        sprite_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         pixels_data = sprite_data.get("pixels_data", {})
         dimensions = pixels_data.get("dimensions", (512, 512))
         pixels = pixels_data.get("pixels", {})
@@ -255,6 +261,9 @@ class SpriteDetailsDialog(QDialog):
         sprite_preview.setFixedSize(pixmap_size)
         sprite_preview.setObjectName("SpritePreview")
 
+        # Add the sprite preview to the layout.
+        preview_layout.addWidget(sprite_preview)
+
         # Display likes, a like button, and a close button.
         buttons_layout = QHBoxLayout()
         buttons_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -271,7 +280,7 @@ class SpriteDetailsDialog(QDialog):
         # Adding our widgets to the layout.
         layout.addWidget(title_label)
         layout.addWidget(desc_label)
-        layout.addWidget(sprite_preview)
+        layout.addWidget(preview_container)
         layout.addWidget(self.likes_label)
         layout.addLayout(buttons_layout)
         self.setStyleSheet(self.get_style())
