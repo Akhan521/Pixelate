@@ -9,7 +9,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QMovie
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from gallery_manager import GalleryManager
+# from gallery_manager import GalleryManager
+from Pixelate.Gallery.gallery_manager import GalleryManager
 from Pixelate.User_Authentication.auth_manager import AuthManager
 from Pixelate.custom_messagebox import CustomMessageBox
 from Pixelate.validations import validate_dimensions, validate_imported_data
@@ -69,8 +70,31 @@ class FileLoaderThread(QThread):
         except Exception as e:
             self.error_occurred.emit(str(e))
 
-# A widget to upload sprites to the gallery.
-class UploadWidget(QWidget):
+# A thread to handle uploading sprites to the gallery.
+class UploadThread(QThread):
+    # Our signals:
+    sprite_uploaded = pyqtSignal(bool)
+    error_occurred = pyqtSignal(str)
+
+    def __init__(self, gallery_manager, title, description, pixels_data):
+        super().__init__()
+        self.gallery_manager = gallery_manager
+        self.title = title
+        self.description = description
+        self.pixels_data = pixels_data
+
+    def run(self):
+        # Now, we'll try to upload the sprite.
+        try:
+            # Uploading the sprite to the gallery.
+            success = self.gallery_manager.upload_sprite(self.title, self.description, self.pixels_data)
+            self.sprite_uploaded.emit(success)
+
+        except Exception as e:
+            self.error_occurred.emit(str(e))
+
+# A dialog to upload sprites to the gallery.
+class UploadDialog(QDialog):
 
     def __init__(self, gallery_manager):
         super().__init__()
@@ -160,20 +184,21 @@ class UploadWidget(QWidget):
             CustomMessageBox("Error", "No sprite data to upload.", type="error")
             return
         
-        # Upload the sprite to the gallery.
-        if self.gallery_manager.upload_sprite(title, description, self.pixels_data):
-            CustomMessageBox("Success", "Sprite uploaded successfully!", type="info")
-            # Clear the input fields and pixels data.
-            self.title_input.clear()
-            self.description_input.clear()
-            self.sprite_label.setText("Selected Sprite: None")
-            self.pixels_data = None
-        else:
-            CustomMessageBox("Error", "An error occurred while uploading the sprite.", type="error")
-            # Clearing the pixels data.
-            self.pixels_data = None
-            # Updating our sprite label to show that no sprite is selected.
-            self.sprite_label.setText("Selected Sprite: None")
+        # Disable our UI during sprite upload to prevent any issues.
+        self.title_input.setReadOnly(True)
+        self.description_input.setReadOnly(True)
+        self.buttons.hide()
+
+        # Start our loading animation.
+        self.loading_label.setVisible(True)
+        self.movie.start()
+
+        # Create an upload thread to upload the sprite in the background.
+        self.upload_thread = UploadThread(self.gallery_manager, title, description, self.pixels_data)
+        self.upload_thread.sprite_uploaded.connect(self.on_sprite_uploaded)
+        self.upload_thread.error_occurred.connect(self.on_error_occurred)
+        self.upload_thread.finished.connect(self.upload_thread.deleteLater)
+        self.upload_thread.start()
 
     # A method to select a sprite to upload (file dialog).
     def select_sprite(self):
@@ -198,8 +223,8 @@ class UploadWidget(QWidget):
         self.file_loader_thread = FileLoaderThread(filepath)
         self.file_loader_thread.file_loaded.connect(self.on_file_loaded)
         self.file_loader_thread.error_occurred.connect(self.on_error_occurred)
+        self.file_loader_thread.finished.connect(self.file_loader_thread.deleteLater)
         self.file_loader_thread.start()
-
 
     # Our file loaded signal handler.
     def on_file_loaded(self, pixels_data, project_name):
@@ -221,12 +246,36 @@ class UploadWidget(QWidget):
         # Showing a success message.
         CustomMessageBox("Success", "Sprite selected successfully.", type="info")
 
+    # Our sprite uploaded signal handler.
+    def on_sprite_uploaded(self, success):
+        # Stop our loading animation.
+        self.movie.stop()
+        self.loading_label.setVisible(False)
+
+        # Re-enable our UI.
+        self.title_input.setReadOnly(False)
+        self.description_input.setReadOnly(False)
+        self.buttons.show()
+
+        # Clear the input fields and pixels data.
+        self.title_input.clear()
+        self.description_input.clear()
+        self.sprite_label.setText("Selected Sprite: None")
+        self.pixels_data = None
+
+        if success:
+            # Showing a success message.
+            CustomMessageBox("Success", "Sprite uploaded successfully.", type="info")
+        else:
+            # Showing an error message.
+            CustomMessageBox("Error", "An error occurred while uploading the sprite.", type="error")
+
     # Our error signal handler.
     def on_error_occurred(self, error_message):
         # Re-enable our UI.
-        self.title_input.setDisabled(False)
-        self.description_input.setDisabled(False)
-        self.buttons.setDisabled(False)
+        self.title_input.setReadOnly(False)
+        self.description_input.setReadOnly(False)
+        self.buttons.show()
 
         # Clearing the pixels data.
         self.pixels_data = None
@@ -243,6 +292,7 @@ class UploadWidget(QWidget):
             QLabel {{
                 background-color: purple;
                 color: white;
+                font-family: {self.get_font().family()};
                 padding: 10px;
                 margin: 0px;
                 font-size: 20px;
@@ -252,13 +302,13 @@ class UploadWidget(QWidget):
     # Default styling.
     def get_style(self):
         return f'''
-            QWidget {{
+            QDialog {{
                 background-color: lightgray;
-                font-family: {self.get_font().family()};
                 color: black;
             }}
             QLabel {{
                 color: black;
+                font-family: {self.get_font().family()};
                 margin-left: 10px;
                 margin-right: 10px;
                 font-size: 14px;
@@ -266,6 +316,7 @@ class UploadWidget(QWidget):
             QLineEdit {{
                 background-color: white;
                 color: black;
+                font-family: {self.get_font().family()};
                 padding: 5px;
                 margin-left: 10px;
                 margin-right: 10px;
@@ -273,6 +324,7 @@ class UploadWidget(QWidget):
             QTextEdit {{
                 background-color: white;
                 color: black;
+                font-family: {self.get_font().family()};
                 padding: 5px;
                 margin-left: 10px;
                 margin-right: 10px;
@@ -280,6 +332,7 @@ class UploadWidget(QWidget):
             QPushButton {{
                 color: black;
                 background-color: white;
+                font-family: {self.get_font().family()};
                 padding: 10px;
                 margin-left: 10px;
                 margin-right: 10px;
@@ -317,9 +370,9 @@ class UploadWidget(QWidget):
 
         return pixelated_font
 
-# Test the UploadWidget.
-app = QApplication([])
-gallery_manager = GalleryManager(AuthManager())
-upload_widget = UploadWidget(gallery_manager)
-upload_widget.show()
-app.exec()
+# # Test the UploadWidget.
+# app = QApplication([])
+# gallery_manager = GalleryManager(AuthManager())
+# upload_dialog = UploadDialog(gallery_manager)
+# upload_dialog.show()
+# app.exec()

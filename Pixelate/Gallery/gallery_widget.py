@@ -9,6 +9,7 @@ from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, 
 from PyQt6.QtCore import Qt, QSize
 # from Pixelate.Gallery.gallery_manager import GalleryManager
 from Gallery.gallery_manager import GalleryManager
+from Gallery.upload_dialog import UploadDialog
 from Pixelate.User_Authentication.auth_manager import AuthManager
 
 class GalleryWidget(QWidget):
@@ -29,6 +30,10 @@ class GalleryWidget(QWidget):
         refresh_button = QPushButton("Refresh Gallery")
         refresh_button.clicked.connect(self.load_gallery)
 
+        # An upload button to upload a sprite to the gallery.
+        upload_button = QPushButton("Upload Sprite")
+        upload_button.clicked.connect(self.upload_sprite)
+
         # A button to close the gallery widget.
         close_button = QPushButton("Close Gallery")
         close_button.clicked.connect(self.close_gallery)
@@ -38,6 +43,7 @@ class GalleryWidget(QWidget):
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setSpacing(0)
         button_layout.addWidget(refresh_button)
+        button_layout.addWidget(upload_button)
         button_layout.addWidget(close_button)
 
         # A list of sprites in the gallery.
@@ -59,6 +65,13 @@ class GalleryWidget(QWidget):
         self.gallery_manager.auth_manager.logout()
         print("Gallery closed and user logged out.")
         self.close()
+
+    # A method to upload a sprite to the gallery (using our Upload Dialog).
+    def upload_sprite(self):
+        upload_dialog = UploadDialog(self.gallery_manager)
+        upload_dialog.exec()
+        # Reload the gallery after the dialog is closed.
+        self.load_gallery()
 
     # A method to load the gallery of sprites.
     def load_gallery(self):
@@ -221,7 +234,7 @@ class SpriteDetailsDialog(QDialog):
         pixels_data = sprite_data.get("pixels_data", {})
         dimensions = pixels_data.get("dimensions", (512, 512))
         pixels = pixels_data.get("pixels", {})
-        pixel_size = 5
+        pixel_size = 1 if 512 <= dimensions[0] <= 1024 else 5
         pixmap_size = QSize(dimensions[0] * pixel_size, dimensions[1] * pixel_size)
         pixmap = QPixmap(pixmap_size)
         pixmap.fill(QColor(0, 0, 0, 0))

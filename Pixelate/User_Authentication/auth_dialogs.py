@@ -359,6 +359,6 @@ class RegisterDialog(QDialog):
 # login_dialog.exec()
 
 # Testing our registration dialog.
-app = QApplication([])
-register_dialog = RegisterDialog(AuthManager())
-register_dialog.exec()
+# app = QApplication([])
+# register_dialog = RegisterDialog(AuthManager())
+# register_dialog.exec()
