@@ -239,23 +239,14 @@ class SpriteDetailsDialog(QDialog):
     # A method to toggle the like status of the sprite (using the gallery manager).
     def toggle_like(self):
 
-        like_status = self.gallery_manager.toggle_like(self.sprite_data["id"])
+        like_status, sprite_data = self.gallery_manager.toggle_like(self.sprite_data["id"])
+        self.sprite_data.update(sprite_data)
 
         if like_status == "Liked":
-            # If the sprite's likes count is 1, we'll set the the likes label to 1.
-            if self.sprite_data.get('likes', 0) == 1:
-                self.likes_label.setText("Likes: 1")
-            # Otherwise, we'll increment the likes count by 1.
-            else:
-                self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0) + 1}")
+            self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0)}")
             self.like_button.setText("Unlike")
         elif like_status == "Unliked":
-            # If the sprite's likes count is 0, we'll set the the likes label to 0.
-            if self.sprite_data.get('likes', 0) == 0:
-                self.likes_label.setText("Likes: 0")
-            # Otherwise, we'll decrement the likes count by 1.
-            else:
-                self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0) - 1}")
+            self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0)}")
             self.like_button.setText("Like")
 
     # Default styling.

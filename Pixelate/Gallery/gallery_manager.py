@@ -127,7 +127,7 @@ class GalleryManager:
                 # Unlike the sprite - delete the like document + decrement the likes count.
                 likes[0].reference.delete()
                 sprite_ref.update({"likes": firestore.Increment(-1)})
-                return "Unliked"
+                return ("Unliked", sprite_ref.get().to_dict())
             else:
                 # Like the sprite - create a new like document + increment the likes count.
                 like_data = {
@@ -137,7 +137,7 @@ class GalleryManager:
                 }
                 self.db.collection("likes").add(like_data)
                 sprite_ref.update({"likes": firestore.Increment(1)})
-                return "Liked"
+                return ("Liked", sprite_ref.get().to_dict())
             
         except Exception as e:
             print(f"An error occurred while toggling like: {e}")
