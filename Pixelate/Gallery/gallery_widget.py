@@ -7,7 +7,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
 from PyQt6.QtCore import Qt, QSize
-from gallery_manager import GalleryManager
+from Pixelate.Gallery.gallery_manager import GalleryManager
+# from Gallery.gallery_manager import GalleryManager
 from Pixelate.User_Authentication.auth_manager import AuthManager
 
 class GalleryWidget(QWidget):
@@ -28,19 +29,36 @@ class GalleryWidget(QWidget):
         refresh_button = QPushButton("Refresh Gallery")
         refresh_button.clicked.connect(self.load_gallery)
 
+        # A button to close the gallery widget.
+        close_button = QPushButton("Close Gallery")
+        close_button.clicked.connect(self.close_gallery)
+
+        # A layout for our buttons.
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        button_layout.setSpacing(0)
+        button_layout.addWidget(refresh_button)
+        button_layout.addWidget(close_button)
+
         # A list of sprites in the gallery.
         self.sprite_list = QListWidget()
         self.sprite_list.itemDoubleClicked.connect(self.show_sprite_details)
 
         # Adding our widgets to the layout.
         layout.addWidget(header)
-        layout.addWidget(refresh_button)
+        layout.addLayout(button_layout)
         layout.addWidget(self.sprite_list)
         self.setStyleSheet(self.get_style())
         self.setLayout(layout)
 
         # Load the gallery when the widget is created.
         self.load_gallery()
+
+    # A method to close the gallery widget.
+    def close_gallery(self):
+        self.gallery_manager.auth_manager.logout()
+        print("Gallery closed and user logged out.")
+        self.close()
 
     # A method to load the gallery of sprites.
     def load_gallery(self):

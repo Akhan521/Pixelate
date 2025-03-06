@@ -11,6 +11,10 @@ from main_window import MainWindow
 from new_sprite_dialog import NewSpriteDialog
 from custom_messagebox import CustomMessageBox
 from validations import validate_dimensions, validate_imported_data
+from Gallery.gallery_manager import GalleryManager
+from Gallery.gallery_widget import GalleryWidget, SpriteDetailsDialog
+from Pixelate.User_Authentication.auth_manager import AuthManager
+from Pixelate.User_Authentication.auth_dialogs import LoginDialog, RegisterDialog
 import ast
 
 # Our starting screen.
@@ -53,6 +57,12 @@ class StartScreen(QMainWindow):
         # Adding the logo button to our layout.
         layout.addWidget(logo_label)
 
+        # Creating a gallery button to allow users to access the Pixelate gallery.
+        gallery_button = QPushButton("GALLERY", self)
+        gallery_button.setStyleSheet(self.get_button_style())
+        gallery_button.clicked.connect(self.open_gallery)
+        layout.addWidget(gallery_button)
+
         # Creating an open button to allow users to continue from previous projects.
         open_button = QPushButton("OPEN", self)
         open_button.setStyleSheet(self.get_button_style())
@@ -82,6 +92,29 @@ class StartScreen(QMainWindow):
 
         # Setting it as the central widget of our window.
         self.setCentralWidget(widget)
+
+    # A method to open the Pixelate gallery.
+    def open_gallery(self):
+
+        # Create an authentication manager instance.
+        self.auth_manager = AuthManager()
+
+        # Create a gallery manager instance.
+        self.gallery_manager = GalleryManager(self.auth_manager)
+
+        # Create a login dialog.
+        login_dialog = LoginDialog(self.auth_manager)
+
+        # If the user is not logged in, we'll prompt them to log in.
+        if not self.auth_manager.is_logged_in():
+            if login_dialog.exec() == QDialog.DialogCode.Accepted:
+                # If the user successfully logs in, we'll close the login dialog and open the gallery.
+                self.gallery_widget = GalleryWidget(self.gallery_manager)
+                self.gallery_widget.showFullScreen()
+            else:
+                return
+
+
 
     # A method to start our application using the main window.
     def start(self):
