@@ -99,8 +99,14 @@ class GalleryWidget(QWidget):
 
         # Show the sprite details in a dialog.
         if sprite_data:
+            # Create a dimmed backdrop to display behind the details dialog.
+            self.details_backdrop = DimmedBackdrop(self)
+            self.details_backdrop.show()
+            # Create a dialog to display the sprite details.
             dialog = SpriteDetailsDialog(sprite_data, self.gallery_manager)
             dialog.exec()
+            # Close the backdrop when the details dialog is closed.
+            self.details_backdrop.close()
             # Reload the gallery after the dialog is closed.
             self.load_gallery()
 
@@ -208,6 +214,26 @@ class GalleryWidget(QWidget):
 
         return pixelated_font
 
+# A dimmed backdrop widget to display behind our details dialog.
+class DimmedBackdrop(QWidget):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+
+        # Set the backdrop to be transparent for mouse events (i.e. mouse events aren't captured by the backdrop).
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+
+        # Set the backdrop to be the same size as the parent widget.
+        self.setGeometry(0, 0, parent.width(), parent.height())
+
+        # Set the backdrop to be on top of the parent widget.
+        self.raise_()
+
+    # Overriding the paint event to draw the dimmed backdrop.
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QColor(0, 0, 0, 128))
+
 # Our sprite details dialog.
 class SpriteDetailsDialog(QDialog):
 
@@ -298,6 +324,17 @@ class SpriteDetailsDialog(QDialog):
         elif like_status == "Unliked":
             self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0)}")
             self.like_button.setText("Like")
+
+    # Overriding the show event to center the dialog on the screen when it's shown.
+    def showEvent(self, event):
+        # Our screen's dimensions.
+        screen_geometry = QGuiApplication.primaryScreen().geometry()
+
+        # Centering the dialog on the screen.
+        x = (screen_geometry.width() - self.width()) // 2
+        y = (screen_geometry.height() - self.height()) // 2
+        self.move(x, y)
+        super().showEvent(event)
 
     # Default styling.
     def get_style(self):
@@ -408,7 +445,6 @@ class SpriteDetailsDialog(QDialog):
             pixelated_font = QFont()
 
         return pixelated_font
-    
 
 
 if __name__ == "__main__":
@@ -422,6 +458,6 @@ if __name__ == "__main__":
 
     # Create the gallery widget.
     gallery_widget = GalleryWidget(gallery_manager)
-    gallery_widget.show()
+    gallery_widget.showFullScreen()
 
     app.exec()
