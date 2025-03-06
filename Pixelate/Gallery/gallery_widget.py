@@ -22,7 +22,7 @@ class GalleryWidget(QWidget):
         # Gallery header.
         header = QLabel("Pixelate Gallery")
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        header.setStyleSheet("font-size: 24px; font-weight: bold;")
+        header.setObjectName("GalleryHeader")
         
         # A refresh button to reload the gallery.
         refresh_button = QPushButton("Refresh Gallery")
@@ -36,6 +36,7 @@ class GalleryWidget(QWidget):
         layout.addWidget(header)
         layout.addWidget(refresh_button)
         layout.addWidget(self.sprite_list)
+        self.setStyleSheet(self.get_style())
         self.setLayout(layout)
 
         # Load the gallery when the widget is created.
@@ -72,6 +73,110 @@ class GalleryWidget(QWidget):
             # Reload the gallery after the dialog is closed.
             self.load_gallery()
 
+    # Default styling.
+    def get_style(self):
+        return f'''
+        QWidget {{
+            background-color: #f0f0f0;
+            font-family: {self.get_font().family()};
+            color: #333333;
+        }}
+        QLabel {{
+            color: #333333;
+            margin-left: 10px;
+            margin-right: 10px;
+            font-size: 14px;
+        }}
+        QLabel#GalleryHeader {{
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+            padding: 12px;
+            background-color: purple;
+            border-radius: 8px;
+        }}
+        QListWidget {{
+            background-color: white;
+            color: #333333;
+            padding: 8px;
+            margin: 10px;
+            border: 2px solid #d0d0d0;
+            border-radius: 10px;
+        }}
+        QListWidget::item {{
+            padding: 12px;
+            margin: 8px;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+            background-color: #f8f8f8;
+        }}
+        QListWidget::item:hover {{
+            background-color: #e6d8f0;
+            border: 1px solid #9370DB;
+        }}
+        QListWidget::item:selected {{
+            background-color: purple;
+            color: white;
+            border: 1px solid white;
+        }}
+        QScrollBar:vertical {{
+            border: none;
+            background: #f0f0f0;
+            width: 10px;
+            margin: 0px;
+        }}
+        QScrollBar::handle:vertical {{
+            background: #9370DB;
+            min-height: 20px;
+            border-radius: 5px;
+        }}
+        QScrollBar::handle:vertical:hover {{
+            background: #7B68EE;
+        }}
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+            height: 0px;
+        }}
+        QPushButton {{
+            color: #333333;
+            background-color: white;
+            padding: 12px;
+            margin: 10px;
+            margin-bottom: 12px;
+            border: 2px solid #A9A9A9;
+            border-radius: 8px;
+            font-weight: bold;
+        }}
+        QPushButton:hover {{
+            color: white;
+            background-color: purple;
+            border: 2px solid white;
+        }}
+        QPushButton:pressed {{
+            color: white;
+            background-color: #4B0082;
+            border: 2px solid white;
+        }}
+    '''
+
+    # A method to get our pixelated font.
+    def get_font(self):
+
+        # Setting up our pixelated font:
+        font_path = "fonts/Press_Start_2P/PressStart2P-Regular.ttf"
+
+        # Adding our pixelated font to the QFontDatabase.
+        font_id = QFontDatabase.addApplicationFont(font_path)
+        
+        # If the font was loaded successfully, we'll use it for our button text.
+        if font_id != -1:
+            pixelated_font = QFont("Press Start 2P")
+        else:
+            # If the font wasn't loaded, we'll use the default application font.
+            pixelated_font = QFont()
+
+        return pixelated_font
+
 # Our sprite details dialog.
 class SpriteDetailsDialog(QDialog):
 
@@ -86,10 +191,12 @@ class SpriteDetailsDialog(QDialog):
 
         # Display the sprite title and creator.
         title_label = QLabel(f"Title: {sprite_data['title']} by {sprite_data['creator_username']}")
+        title_label.setObjectName("SpriteTitle")
 
         # Display the sprite description.
         desc_label = QLabel(f"Description: {sprite_data.get('description', 'No description')}")
         desc_label.setWordWrap(True)
+        desc_label.setObjectName("SpriteDescription")
 
         # Display a preview of the sprite.
         sprite_preview = QLabel()
@@ -109,12 +216,15 @@ class SpriteDetailsDialog(QDialog):
 
         sprite_preview.setPixmap(pixmap)
         sprite_preview.setFixedSize(pixmap_size)
+        sprite_preview.setObjectName("SpritePreview")
 
         # Display likes and a like button.
         likes_layout = QHBoxLayout()
         self.likes_label = QLabel(f"Likes: {self.sprite_data.get('likes', 0)}")
+        self.likes_label.setObjectName("LikesLabel")
         self.like_button = QPushButton("Like") if self.sprite_data.get('likes', 0) == 0 else QPushButton("Unlike")
         self.like_button.clicked.connect(self.toggle_like)
+        self.like_button.setObjectName("LikeButton")
         likes_layout.addWidget(self.likes_label)
         likes_layout.addWidget(self.like_button)
 
@@ -123,6 +233,7 @@ class SpriteDetailsDialog(QDialog):
         layout.addWidget(desc_label)
         layout.addWidget(sprite_preview)
         layout.addLayout(likes_layout)
+        self.setStyleSheet(self.get_style())
         self.setLayout(layout)
 
     # A method to toggle the like status of the sprite (using the gallery manager).
@@ -131,11 +242,133 @@ class SpriteDetailsDialog(QDialog):
         like_status = self.gallery_manager.toggle_like(self.sprite_data["id"])
 
         if like_status == "Liked":
-            self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0) + 1}")
+            # If the sprite's likes count is 1, we'll set the the likes label to 1.
+            if self.sprite_data.get('likes', 0) == 1:
+                self.likes_label.setText("Likes: 1")
+            # Otherwise, we'll increment the likes count by 1.
+            else:
+                self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0) + 1}")
             self.like_button.setText("Unlike")
         elif like_status == "Unliked":
-            self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0) - 1}")
+            # If the sprite's likes count is 0, we'll set the the likes label to 0.
+            if self.sprite_data.get('likes', 0) == 0:
+                self.likes_label.setText("Likes: 0")
+            # Otherwise, we'll decrement the likes count by 1.
+            else:
+                self.likes_label.setText(f"Likes: {self.sprite_data.get('likes', 0) - 1}")
             self.like_button.setText("Like")
+
+    # Default styling.
+    def get_style(self):
+        return f'''
+        QDialog {{
+            background-color: #f0f0f0;
+            font-family: {self.get_font().family()};
+            color: #333333;
+            padding: 15px;
+        }}
+        QLabel {{
+            color: #333333;
+            margin-left: 10px;
+            margin-right: 10px;
+            font-size: 14px;
+            padding: 5px;
+        }}
+        QLabel#SpriteTitle {{
+            font-size: 18px;
+            font-weight: bold;
+            color: #4B0082;
+            margin-bottom: 10px;
+            padding: 8px;
+            background-color: #e6d8f0;
+            border-radius: 8px;
+        }}
+        QLabel#SpriteDescription {{
+            background-color: white;
+            padding: 12px;
+            margin: 8px;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+        }}
+        QLabel#SpritePreview {{
+            border: 2px solid #9370DB;
+            border-radius: 10px;
+            padding: 5px;
+            background-color: white;
+            margin: 15px;
+        }}
+        QLabel#LikesLabel {{
+            font-weight: bold;
+            color: #4B0082;
+            font-size: 16px;
+        }}
+        QScrollBar:vertical {{
+            border: none;
+            background: #f0f0f0;
+            width: 10px;
+            margin: 0px;
+        }}
+        QScrollBar::handle:vertical {{
+            background: #9370DB;
+            min-height: 20px;
+            border-radius: 5px;
+        }}
+        QScrollBar::handle:vertical:hover {{
+            background: #7B68EE;
+        }}
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+            height: 0px;
+        }}
+        QPushButton {{
+            color: #333333;
+            background-color: white;
+            padding: 12px;
+            margin: 10px;
+            margin-bottom: 12px;
+            border: 2px solid #9370DB;
+            border-radius: 8px;
+            font-weight: bold;
+            min-width: 100px;
+        }}
+        QPushButton:hover {{
+            color: white;
+            background-color: #9370DB;
+            border: 2px solid #7B68EE;
+        }}
+        QPushButton:pressed {{
+            color: white;
+            background-color: #4B0082;
+            border: 2px solid #7B68EE;
+        }}
+        /* Special styling for the like button */
+        QPushButton#LikeButton {{
+            background-color: #f0f0f0;
+            border: 2px solid #9370DB;
+        }}
+        QPushButton#LikeButton:hover {{
+            background-color: #9370DB;
+            color: white;
+        }}
+    '''
+
+    # A method to get our pixelated font.
+    def get_font(self):
+
+        # Setting up our pixelated font:
+        font_path = "fonts/Press_Start_2P/PressStart2P-Regular.ttf"
+
+        # Adding our pixelated font to the QFontDatabase.
+        font_id = QFontDatabase.addApplicationFont(font_path)
+        
+        # If the font was loaded successfully, we'll use it for our button text.
+        if font_id != -1:
+            pixelated_font = QFont("Press Start 2P")
+        else:
+            # If the font wasn't loaded, we'll use the default application font.
+            pixelated_font = QFont()
+
+        return pixelated_font
+    
 
 
 if __name__ == "__main__":
