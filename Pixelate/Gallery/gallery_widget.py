@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
 from PyQt6.QtCore import Qt, QSize
-from Pixelate.Gallery.gallery_manager import GalleryManager
-# from Gallery.gallery_manager import GalleryManager
+# from Pixelate.Gallery.gallery_manager import GalleryManager
+from Gallery.gallery_manager import GalleryManager
 from Pixelate.User_Authentication.auth_manager import AuthManager
 
 class GalleryWidget(QWidget):
@@ -240,7 +240,7 @@ class SpriteDetailsDialog(QDialog):
         likes_layout = QHBoxLayout()
         self.likes_label = QLabel(f"Likes: {self.sprite_data.get('likes', 0)}")
         self.likes_label.setObjectName("LikesLabel")
-        self.like_button = QPushButton("Like") if self.sprite_data.get('likes', 0) == 0 else QPushButton("Unlike")
+        self.like_button = QPushButton("Like") if not self.sprite_data.get("liked_by_user", False) else QPushButton("Unlike")
         self.like_button.clicked.connect(self.toggle_like)
         self.like_button.setObjectName("LikeButton")
         likes_layout.addWidget(self.likes_label)

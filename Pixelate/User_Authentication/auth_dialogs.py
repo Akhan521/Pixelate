@@ -258,6 +258,8 @@ class RegisterDialog(QDialog):
         # Attempt to register the user.
         success, error_msg = self.auth_manager.register(email, password, username)
         if success:
+            # Automatically log the user in after registering.
+            self.auth_manager.login(email, password)
             CustomMessageBox("Success", "You have successfully registered.", type="info")
             self.accept()
         else:

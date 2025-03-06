@@ -21,8 +21,8 @@ class AuthManager:
         self.auth = self.firebase.auth()
         self.db = firestore.client()
         # For testing purposes, we'll sign in with a test account.
-        # self.user = self.auth.sign_in_with_email_and_password("aamirksfg@gmail.com", "aak365")
-        self.user = None
+        self.user = self.auth.sign_in_with_email_and_password("darth@mail.com", "darthvader")
+        # self.user = None
 
     def register(self, email, password, username):
         try:

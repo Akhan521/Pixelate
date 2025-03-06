@@ -95,6 +95,21 @@ class GalleryManager:
                 else:
                     sprite["creator_username"] = "Unknown"
 
+                # Check if the current user has liked the sprite.
+                sprite["liked_by_user"] = False
+                # If the user is logged in, check if they have liked the sprite.
+                if self.auth_manager.is_logged_in():
+                    user_id = self.auth_manager.get_user_id()
+                    like_ref = (
+                        self.db.collection("likes")
+                        .where("user_id", "==", user_id)
+                        .where("sprite_id", "==", sprite["id"])
+                        .limit(1)
+                    )
+                    likes = list(like_ref.stream())
+                    if likes:
+                        sprite["liked_by_user"] = True
+
                 sprites.append(sprite)
 
             return sprites
@@ -155,6 +170,21 @@ class GalleryManager:
             
             sprite_data = sprite.to_dict()
             sprite_data["id"] = sprite_id
+
+            # Check if the current user has liked the sprite.
+            sprite_data["liked_by_user"] = False
+            # If the user is logged in, check if they have liked the sprite.
+            if self.auth_manager.is_logged_in():
+                user_id = self.auth_manager.get_user_id()
+                like_ref = (
+                    self.db.collection("likes")
+                    .where("user_id", "==", user_id)
+                    .where("sprite_id", "==", sprite_id)
+                    .limit(1)
+                )
+                likes = list(like_ref.stream())
+                if likes:
+                    sprite_data["liked_by_user"] = True
 
             # Fetch the sprite creator's data.
             user = self.db.collection("users").document(sprite_data["creator_id"]).get()

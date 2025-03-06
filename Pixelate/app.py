@@ -107,13 +107,18 @@ class StartScreen(QMainWindow):
 
         # If the user is not logged in, we'll prompt them to log in.
         if not self.auth_manager.is_logged_in():
-            if login_dialog.exec() == QDialog.DialogCode.Accepted:
-                # If the user successfully logs in, we'll close the login dialog and open the gallery.
+            logged_in = login_dialog.exec()
+            if logged_in == QDialog.DialogCode.Accepted:
+                # If the user successfully logs in, we'll open the gallery.
                 self.gallery_widget = GalleryWidget(self.gallery_manager)
                 self.gallery_widget.showFullScreen()
             else:
-                return
-
+                # If the user canceled/closed the login dialog, we'll check to see whether they've registered + logged in.
+                # The register dialog will automatically log the user in if they successfully register.
+                # (i.e. if the user is logged in by this point, they've registered successfully).
+                if self.auth_manager.is_logged_in():
+                    self.gallery_widget = GalleryWidget(self.gallery_manager)
+                    self.gallery_widget.showFullScreen()
 
 
     # A method to start our application using the main window.
