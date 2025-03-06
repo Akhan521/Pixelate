@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
 from PyQt6.QtCore import Qt, QSize
-# from Pixelate.Gallery.gallery_manager import GalleryManager
-from Gallery.gallery_manager import GalleryManager
+from Pixelate.Gallery.gallery_manager import GalleryManager
+# from Gallery.gallery_manager import GalleryManager
 from Gallery.upload_dialog import UploadDialog
 from Pixelate.User_Authentication.auth_manager import AuthManager
 
@@ -215,17 +215,23 @@ class SpriteDetailsDialog(QDialog):
         super().__init__()
         self.sprite_data = sprite_data
         self.gallery_manager = gallery_manager
-        self.setWindowTitle(f"{sprite_data['title']}")
+        
+        # Hiding our system taskbar and keeping our dialog on top.
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
 
         # Create a layout for the dialog.
         layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 10)
+        layout.setSpacing(5)
 
         # Display the sprite title and creator.
-        title_label = QLabel(f"Title: {sprite_data['title']} by {sprite_data['creator_username']}")
+        title_label = QLabel(f"{sprite_data['title']} by {sprite_data['creator_username']}")
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setObjectName("SpriteTitle")
 
         # Display the sprite description.
-        desc_label = QLabel(f"Description: {sprite_data.get('description', 'No description')}")
+        desc_label = QLabel(f"{sprite_data.get('description', 'No description')}")
+        desc_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         desc_label.setWordWrap(True)
         desc_label.setObjectName("SpriteDescription")
 
@@ -249,21 +255,25 @@ class SpriteDetailsDialog(QDialog):
         sprite_preview.setFixedSize(pixmap_size)
         sprite_preview.setObjectName("SpritePreview")
 
-        # Display likes and a like button.
-        likes_layout = QHBoxLayout()
+        # Display likes, a like button, and a close button.
+        buttons_layout = QHBoxLayout()
+        buttons_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.likes_label = QLabel(f"Likes: {self.sprite_data.get('likes', 0)}")
+        self.likes_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.likes_label.setObjectName("LikesLabel")
         self.like_button = QPushButton("Like") if not self.sprite_data.get("liked_by_user", False) else QPushButton("Unlike")
         self.like_button.clicked.connect(self.toggle_like)
-        self.like_button.setObjectName("LikeButton")
-        likes_layout.addWidget(self.likes_label)
-        likes_layout.addWidget(self.like_button)
+        self.close_button = QPushButton("Close")
+        self.close_button.clicked.connect(self.close)
+        buttons_layout.addWidget(self.like_button)
+        buttons_layout.addWidget(self.close_button)
 
         # Adding our widgets to the layout.
         layout.addWidget(title_label)
         layout.addWidget(desc_label)
         layout.addWidget(sprite_preview)
-        layout.addLayout(likes_layout)
+        layout.addWidget(self.likes_label)
+        layout.addLayout(buttons_layout)
         self.setStyleSheet(self.get_style())
         self.setLayout(layout)
 
@@ -288,24 +298,30 @@ class SpriteDetailsDialog(QDialog):
             font-family: {self.get_font().family()};
             color: #333333;
             padding: 15px;
+            border: 2px solid lightgray;
         }}
         QLabel {{
             color: #333333;
+            font-family: {self.get_font().family()};
             margin-left: 10px;
             margin-right: 10px;
             font-size: 14px;
             padding: 5px;
         }}
         QLabel#SpriteTitle {{
+            font-family: {self.get_font().family()};
             font-size: 18px;
             font-weight: bold;
-            color: #4B0082;
+            color: white;
+            margin-left: 0px;
+            margin-right: 0px;
             margin-bottom: 10px;
             padding: 8px;
-            background-color: #e6d8f0;
-            border-radius: 8px;
+            background-color: purple;
         }}
         QLabel#SpriteDescription {{
+            font-family: {self.get_font().family()};
+            font-size: 12px;
             background-color: white;
             padding: 12px;
             margin: 8px;
@@ -313,16 +329,18 @@ class SpriteDetailsDialog(QDialog):
             border-radius: 8px;
         }}
         QLabel#SpritePreview {{
-            border: 2px solid #9370DB;
+            border: 2px solid purple;
             border-radius: 10px;
             padding: 5px;
             background-color: white;
             margin: 15px;
         }}
         QLabel#LikesLabel {{
+            font-family: {self.get_font().family()};
+            font-size: 16px;
             font-weight: bold;
             color: #4B0082;
-            font-size: 16px;
+            margin-bottom: 10px;
         }}
         QScrollBar:vertical {{
             border: none;
@@ -342,35 +360,26 @@ class SpriteDetailsDialog(QDialog):
             height: 0px;
         }}
         QPushButton {{
-            color: #333333;
-            background-color: white;
-            padding: 12px;
-            margin: 10px;
-            margin-bottom: 12px;
-            border: 2px solid #9370DB;
-            border-radius: 8px;
-            font-weight: bold;
-            min-width: 100px;
-        }}
-        QPushButton:hover {{
-            color: white;
-            background-color: #9370DB;
-            border: 2px solid #7B68EE;
-        }}
-        QPushButton:pressed {{
-            color: white;
-            background-color: #4B0082;
-            border: 2px solid #7B68EE;
-        }}
-        /* Special styling for the like button */
-        QPushButton#LikeButton {{
-            background-color: #f0f0f0;
-            border: 2px solid #9370DB;
-        }}
-        QPushButton#LikeButton:hover {{
-            background-color: #9370DB;
-            color: white;
-        }}
+                color: black;
+                background-color: white;
+                font-family: {self.get_font().family()};
+                padding: 10px;
+                margin-left: 10px;
+                margin-right: 10px;
+                margin-bottom: 10px;
+                border: 2px solid #A9A9A9;
+                border-radius: 10px;
+            }}
+            QPushButton:hover {{
+                color: white;
+                background-color: purple;
+                border: 2px solid white;
+            }}
+            QPushButton:pressed {{
+                color: white;
+                background-color: #4B0082;
+                border: 2px solid white
+            }}
     '''
 
     # A method to get our pixelated font.
