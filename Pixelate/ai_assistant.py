@@ -7,10 +7,11 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QTextEdit, QFormLayout, QDialogButtonBox,
                               QListWidget, QListWidgetItem )
 
-from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage
+from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage, QGuiApplication
 from PyQt6.QtCore import Qt, QSize
 from chat_bubble_widget import ChatBubbleWidget
 from image_gen_dialog import ImageGenDialog
+from Gallery.gallery_widget import DimmedBackdrop
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
@@ -25,12 +26,15 @@ with open("Pixelate/Pixi_System_Prompt.txt", "r") as file:
 # Our AI assistant will be implemented as a chat widget.
 class AIAssistant(QWidget):
 
-    def __init__(self, width, height, canvas=None):
+    def __init__(self, width, height, canvas=None, main_window=None):
 
         super().__init__()
 
-        # Storing a reference to the canvas (to handle image generation).
+        # Storing a reference to the canvas (to handle image generation + drawing).
         self.canvas = canvas
+
+        # Storing a reference to the main window (to dim the background during image generation).
+        self.main_window = main_window
 
         # Creating an instance of the OpenAI class.
         self.client = OpenAI(
@@ -110,6 +114,10 @@ class AIAssistant(QWidget):
     def set_canvas(self, canvas):
         self.canvas = canvas
 
+    # A function to set the main window reference for our AI assistant.
+    def set_main_window(self, main_window):
+        self.main_window = main_window
+
     # A function to send a request to the OpenAI API and receive a response. 
     def get_response(self):
 
@@ -164,7 +172,6 @@ class AIAssistant(QWidget):
             # Automatically scrolling to the bottom of our chat messages list widget.
             self.chat_messages.scrollToBottom()
 
-
     # A function to create a list item for our chat messages list widget.
     def create_list_item(self, message, is_user=False):
 
@@ -197,6 +204,10 @@ class AIAssistant(QWidget):
     # Our generate_image method will be implemented here.
     def generate_image(self):
 
+        # Providing a dimmed backdrop for the image generation dialog.
+        self.backdrop = DimmedBackdrop(self.main_window)
+        self.backdrop.show()
+
         # Creating an ImageGenDialog instance to generate an image based on the user's description.
         image_gen_dialog = ImageGenDialog()
 
@@ -224,6 +235,9 @@ class AIAssistant(QWidget):
                 
                 # Storing the generated image in our canvas.
                 self.canvas.set_generated_image(image)
+
+        # Closing the dimmed backdrop after the image generation dialog is closed.
+        self.backdrop.close()
 
     # Button Style:
     def get_button_style(self):

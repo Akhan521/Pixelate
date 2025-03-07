@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
 from PyQt6.QtCore import Qt, QSize
-from Pixelate.Gallery.gallery_manager import GalleryManager
-# from Gallery.gallery_manager import GalleryManager
+# from Pixelate.Gallery.gallery_manager import GalleryManager
+from Gallery.gallery_manager import GalleryManager
 from Gallery.upload_dialog import UploadDialog
 from Pixelate.User_Authentication.auth_manager import AuthManager
 
@@ -224,7 +224,7 @@ class DimmedBackdrop(QWidget):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
 
         # Set the backdrop to be the same size as the parent widget.
-        self.setGeometry(0, 0, parent.width(), parent.height())
+        self.setGeometry(parent.geometry())
 
         # Set the backdrop to be on top of the parent widget.
         self.raise_()
