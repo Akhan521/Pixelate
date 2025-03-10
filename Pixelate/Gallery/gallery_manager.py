@@ -11,7 +11,8 @@ if root_path not in sys.path:
 
 import pyrebase
 from firebase_admin import firestore, storage
-from Pixelate.Firebase_Config.firebase_config import firebase_config
+from backend.config import firebase_config
+# from Pixelate.Firebase_Config.firebase_config import firebase_config
 
 class GalleryManager:
 

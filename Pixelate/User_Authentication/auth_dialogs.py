@@ -8,6 +8,7 @@ from PyQt6.QtGui import QPixmap, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt
 from custom_messagebox import CustomMessageBox
 from User_Authentication.auth_manager import AuthManager
+import requests
 import json
 
 class LoginDialog(QDialog):
@@ -84,8 +85,28 @@ class LoginDialog(QDialog):
         # Attempt to log the user in.
         success, error_msg = self.auth_manager.login(email, password)
         if success:
+            # Save the user's data to Firestore.
+            try:
+                response = requests.post(f"{self.auth_manager.backend_url}/auth/save_user_data", 
+                                            json={"email": email},
+                                            headers={"Authorization": f"Bearer {self.auth_manager.get_token()}"})
+                
+                # If an error occurred while saving the user's data, show an error message.
+                if response.status_code != 200:
+                    error = response.json()
+                    error_msg = error["detail"]
+                    print(f"An error occurred while saving user data: {error_msg}")
+                    CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
+                    return
+                
+            except Exception as e:
+                print(f"An error occurred while saving user data: {str(e)}")
+                CustomMessageBox("Error", f"An error occurred while saving user data. Please try again.", type="warning")
+                return
+
             CustomMessageBox("Success", "You have successfully logged in.", type="info")
             self.accept()
+
         else:
             CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
 
@@ -259,10 +280,30 @@ class RegisterDialog(QDialog):
         # Attempt to register the user.
         success, error_msg = self.auth_manager.register(email, password, username)
         if success:
+            # Save the user's data to Firestore.
+            try:
+                response = requests.post(f"{self.auth_manager.backend_url}/auth/save_user_data", 
+                                            json={"email": email, "username": username},
+                                            headers={"Authorization": f"Bearer {self.auth_manager.get_token()}"})
+                
+                # If an error occurred while saving the user's data, show an error message.
+                if response.status_code != 200:
+                    error = response.json()
+                    error_msg = error["detail"]
+                    print(f"An error occurred while saving user data: {error_msg}")
+                    CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
+                    return
+                
+            except Exception as e:
+                print(f"An error occurred while saving user data: {str(e)}")
+                CustomMessageBox("Error", f"An error occurred while saving user data. Please try again.", type="warning")
+                return
+
             # Automatically log the user in after registering.
             self.auth_manager.login(email, password)
             CustomMessageBox("Success", "You have successfully registered.", type="info")
             self.accept()
+            
         else:
             CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
 

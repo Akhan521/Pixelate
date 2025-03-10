@@ -1,19 +1,13 @@
 
-# Our firebase configuration.
-
+# Our Firebase configuration for backend operations.
+import os
+import sys
+from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore, storage
-import pyrebase
-import json
-import os
-from dotenv import load_dotenv
 
 # Load the environment variables.
 load_dotenv()
-
-# Initialize the Firebase Admin SDK for backend operations.
-# cred = credentials.Certificate(f"{os.path.dirname(__file__)}/{os.getenv('FIREBASE_ADMIN_SDK')}")
-# firebase_admin.initialize_app(cred)
 
 # Initialize Pyrebase for frontend operations.
 firebase_config = {
@@ -27,3 +21,8 @@ firebase_config = {
     "databaseURL": ""
 }
 
+# Initialize the Firebase Admin SDK for backend operations.
+cred = credentials.Certificate(f"{os.path.dirname(__file__)}/{os.getenv('FIREBASE_ADMIN_SDK')}")
+firebase_admin.initialize_app(cred, {
+    "storageBucket": "pixelate-c1517.firebasestorage.app"
+})
