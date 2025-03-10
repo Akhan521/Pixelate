@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+import requests
 
 # Adding the root directory to the Python path.
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,9 +21,10 @@ class GalleryManager:
         self.auth_manager = auth_manager
         self.db = firestore.client()
         self.bucket = storage.bucket(name=firebase_config["storageBucket"])
+        self.backend_url = self.auth_manager.backend_url
 
     # A method to upload a sprite to the gallery.
-    def upload_sprite(self, title, description, pixels_data):
+    def upload_sprite(self, title, description, file_name, pixels_data):
         '''
         Here is the structure of the pixels_data parameter:
             pixels_data: {
@@ -31,47 +33,33 @@ class GalleryManager:
             }
         '''
         try:
-            user_id = self.auth_manager.get_user_id()
+            
             # If the user is not logged in, return False.
-            if not user_id:
+            if not self.auth_manager.is_logged_in():
                 return False
             
-            # Create a new document in the "sprites" collection.
-            sprite_ref = self.db.collection("sprites").document()
-            sprite_id = sprite_ref.id
-
-            # Set up the blob path (storage path) for the sprite.
-            blob_path = f"sprites/{user_id}/{sprite_id}.pix"
-            blob = self.bucket.blob(blob_path)
+            user_id = self.auth_manager.get_user_id()
             
-            # Prepare the sprite data for upload (serializing to JSON).
-            sprite_data = {
-                "dimensions": list(pixels_data["dimensions"]),
-                "pixels": {f"{x},{y}": list(rgba) for (x, y), rgba in pixels_data["pixels"].items()}
-            }
-            sprite_data_json = json.dumps(sprite_data)
-
-            # Upload the sprite data to Firebase Storage.
-            blob.upload_from_string(sprite_data_json, content_type="application/json")
-
-            # Make the sprite publicly accessible.
-            blob.make_public()
-
-            # Store the sprite metadata in Firestore.
-            sprite_data = {
-                "title": title,
-                "description": description,
-                "creator_id": user_id,
-                "storage_path": blob_path,
-                "public_url": blob.public_url,
-                "created_at": firestore.SERVER_TIMESTAMP,
-                "likes": 0
-            }
-            sprite_ref.set(sprite_data)
-            return True
+            # Send an upload request to the backend.
+            response = requests.post(
+                f"{self.backend_url}/sprite/upload",
+                   json={
+                        "title": title,
+                        "description": description,
+                        "creator_id": user_id,
+                        "file_name": file_name,
+                        "content": pixels_data
+                    },
+                    headers={"Authorization": f"Bearer {self.auth_manager.get_token()}"}
+                )
+            
+            # If the request was successful, return True.
+            if response.status_code == 200:
+                return True
+            return False
         
         except Exception as e:
-            print(f"An error occurred while uploading sprite: {e}")
+            print(f"An error occurred while uploading sprite: {str(e)}")
             return False
         
     # A method to get our gallery of sprites.

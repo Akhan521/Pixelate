@@ -76,18 +76,19 @@ class UploadThread(QThread):
     sprite_uploaded = pyqtSignal(bool)
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, gallery_manager, title, description, pixels_data):
+    def __init__(self, gallery_manager, title, description, file_name, pixels_data):
         super().__init__()
         self.gallery_manager = gallery_manager
         self.title = title
         self.description = description
+        self.file_name = file_name
         self.pixels_data = pixels_data
 
     def run(self):
         # Now, we'll try to upload the sprite.
         try:
             # Uploading the sprite to the gallery.
-            success = self.gallery_manager.upload_sprite(self.title, self.description, self.pixels_data)
+            success = self.gallery_manager.upload_sprite(self.title, self.description, self.file_name, self.pixels_data)
             self.sprite_uploaded.emit(success)
 
         except Exception as e:
@@ -99,6 +100,7 @@ class UploadDialog(QDialog):
     def __init__(self, gallery_manager):
         super().__init__()
         self.gallery_manager = gallery_manager
+        self.file_name = None
         self.pixels_data = None
         self.setFixedSize(400, 460)
 
@@ -184,6 +186,11 @@ class UploadDialog(QDialog):
             CustomMessageBox("Error", "No sprite data to upload.", type="error")
             return
         
+        # If the file name is empty, show an error message.
+        if not self.file_name:
+            CustomMessageBox("Error", "No sprite selected.", type="error")
+            return
+        
         # Disable our UI during sprite upload to prevent any issues.
         self.title_input.setReadOnly(True)
         self.description_input.setReadOnly(True)
@@ -194,7 +201,7 @@ class UploadDialog(QDialog):
         self.movie.start()
 
         # Create an upload thread to upload the sprite in the background.
-        self.upload_thread = UploadThread(self.gallery_manager, title, description, self.pixels_data)
+        self.upload_thread = UploadThread(self.gallery_manager, title, description, self.file_name, self.pixels_data)
         self.upload_thread.sprite_uploaded.connect(self.on_sprite_uploaded)
         self.upload_thread.error_occurred.connect(self.on_error_occurred)
         self.upload_thread.finished.connect(self.upload_thread.deleteLater)
@@ -242,6 +249,7 @@ class UploadDialog(QDialog):
 
         # Updating our sprite label.
         self.sprite_label.setText(f"Selected Sprite: {project_name}")
+        self.file_name = project_name
 
         # Showing a success message.
         CustomMessageBox("Success", "Sprite selected successfully.", type="info")
@@ -262,6 +270,7 @@ class UploadDialog(QDialog):
         self.description_input.clear()
         self.sprite_label.setText("Selected Sprite: None")
         self.pixels_data = None
+        self.file_name = None
 
         if success:
             # Showing a success message.
@@ -277,8 +286,9 @@ class UploadDialog(QDialog):
         self.description_input.setReadOnly(False)
         self.buttons.show()
 
-        # Clearing the pixels data.
+        # Clearing the pixels data and file name.
         self.pixels_data = None
+        self.file_name = None
 
         # Updating our sprite label to show that no sprite is selected.
         self.sprite_label.setText("Selected Sprite: None")
