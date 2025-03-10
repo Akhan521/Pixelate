@@ -15,6 +15,9 @@ class UserDataRequest(BaseModel):
     username: str = None # Provided when the user registers.
     created_at: firestore.SERVER_TIMESTAMP
 
-class PixFileRequest(BaseModel):
+class SpriteUploadRequest(BaseModel):
+    title: str
+    description: str
+    creator_id: str
     file_name: str
-    content: str  # .pix file content as a string.
+    content: str   # .pix file content as a string.
