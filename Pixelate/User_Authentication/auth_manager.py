@@ -19,12 +19,11 @@ class AuthManager(QObject):
 
     def __init__(self):
         super().__init__()
-        self.backend_url = "http://localhost:8000"
+        self.backend_url = "https://pixelate-backend.onrender.com"
 
         # Firebase client configuration.
         self.firebase = pyrebase.initialize_app(firebase_config)
         self.auth = self.firebase.auth()
-        self.db = firestore.client()
         self.user = None
         self.token = None
 
