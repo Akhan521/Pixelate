@@ -10,7 +10,7 @@ if root_path not in sys.path:
 
 import pyrebase
 from firebase_admin import firestore
-from backend.config import firebase_config
+from firebase_config import firebase_config
 from PyQt6.QtCore import QObject
 import requests
 import json
