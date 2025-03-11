@@ -8,7 +8,7 @@ from auth.auth_manager import AuthManager
 from auth.firestore_manager import FirestoreManager
 from auth.storage_manager import StorageManager
 from auth.models import LoginRequest, AuthResponse, UserDataRequest, SpriteUploadRequest
-from firebase_admin import auth
+from firebase_admin import auth, firestore
 from config import firebase_admin
 
 # Initialize the FASTAPI app and other necessary components.
@@ -72,7 +72,7 @@ async def get_gallery(limit: int = 15, user_id: str = Depends(get_current_user))
     print("\nGetting gallery...\n")
     sprites = []
     # Retrieve the latest sprites from Firestore.
-    query = firestore_manager.db.collection("sprites").order_by("created_at", direction=firestore_manager.db.Query.DESCENDING)
+    query = firestore_manager.db.collection("sprites").order_by("created_at", direction=firestore.Query.Direction.DESCENDING)
     query = query.limit(limit)
     results = query.stream()
 
