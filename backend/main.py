@@ -72,7 +72,7 @@ async def get_gallery(limit: int = 15, user_id: str = Depends(get_current_user))
     print("\nGetting gallery...\n")
     sprites = []
     # Retrieve the latest sprites from Firestore.
-    query = firestore_manager.db.collection("sprites").order_by("created_at", direction=firestore.Query.Direction.DESCENDING)
+    query = firestore_manager.db.collection("sprites").order_by("created_at", direction=firestore.Query.DESCENDING)
     query = query.limit(limit)
     results = query.stream()
 
