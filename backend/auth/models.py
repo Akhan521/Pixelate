@@ -1,6 +1,7 @@
 
 # Our request and response models:
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Dict, List
 
 class LoginRequest(BaseModel):
     id_token: str # Provided by Firebase Client SDK.
@@ -19,4 +20,16 @@ class SpriteUploadRequest(BaseModel):
     description: str
     creator_id: str
     file_name: str
-    content: dict # Our pixels data.
+    pixels_data: Dict[str, any] = Field(
+        ...,
+        description="A dictionary containing the sprite's pixel data.",
+        example = {
+            "dimensions": [16, 16],
+            "pixels": {
+                "0,0": [255, 255, 255, 255],
+                "0,1": [255, 255, 255, 255],
+                "0,2": [255, 255, 255, 255],
+                "0,3": [255, 255, 255, 255],
+            }
+        }
+    )

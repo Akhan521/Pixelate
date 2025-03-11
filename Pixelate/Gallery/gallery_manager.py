@@ -24,6 +24,12 @@ class GalleryManager:
                 "dimensions": (width, height),
                 "pixels": { (x, y): rgba_tuple } 
             }
+        
+        We want it in this format for the backend:
+            pixels_data: {
+                "dimensions": [width, height],
+                "pixels": { 'x, y': [r, g, b, a] } 
+            }
         '''
         try:
             
@@ -32,6 +38,13 @@ class GalleryManager:
                 return False
             
             user_id = self.auth_manager.get_user_id()
+
+            # Convert the pixels_data to the format expected by the backend (Serializing to JSON).
+            pixels_data = {
+                "dimensions": list(pixels_data["dimensions"]),
+                "pixels": {f"{x},{y}": list(rgba) for (x, y), rgba in pixels_data["pixels"].items()}
+            }
+            pixels_data = json.dumps(pixels_data)
             
             # Send an upload request to the backend.
             response = requests.post(
@@ -41,7 +54,7 @@ class GalleryManager:
                         "description": description,
                         "creator_id": user_id,
                         "file_name": file_name,
-                        "content": pixels_data
+                        "pixels_data": pixels_data
                     },
                     headers={"Authorization": f"Bearer {self.auth_manager.get_token()}"}
                 )
@@ -54,6 +67,8 @@ class GalleryManager:
         except requests.exceptions.RequestException as e:
             error_msg = e.response.json().get("detail", str(e)) if hasattr(e, "response") else str(e)
             print(f"An error occurred while uploading sprite: {error_msg}")
+            print(f"Full response: {e.response.text if hasattr(e, 'response') else 'No response'}")
+            print(f"Status code: {e.response.status_code if hasattr(e, 'response') else 'N/A'}")
             return False
         
     # A method to get our gallery of sprites.

@@ -51,10 +51,10 @@ async def upload_sprite(request: SpriteUploadRequest, user_id: str = Depends(get
     description = request.description
     creator_id = request.creator_id
     file_name = request.file_name
-    content = request.content
+    pixels_data = request.pixels_data
 
     # If any of the required fields are missing, raise an HTTPException.
-    if not all([title, description, creator_id, file_name, content]):
+    if not all([title, description, creator_id, file_name, pixels_data]):
         raise HTTPException(status_code=400, detail="Missing required fields")
     
     # If the creator ID does not match the user ID, raise an HTTPException.
@@ -62,7 +62,7 @@ async def upload_sprite(request: SpriteUploadRequest, user_id: str = Depends(get
         raise HTTPException(status_code=403, detail="Unauthorized to upload sprite")
     
     # Save the sprite file to Firebase Storage.
-    sprite_data = storage_manager.upload_sprite(user_id, title, description, file_name, content)
+    sprite_data = storage_manager.upload_sprite(user_id, title, description, file_name, pixels_data)
     return {"message": "Pix file uploaded successfully", "sprite_id": sprite_data["id"]}
 
 # Our get gallery route to retrieve all sprites uploaded by users.
