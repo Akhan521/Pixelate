@@ -48,8 +48,7 @@ class AuthManager(QObject):
                 return (True, None)
             
             else:
-                error = response.json()
-                error_msg = error["detail"]
+                error_msg = response.json().get("detail", str(response.json()))
                 print(f"An error occurred while registering: {error_msg}")
                 return (False, error_msg)
         
@@ -58,7 +57,7 @@ class AuthManager(QObject):
             error_response = e.args[1]
             error = json.loads(error_response)
             error_msg = error["error"]["message"]
-            print(f"An error occurred while registering: {error_msg}")
+            print(f"An error occurred while logging in: {error_msg}")
             return (False, error_msg)
         
         except Exception as e:
@@ -83,8 +82,7 @@ class AuthManager(QObject):
                 self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
                 return (True, None)
             else:
-                error = response.json()
-                error_msg = error["detail"]
+                error_msg = response.json().get("detail", str(response.json()))
                 print(f"An error occurred while logging in: {error_msg}")
                 return (False, error_msg)
         

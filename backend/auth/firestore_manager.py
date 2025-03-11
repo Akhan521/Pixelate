@@ -18,7 +18,9 @@ class FirestoreManager:
             }
             if username:
                 user_data["username"] = username
+            print("Attempting to save user data.")
             self.db.collection("users").document(user_id).set(user_data, merge=True)
+            print("User data saved in Firestore.")
         
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred while saving user data: {str(e)}")
