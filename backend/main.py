@@ -23,6 +23,7 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(securit
     return auth_manager.get_current_user(token.credentials)
 
 # Our login route to authenticate the user.
+# TODO: Remove this route as we already have the client provide the user ID and ID token.
 @app.post("/auth/login", response_model=AuthResponse)
 async def login(request: LoginRequest) -> AuthResponse:
     
@@ -66,15 +67,19 @@ async def upload_sprite(request: SpriteUploadRequest, user_id: str = Depends(get
 
 # Our get gallery route to retrieve all sprites uploaded by users.
 @app.get("/sprite/gallery")
-async def get_gallery(limit: int = 10, user_id: str = Depends(get_current_user)) -> list[dict]:
+async def get_gallery(limit: int = 15, user_id: str = Depends(get_current_user)) -> list[dict]:
 
+    print("\nGetting gallery...\n")
     sprites = []
     # Retrieve the latest sprites from Firestore.
     query = firestore_manager.db.collection("sprites").order_by("created_at", direction=firestore_manager.db.Query.DESCENDING)
     query = query.limit(limit)
     results = query.stream()
 
+    print(f"\nResults = {results}\n")
+
     for doc in results:
+        print(f"Sprite {doc.id} => {doc.to_dict()}")
         sprite = doc.to_dict()
         sprite["id"] = doc.id
 
