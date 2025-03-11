@@ -11,6 +11,7 @@ from PyQt6.QtCore import Qt, QSize
 from Gallery.gallery_manager import GalleryManager
 from Gallery.upload_dialog import UploadDialog
 from Pixelate.User_Authentication.auth_manager import AuthManager
+import json
 
 class GalleryWidget(QWidget):
 
@@ -97,7 +98,34 @@ class GalleryWidget(QWidget):
         # Get the sprite from the gallery manager.
         print(f"GALLERY WIDGET: Showing sprite details for sprite ID: {sprite_id}")
         sprite_data = self.gallery_manager.get_sprite(sprite_id)
-        print(f"Sprite data: {sprite_data}")
+        
+        '''
+        Our pixels data is currently in this format as a JSON string:
+        pixels_data: {
+            "dimensions": [width, height],
+            "pixels": { 'x, y': [r, g, b, a] }
+        }
+
+        We want it in this format to display the sprite preview:
+        pixels_data: {
+            "dimensions": (width, height),
+            "pixels": { (x, y): rgba_tuple }
+        }
+        '''
+        pixels_data = sprite_data.get("pixels_data", {})
+        # If there's no pixels data, return.
+        if not pixels_data:
+            return
+        
+        # Convert the pixels data to the format expected by the dialog.
+        pixels_data = json.loads(pixels_data)
+        print(f"Type of pixels_data: {type(pixels_data)}")
+        print(f"Type of pixels: {type(pixels_data['pixels'])}")
+        pixels_data = {
+            "dimensions": tuple(pixels_data["dimensions"]),
+            "pixels": {tuple(map(int, key.split(","))): tuple(value) for key, value in pixels_data["pixels"].items()}
+        }
+        sprite_data["pixels_data"] = pixels_data
 
         # Show the sprite details in a dialog.
         if sprite_data:
