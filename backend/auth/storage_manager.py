@@ -11,14 +11,16 @@ class StorageManager:
         self.db = firestore.client()
 
     # A method to upload a .pix file to Firebase Storage + store sprite metadata in Firestore.
-    def upload_sprite(self, user_id: str, title: str, description: str, file_name: str, pixels_data: dict) -> dict:
+    def upload_sprite(self, user_id: str, title: str, description: str, file_name: str, pixels_data: str) -> dict:
         '''
-        Here is the structure of the pixels_data parameter:
+        Here is the structure of the pixels_data JSON string:
             pixels_data: {
                 "dimensions: [width, height],
                 "pixels": { 'x, y': [r, g, b, a] }
             }
         '''
+
+        print(f"\nUploading sprite to cloud storage: {title}")
         
         try:
             # Create a new document in the "sprites" collection.
@@ -28,6 +30,8 @@ class StorageManager:
             # Set up the blob path (storage path) for the sprite.
             blob_path = f"sprites/{user_id}/{file_name}"
             blob = self.bucket.blob(blob_path)
+            
+            # Since the pixels data is a JSON string, we can directly upload it to Firebase Storage.
             sprite_data_json = json.dumps(pixels_data)
 
             # Upload the sprite data to Firebase Storage.

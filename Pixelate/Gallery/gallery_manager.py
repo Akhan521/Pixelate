@@ -39,6 +39,8 @@ class GalleryManager:
             
             user_id = self.auth_manager.get_user_id()
 
+            print(f"\nSending upload request to backend for sprite: {title}")
+
             # Convert the pixels_data to the format expected by the backend (Serializing to JSON).
             pixels_data = {
                 "dimensions": list(pixels_data["dimensions"]),
@@ -61,14 +63,14 @@ class GalleryManager:
             
             # If the request was successful, return True.
             if response.status_code == 200:
+                print("Sprite uploaded successfully!")
                 return True
+            print("\nFailed to upload sprite due to failed request.")
             return False
         
         except requests.exceptions.RequestException as e:
             error_msg = e.response.json().get("detail", str(e)) if hasattr(e, "response") else str(e)
             print(f"An error occurred while uploading sprite: {error_msg}")
-            print(f"Full response: {e.response.text if hasattr(e, 'response') else 'No response'}")
-            print(f"Status code: {e.response.status_code if hasattr(e, 'response') else 'N/A'}")
             return False
         
     # A method to get our gallery of sprites.

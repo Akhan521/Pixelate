@@ -1,8 +1,6 @@
 
 # Our request and response models:
-from pydantic import BaseModel, Field
-from pydantic.config import ConfigDict
-from typing import Dict, List
+from pydantic import BaseModel
 
 class LoginRequest(BaseModel):
     id_token: str # Provided by Firebase Client SDK.
@@ -21,20 +19,12 @@ class SpriteUploadRequest(BaseModel):
     description: str
     creator_id: str
     file_name: str
-    pixels_data: Dict[str, any] = Field(
-        ...,
-        description="A dictionary containing the sprite's pixel data.",
-        example = {
-            "dimensions": [16, 16],
-            "pixels": {
-                "0,0": [255, 255, 255, 255],
-                "0,1": [255, 255, 255, 255],
-                "0,2": [255, 255, 255, 255],
-                "0,3": [255, 255, 255, 255],
-            }
-        }
-    )
+    pixels_data: str # JSON string of sprite data.
 
-    # To allow for the 'any' type, we need to override the Config class.
-    class Config:
-        arbitrary_types_allowed = True
+    '''
+    Here is the structure of the pixels_data JSON string:
+        pixels_data: {
+            "dimensions": [width, height],
+            "pixels": { 'x, y': [r, g, b, a]
+        }
+    '''

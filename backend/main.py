@@ -51,7 +51,7 @@ async def upload_sprite(request: SpriteUploadRequest, user_id: str = Depends(get
     description = request.description
     creator_id = request.creator_id
     file_name = request.file_name
-    pixels_data = request.pixels_data
+    pixels_data = request.pixels_data # JSON string of sprite data.
 
     # If any of the required fields are missing, raise an HTTPException.
     if not all([title, description, creator_id, file_name, pixels_data]):
