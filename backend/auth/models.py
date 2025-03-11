@@ -19,4 +19,4 @@ class SpriteUploadRequest(BaseModel):
     description: str
     creator_id: str
     file_name: str
-    content: str   # .pix file content as a string.
+    content: dict # Our pixels data.

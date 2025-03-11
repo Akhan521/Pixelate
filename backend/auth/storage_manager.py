@@ -11,7 +11,7 @@ class StorageManager:
         self.db = firestore.client()
 
     # A method to upload a .pix file to Firebase Storage + store sprite metadata in Firestore.
-    def upload_sprite(self, user_id: str, title: str, description: str, file_name: str, pixels_data: str) -> dict:
+    def upload_sprite(self, user_id: str, title: str, description: str, file_name: str, pixels_data: dict) -> dict:
         
         try:
             # Create a new document in the "sprites" collection.
