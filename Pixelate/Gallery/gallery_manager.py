@@ -12,13 +12,13 @@ if root_path not in sys.path:
 
 import pyrebase
 from firebase_admin import firestore, storage
-from backend.config import firebase_config
-# from Pixelate.Firebase_Config.firebase_config import firebase_config
+from Pixelate.firebase_config import firebase_config
 
 class GalleryManager:
 
     def __init__(self, auth_manager):
         self.auth_manager = auth_manager
+        self.firebase = pyrebase.initialize_app(firebase_config)
         self.db = firestore.client()
         self.bucket = storage.bucket(name=firebase_config["storageBucket"])
         self.backend_url = self.auth_manager.backend_url
