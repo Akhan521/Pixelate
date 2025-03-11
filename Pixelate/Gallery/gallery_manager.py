@@ -60,7 +60,7 @@ class GalleryManager:
     def get_gallery(self, limit=15):
         try:
             headers = {}
-            # If the user is logged in, send the custom token in the request headers.
+            # If the user is logged in, send the token in the request headers.
             if self.auth_manager.is_logged_in():
                 headers["Authorization"] = f"Bearer {self.auth_manager.get_token()}"
 
@@ -112,7 +112,7 @@ class GalleryManager:
     def get_sprite(self, sprite_id):
         try:
             headers = {}
-            # If the user is logged in, send the custom token in the request headers.
+            # If the user is logged in, send the token in the request headers.
             if self.auth_manager.is_logged_in():
                 headers["Authorization"] = f"Bearer {self.auth_manager.get_token()}"
 

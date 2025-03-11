@@ -9,18 +9,15 @@ class FirestoreManager:
         self.db = firestore.client()
 
     # A method to save user data to Firestore.
-    def save_user_data(self, user_id: str, email: str, username: str = None) -> None:
+    def save_user_data(self, user_id: str, email: str, username: str) -> None:
         try:
             # Store data in the 'users' collection.
             user_data = {
                 "email": email,
+                "username": username,
                 "created_at": firestore.SERVER_TIMESTAMP
             }
-            if username:
-                user_data["username"] = username
-            print("Attempting to save user data.")
-            self.db.collection("users").document(user_id).set(user_data, merge=True)
-            print("User data saved in Firestore.")
+            self.db.collection("users").document(user_id).set(user_data)
         
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred while saving user data: {str(e)}")

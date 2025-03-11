@@ -1,9 +1,6 @@
 
-# Our request and response models for user authentication.
+# Our request and response models:
 from pydantic import BaseModel
-from pydantic.config import ConfigDict
-from firebase_admin import firestore
-from typing import Any
 
 class LoginRequest(BaseModel):
     id_token: str # Provided by Firebase Client SDK.
@@ -12,13 +9,10 @@ class AuthResponse(BaseModel):
     user_id: str
     token: str    # Provided by Firebase Admin SDK.
 
+# For saving user data to Firestore.
 class UserDataRequest(BaseModel):
     email: str
-    username: str = None # Provided when the user registers.
-    created_at: Any = firestore.SERVER_TIMESTAMP
-
-    # To allow for firestore timestamps:
-    model_config = ConfigDict(arbitrary_types_allowed=True) 
+    username: str
 
 class SpriteUploadRequest(BaseModel):
     title: str

@@ -8,6 +8,7 @@ from auth.auth_manager import AuthManager
 from auth.firestore_manager import FirestoreManager
 from auth.storage_manager import StorageManager
 from auth.models import LoginRequest, AuthResponse, UserDataRequest, SpriteUploadRequest
+from firebase_admin import auth
 from config import firebase_admin
 
 # Initialize the FASTAPI app and other necessary components.
@@ -17,7 +18,7 @@ auth_manager = AuthManager()
 firestore_manager = FirestoreManager()
 storage_manager = StorageManager()
 
-# Create a dependency to verify the user's custom token (for protected routes).
+# Create a dependency to verify the user's ID token (for protected routes).
 async def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)) -> str:
     return auth_manager.get_current_user(token.credentials)
 
@@ -25,15 +26,17 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(securit
 @app.post("/auth/login", response_model=AuthResponse)
 async def login(request: LoginRequest) -> AuthResponse:
     
-    # Verify the ID token provided by the Firebase Client SDK.
-    user_info = auth_manager.verify_token(request.id_token)
+    # Verify the ID token provided by the user.
+    user_id = auth_manager.get_current_user(request.id_token)
     
-    # Return the user's ID and custom token for backend operations.
-    return AuthResponse(user_id=user_info["user_id"], token=user_info["token"])
+    # Return the user's ID and ID token for backend operations.
+    return AuthResponse(user_id=user_id, token=request.id_token)
 
 # Our save user data route to store user information in Firestore.
 @app.post("/auth/save_user_data")
 async def save_user_data(request: UserDataRequest, user_id: str = Depends(get_current_user)) -> dict:
+
+    print(f"\nUserDataRequest = \n{request}\n")
 
     firestore_manager.save_user_data(user_id, request.email, request.username)
     return {"message": "User data saved successfully"}

@@ -38,11 +38,11 @@ class AuthManager(QObject):
             # Send the ID token to the backend for verification.
             response = requests.post(f"{self.backend_url}/auth/login", json={"id_token": id_token})
 
-            # If the request was successful, we'll extract the user ID and custom token.
+            # If the request was successful, we'll extract the user ID and token.
             if response.status_code == 200:
                 user_info = response.json()
                 self.user = user
-                self.token = user_info["token"] # Custom token for backend operations.
+                self.token = user_info["token"] 
                 self.user_id = user_info["user_id"]
                 self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
                 return (True, None)
@@ -69,15 +69,15 @@ class AuthManager(QObject):
             # Attempt to sign in using Firebase Client SDK.
             user = self.auth.sign_in_with_email_and_password(email, password)
             id_token = user["idToken"]
-            
+
             # Send the ID token to the backend for verification.
             response = requests.post(f"{self.backend_url}/auth/login", json={"id_token": id_token})
 
-            # If the request was successful, we'll extract the user ID and custom token.
+            # If the request was successful, we'll extract the user ID and token.
             if response.status_code == 200:
                 user_info = response.json()
                 self.user = user
-                self.token = user_info["token"] # Custom token for backend operations.
+                self.token = user_info["token"] 
                 self.user_id = user_info["user_id"]
                 self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
                 return (True, None)
@@ -120,10 +120,10 @@ class AuthManager(QObject):
                 id_token = refreshed_user["idToken"]
                 self.user = refreshed_user
 
-                # Send the new ID token to the backend for verification and generate a new custom token.
+                # Send the new ID token to the backend for verification and generate a new token.
                 response = requests.post(f"{self.backend_url}/auth/login", json={"id_token": id_token})
 
-                # If the request was successful, we'll extract the user ID and custom token.
+                # If the request was successful, we'll extract the user ID and token.
                 if response.status_code == 200:
                     user_info = response.json()
                     self.token = user_info["token"]
