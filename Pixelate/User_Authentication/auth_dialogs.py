@@ -99,9 +99,10 @@ class LoginDialog(QDialog):
                     CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
                     return
                 
-            except Exception as e:
-                print(f"An error occurred while saving user data: {str(e)}")
-                CustomMessageBox("Error", f"An error occurred while saving user data. Please try again.", type="warning")
+            except requests.exceptions.RequestException as e:
+                error_msg = e.response.json().get("detail", str(e)) if hasattr(e, "response") else str(e)
+                print(f"An error occurred while saving user data: {error_msg}")
+                CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
                 return
 
             CustomMessageBox("Success", "You have successfully logged in.", type="info")
@@ -294,9 +295,10 @@ class RegisterDialog(QDialog):
                     CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
                     return
                 
-            except Exception as e:
-                print(f"An error occurred while saving user data: {str(e)}")
-                CustomMessageBox("Error", f"An error occurred while saving user data. Please try again.", type="warning")
+            except requests.exceptions.RequestException as e:
+                error_msg = e.response.json().get("detail", str(e)) if hasattr(e, "response") else str(e)
+                print(f"An error occurred while saving user data: {error_msg}")
+                CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
                 return
 
             # Automatically log the user in after registering.
