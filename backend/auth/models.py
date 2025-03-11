@@ -1,6 +1,7 @@
 
 # Our request and response models:
 from pydantic import BaseModel, Field
+from pydantic.config import ConfigDict
 from typing import Dict, List
 
 class LoginRequest(BaseModel):
@@ -33,3 +34,7 @@ class SpriteUploadRequest(BaseModel):
             }
         }
     )
+
+    # To allow for the 'any' type, we need to override the Config class.
+    class Config:
+        arbitrary_types_allowed = True
