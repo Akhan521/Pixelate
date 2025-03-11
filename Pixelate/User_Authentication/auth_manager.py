@@ -26,6 +26,7 @@ class AuthManager(QObject):
         self.auth = self.firebase.auth()
         self.user = None
         self.token = None
+        self.user_id = None # Backend authenticated user ID.
 
     def register(self, email: str, password: str, username: str) -> tuple[bool, str]:
         try:
@@ -41,6 +42,7 @@ class AuthManager(QObject):
                 user_info = response.json()
                 self.user = user
                 self.token = user_info["token"] # Custom token for backend operations.
+                self.user_id = user_info["user_id"]
                 return (True, None)
             
             else:
@@ -75,6 +77,7 @@ class AuthManager(QObject):
                 user_info = response.json()
                 self.user = user
                 self.token = user_info["token"] # Custom token for backend operations.
+                self.user_id = user_info["user_id"]
                 return (True, None)
             else:
                 error = response.json()
@@ -96,14 +99,14 @@ class AuthManager(QObject):
         
     def logout(self):
         self.user = None
+        self.token = None
+        self.user_id = None
 
     def get_user_id(self):
-        if self.user:
-            return self.user["localId"]
-        return None
+        return self.user_id
     
     def get_token(self):
         return self.token
 
     def is_logged_in(self):
-        return self.user is not None and self.token is not None
+        return self.user is not None and self.token is not None and self.user_id is not None
