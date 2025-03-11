@@ -85,11 +85,19 @@ class LoginDialog(QDialog):
         # Attempt to log the user in.
         success, error_msg = self.auth_manager.login(email, password)
         if success:
+            # Get the user's token to save their data to Firestore.
+            token = self.auth_manager.get_token()
+            if not token:
+                CustomMessageBox("Error", "Failed to refresh token. Please try again.", type="warning")
+                self.auth_manager.logout()
+                self.reject()
+                return
+            
             # Save the user's data to Firestore.
             try:
                 response = requests.post(f"{self.auth_manager.backend_url}/auth/save_user_data", 
                                             json={"email": email},
-                                            headers={"Authorization": f"Bearer {self.auth_manager.get_token()}"})
+                                            headers={"Authorization": f"Bearer {token}"})
                 
                 # If an error occurred while saving the user's data, show an error message.
                 if response.status_code != 200:
@@ -102,7 +110,14 @@ class LoginDialog(QDialog):
             except requests.exceptions.RequestException as e:
                 error_msg = e.response.json().get("detail", str(e)) if hasattr(e, "response") else str(e)
                 print(f"An error occurred while saving user data: {error_msg}")
-                CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
+                if "Invalid or expired custom token" in error_msg:
+                    CustomMessageBox("Error", "Session expired. Please log in again.", type="warning")
+                    self.auth_manager.logout()
+                    self.reject()
+                else:
+                    CustomMessageBox("Error", f"Failed to save user data: {error_msg}. Please try again.", type="warning")
+                    # Continue with the login process even if saving user data failed.
+                    self.accept()
                 return
 
             CustomMessageBox("Success", "You have successfully logged in.", type="info")
@@ -110,7 +125,6 @@ class LoginDialog(QDialog):
 
         else:
             CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
-
 
     # A method to switch to a registration dialog.
     def register(self):
@@ -281,6 +295,14 @@ class RegisterDialog(QDialog):
         # Attempt to register the user.
         success, error_msg = self.auth_manager.register(email, password, username)
         if success:
+            # Get the user's token to save their data to Firestore.
+            token = self.auth_manager.get_token()
+            if not token:
+                CustomMessageBox("Error", "Failed to refresh token. Please try again.", type="warning")
+                self.auth_manager.logout()
+                self.reject()
+                return
+            
             # Save the user's data to Firestore.
             try:
                 response = requests.post(f"{self.auth_manager.backend_url}/auth/save_user_data", 
@@ -298,7 +320,14 @@ class RegisterDialog(QDialog):
             except requests.exceptions.RequestException as e:
                 error_msg = e.response.json().get("detail", str(e)) if hasattr(e, "response") else str(e)
                 print(f"An error occurred while saving user data: {error_msg}")
-                CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
+                if "Invalid or expired custom token" in error_msg:
+                    CustomMessageBox("Error", "Session expired. Please try again.", type="warning")
+                    self.auth_manager.logout()
+                    self.reject()
+                else:
+                    CustomMessageBox("Error", f"Failed to save user data: {error_msg}. Please try again.", type="warning")
+                    # Continue with the registration process even if saving user data failed.
+                    self.accept()
                 return
 
             # Automatically log the user in after registering.

@@ -2,6 +2,7 @@
 # Our user authentication manager (implemented using Firebase).
 import os
 import sys
+import time
 
 # Adding the root directory to the Python path.
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -9,7 +10,6 @@ if root_path not in sys.path:
     sys.path.append(root_path)
 
 import pyrebase
-from firebase_admin import firestore
 from firebase_config import firebase_config
 from PyQt6.QtCore import QObject
 import requests
@@ -26,7 +26,8 @@ class AuthManager(QObject):
         self.auth = self.firebase.auth()
         self.user = None
         self.token = None
-        self.user_id = None # Backend authenticated user ID.
+        self.user_id = None   # Backend authenticated user ID.
+        self.token_expiry = 0 # Token expiration time (for refreshing).
 
     def register(self, email: str, password: str, username: str) -> tuple[bool, str]:
         try:
@@ -43,6 +44,7 @@ class AuthManager(QObject):
                 self.user = user
                 self.token = user_info["token"] # Custom token for backend operations.
                 self.user_id = user_info["user_id"]
+                self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
                 return (True, None)
             
             else:
@@ -78,6 +80,7 @@ class AuthManager(QObject):
                 self.user = user
                 self.token = user_info["token"] # Custom token for backend operations.
                 self.user_id = user_info["user_id"]
+                self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
                 return (True, None)
             else:
                 error = response.json()
@@ -101,11 +104,58 @@ class AuthManager(QObject):
         self.user = None
         self.token = None
         self.user_id = None
+        self.token_expiry = 0
 
+    # If our token has expired or is about to expire, we'll refresh it.
+    def refresh_token(self):
+        if not self.is_logged_in():
+            return False
+        
+        current_time = int(time.time())
+        five_minutes = 300
+
+        if self.token_expiry - current_time <= five_minutes:
+            try:
+                print("Refreshing token...")
+                # Refresh the user's token using their refresh token.
+                refreshed_user = self.auth.refresh(self.user["refreshToken"])
+                id_token = refreshed_user["idToken"]
+                self.user = refreshed_user
+
+                # Send the new ID token to the backend for verification and generate a new custom token.
+                response = requests.post(f"{self.backend_url}/auth/login", json={"id_token": id_token})
+
+                # If the request was successful, we'll extract the user ID and custom token.
+                if response.status_code == 200:
+                    user_info = response.json()
+                    self.token = user_info["token"]
+                    self.user_id = user_info["user_id"]
+                    self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
+                    print(f"Token refreshed successfully. New expiry: {self.token_expiry}")
+                    return True
+                else:
+                    error = response.json()
+                    error_msg = error["detail"]
+                    print(f"An error occurred while refreshing token: {error_msg}")
+                    self.logout()
+                    return False
+                
+            except Exception as e:
+                print(f"An error occurred while refreshing token: {str(e)}")
+                self.logout()
+                return False
+
+        return True
+                
     def get_user_id(self):
         return self.user_id
     
     def get_token(self):
+        
+        # If the token is about to expire, we'll refresh it. If the refresh fails, we'll return None.
+        if not self.refresh_token():
+            return None
+        
         return self.token
 
     def is_logged_in(self):
