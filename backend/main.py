@@ -185,28 +185,22 @@ async def get_sprite(sprite_id: str, user_id: str = Depends(get_current_user)) -
     blob_path = sprite_data["storage_path"]
     blob = storage_manager.bucket.blob(blob_path)
     pixels_data_json = blob.download_as_string().decode("utf-8")
-    pixels_data = json.loads(pixels_data_json)
+    # pixels_data = json.loads(pixels_data_json)
 
     '''
-    Here is the structure of pixels_data:
+    Here is the structure of the pixels_data JSON string:
         pixels_data: {
             "dimensions": [width, height],
             "pixels": { 'x, y': [r, g, b, a] } # 'x, y' is a string.
         }
-
-    We want it in this format:
-        pixels_data: {
-            "dimensions": (width, height),
-            "pixels": { (x, y): (r, g, b, a) } # (x, y) is a tuple.
-        }
     '''
 
-    pixels_data = {
-        "dimensions": tuple(pixels_data["dimensions"]),
-        "pixels": {tuple(map(int, key.split(","))): tuple(value) for key, value in pixels_data["pixels"].items()}
-    }
+    # pixels_data = {
+    #     "dimensions": tuple(pixels_data["dimensions"]),
+    #     "pixels": {tuple(map(int, key.split(","))): tuple(value) for key, value in pixels_data["pixels"].items()}
+    # }
 
-    sprite_data["pixels_data"] = pixels_data
+    sprite_data["pixels_data"] = pixels_data_json
 
     return sprite_data
 

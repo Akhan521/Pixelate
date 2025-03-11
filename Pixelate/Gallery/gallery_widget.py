@@ -86,7 +86,7 @@ class GalleryWidget(QWidget):
         for sprite in sprites:
             item = QListWidgetItem(f"{sprite['title']} by {sprite['creator_username']} - {sprite.get('likes', 0)} likes")
             # Storing the sprite ID within the item for later on when we show the sprite details.
-            item.setData(Qt.ItemDataRole.UserRole, sprite["id"])
+            item.setData(Qt.ItemDataRole.UserRole, sprite['id'])
             self.sprite_list.addItem(item)
 
     # A method to show the details of a sprite.
@@ -95,7 +95,9 @@ class GalleryWidget(QWidget):
         sprite_id = item.data(Qt.ItemDataRole.UserRole)
 
         # Get the sprite from the gallery manager.
+        print(f"GALLERY WIDGET: Showing sprite details for sprite ID: {sprite_id}")
         sprite_data = self.gallery_manager.get_sprite(sprite_id)
+        print(f"Sprite data: {sprite_data}")
 
         # Show the sprite details in a dialog.
         if sprite_data:
