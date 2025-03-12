@@ -5,9 +5,9 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QFileDialog, QMessageBox, QPushButton, 
                               QLabel, QDialog, QInputDialog, QLineEdit,
                               QTextEdit, QFormLayout, QDialogButtonBox,
-                              QListWidget, QListWidgetItem )
+                              QListWidget, QListWidgetItem)
 
-from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage, QGuiApplication
+from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage, QGuiApplication, QKeySequence, QShortcut
 from PyQt6.QtCore import Qt, QSize
 from chat_bubble_widget import ChatBubbleWidget
 from image_gen_dialog import ImageGenDialog
@@ -83,6 +83,15 @@ class AIAssistant(QWidget):
         self.input_field = QTextEdit(self)
         self.input_field.setFixedSize(self.width - 20, input_field_height) # Subtracting 20 to account for padding.
         self.input_field.setPlaceholderText("Type your message here...")
+        self.input_field.setFocus()
+
+        # Adding an enter shortcut to our input field (to send messages to Pixi).
+        enter_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Return), self.input_field)
+        enter_shortcut.activated.connect(self.send_message)
+
+        # Adding a shift + enter shortcut to our input field (to add a new line).
+        shift_enter_shortcut = QShortcut(QKeySequence("Shift+Return"), self.input_field)
+        shift_enter_shortcut.activated.connect(lambda: self.input_field.insertPlainText("\n"))
 
         # Adding our input field to our main layout.
         main_layout.addWidget(self.input_field)
@@ -132,18 +141,23 @@ class AIAssistant(QWidget):
 
         # Now, we'll send a request to our backend server to interact with Pixi, our AI assistant.
         chat_context_json = json.dumps(chat_context)
-        response = requests.post(
-            f"{self.backend_url}/chat",
-            json={"chat_context": chat_context_json}
-        )
-
-        # If the request was successful, we'll extract the response from the server.
-        if response.status_code == 200:
-            return response.json()
         
-        # If an error occurred, we'll return a default response.
-        return "I'm sorry, but I'm currently unavailable. Please try again later."
+        try:
+            response = requests.post(
+                f"{self.backend_url}/chat",
+                json={"chat_context": chat_context_json}
+            )
 
+            # If the request was successful, we'll extract the response from the server.
+            if response.status_code == 200:
+                return response.json()
+            
+            # If an error occurred, we'll return a default response.
+            return "I'm sorry, but I'm currently unavailable. Please try again later."
+        
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred while sending a request to the server: {str(e)}")
+            return "I'm sorry, an error occurred while processing your request. Please try again later."
 
     # A function to send a message to our AI assistant, Pixi.
     def send_message(self):
@@ -194,14 +208,6 @@ class AIAssistant(QWidget):
 
         # Automatically scrolling to the bottom of our chat messages list widget.
         self.chat_messages.scrollToBottom()
-
-    # If the user presses Ctrl + Enter, we'll send their message to Pixi.
-    def keyPressEvent(self, event):
-
-        if event.key() == Qt.Key.Key_Return and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-
-            # Sending the user's message to Pixi.
-            self.send_message()
 
     # Our generate_image method will be implemented here.
     def generate_image(self):
