@@ -20,3 +20,15 @@ if "FIREBASE_SERVICE_ACCOUNT" in os.environ:
     })
 else:
     raise ValueError("The FIREBASE_SERVICE_ACCOUNT environment variable was not found.")
+
+# Retrieve our OpenAI API key from the environment.
+if "OPENAI_API_KEY" in os.environ:
+    openai_api_key = os.environ["OPENAI_API_KEY"]
+else:
+    raise ValueError("The OPENAI_API_KEY environment variable was not found.")
+
+# Retrieve our Dall-e API key from the environment.
+if "DALLE_API_KEY" in os.environ:
+    dalle_api_key = os.environ["DALLE_API_KEY"]
+else:
+    raise ValueError("The DALLE_API_KEY environment variable was not found.")

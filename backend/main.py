@@ -7,9 +7,10 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from auth.auth_manager import AuthManager
 from auth.firestore_manager import FirestoreManager
 from auth.storage_manager import StorageManager
-from auth.models import LoginRequest, AuthResponse, UserDataRequest, SpriteUploadRequest
+from auth.models import LoginRequest, AuthResponse, UserDataRequest, SpriteUploadRequest, ChatRequest
 from firebase_admin import auth, firestore
-from config import firebase_admin
+from config import openai_api_key, dalle_api_key
+from openai import OpenAI
 
 # Initialize the FASTAPI app and other necessary components.
 app = FastAPI()
@@ -17,6 +18,12 @@ security = HTTPBearer()
 auth_manager = AuthManager()
 firestore_manager = FirestoreManager()
 storage_manager = StorageManager()
+chat_client = OpenAI(
+    api_key=openai_api_key,
+)
+img_client = OpenAI(
+    api_key=dalle_api_key,
+)
 
 # Create a dependency to verify the user's ID token (for protected routes).
 async def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)) -> str:
@@ -198,6 +205,31 @@ async def get_sprite(sprite_id: str, user_id: str = Depends(get_current_user)) -
     sprite_data["pixels_data"] = pixels_data
 
     return sprite_data
+
+# Our chat route to interact with our chatbot.
+@app.post("/chat")
+async def chat(request: ChatRequest) -> str:
+    
+    # Extract the chat context from the request.
+    chat_context = request.chat_context
+    chat_context = json.loads(chat_context)
+
+    # If the chat context is empty, raise an HTTPException.
+    if not chat_context:
+        raise HTTPException(status_code=400, detail="Chat context is empty")
+    
+    try:
+        # Send the entire chat context to our chatbot.
+        response = chat_client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=chat_context
+        )
+
+        # Extract the chatbot's response.
+        return response.choices[0].message.content
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while chatting: {str(e)}")
 
 if __name__ == "__main__":
     # Run the FASTAPI app.

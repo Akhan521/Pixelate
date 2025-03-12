@@ -14,7 +14,9 @@ from image_gen_dialog import ImageGenDialog
 from Gallery.gallery_widget import DimmedBackdrop
 from openai import OpenAI
 from dotenv import load_dotenv
+import requests
 import os
+import json
 
 # Loading the environment variables.
 load_dotenv()
@@ -36,10 +38,8 @@ class AIAssistant(QWidget):
         # Storing a reference to the main window (to dim the background during image generation).
         self.main_window = main_window
 
-        # Creating an instance of the OpenAI class.
-        self.client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY")
-        )
+        # To interact with our backend, we'll store the backend URL.
+        self.backend_url = "https://pixelate-backend.onrender.com"
         
         # Setting the width and height of our chat widget.
         self.width = width
@@ -130,17 +130,20 @@ class AIAssistant(QWidget):
             # We'll provide the system prompt and the most recent messages to Pixi.
             chat_context = system_prompt + self.chat_context[-self.context_limit:]
 
-        # Now, we'll send a request to the OpenAI API w/ our chat context to get a response.
-        try:
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=chat_context
-            )
+        # Now, we'll send a request to our backend server to interact with Pixi, our AI assistant.
+        chat_context_json = json.dumps(chat_context)
+        response = requests.post(
+            f"{self.backend_url}/chat",
+            json={"chat_context": chat_context_json}
+        )
 
-            return response.choices[0].message.content
+        # If the request was successful, we'll extract the response from the server.
+        if response.status_code == 200:
+            return response.json()
         
-        except Exception as e:
-            return f"An error occurred: {e}"
+        # If an error occurred, we'll return a default response.
+        return "I'm sorry, but I'm currently unavailable. Please try again later."
+
 
     # A function to send a message to our AI assistant, Pixi.
     def send_message(self):

@@ -28,3 +28,6 @@ class SpriteUploadRequest(BaseModel):
             "pixels": { 'x, y': [r, g, b, a]
         }
     '''
+
+class ChatRequest(BaseModel):
+    chat_context: str # Our context is a list of chat messages. Here, it's a JSON string.
