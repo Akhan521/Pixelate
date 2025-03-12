@@ -8,9 +8,9 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDatabase
 from PyQt6.QtCore import Qt, QSize
 from main_window import MainWindow
-from new_sprite_dialog import NewSpriteDialog
+from app.canvas.new_sprite_dialog import NewSpriteDialog
 from custom_messagebox import CustomMessageBox
-from validations import validate_dimensions, validate_imported_data
+from app.tools.validations import validate_dimensions, validate_imported_data
 from gallery.gallery_manager import GalleryManager
 from gallery.gallery_widget import GalleryWidget
 from app.user_auth.auth_manager import AuthManager

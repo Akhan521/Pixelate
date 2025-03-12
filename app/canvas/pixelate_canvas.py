@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 # Importing the necessary modules to work with canvas drawings.
 from PyQt6.QtGui import QPainter, QColor, QPixmap, QRegion
 from PyQt6.QtCore import Qt, QEvent, QRect, QTimer
-from color_selection_window import ColorSelectionWindow
-from canvas_history import CanvasHistory
+from canvas.color_selection_window import ColorSelectionWindow
+from canvas.canvas_history import CanvasHistory
 from collections import deque
 
 # Defining a custom canvas widget for Pixelate.

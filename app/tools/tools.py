@@ -4,8 +4,8 @@ from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QApp
 from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor
 from PyQt6.QtCore import Qt, QSize
 # Importing our canvas class.
-from pixelate_canvas import PixelateCanvas
-from canvas_history import CanvasHistory
+from canvas.pixelate_canvas import PixelateCanvas
+from canvas.canvas_history import CanvasHistory
 
 class Tools(QMainWindow):
     

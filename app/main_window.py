@@ -6,15 +6,15 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
-from tools import Tools
+from tools.tools import Tools
 import ast
 
-from pixelate_canvas import PixelateCanvas
-from color_selection_window import ColorSelectionWindow
-from zoomable_canvas_view import ZoomableCanvasView
-from ai_assistant import AIAssistant
+from canvas.pixelate_canvas import PixelateCanvas
+from canvas.color_selection_window import ColorSelectionWindow
+from canvas.zoomable_canvas_view import ZoomableCanvasView
+from pixi_ai.ai_assistant import AIAssistant
 from custom_messagebox import CustomMessageBox
-from validations import validate_dimensions, validate_imported_data
+from app.tools.validations import validate_dimensions, validate_imported_data
 
 class MainWindow(QMainWindow):
     # Our constructor will invoke QMainWindow's constructor.

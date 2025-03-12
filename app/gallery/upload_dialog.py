@@ -13,7 +13,7 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from app.gallery.gallery_manager import GalleryManager
 from app.user_auth.auth_manager import AuthManager
 from app.custom_messagebox import CustomMessageBox
-from app.validations import validate_dimensions, validate_imported_data
+from app.tools.validations import validate_dimensions, validate_imported_data
 import ast
 
 # A file loader thread to handle loading .pix files in the background.
