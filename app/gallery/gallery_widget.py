@@ -18,6 +18,7 @@ class GalleryWidget(QWidget):
     def __init__(self, gallery_manager):
         super().__init__()
         self.gallery_manager = gallery_manager
+        self.setFont(self.get_font())
 
         # Create a layout for the gallery widget.
         layout = QVBoxLayout()
