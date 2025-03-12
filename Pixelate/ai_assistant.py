@@ -128,7 +128,7 @@ class AIAssistant(QWidget):
         if len(self.chat_context) > self.context_limit + 1: # We add 1 to account for the system prompt.
 
             # We'll provide the system prompt and the most recent messages to Pixi.
-            chat_context = self.chat_context[0] + self.chat_context[-self.context_limit:]
+            chat_context = system_prompt + self.chat_context[-self.context_limit:]
 
         # Now, we'll send a request to the OpenAI API w/ our chat context to get a response.
         try:
@@ -141,7 +141,6 @@ class AIAssistant(QWidget):
         
         except Exception as e:
             return f"An error occurred: {e}"
-
 
     # A function to send a message to our AI assistant, Pixi.
     def send_message(self):

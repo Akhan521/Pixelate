@@ -34,11 +34,15 @@ class LoginDialog(QDialog):
         # Create a label for the user to enter their email.
         self.email_label = QLabel("Email:")
         self.email_input = QLineEdit()
+        # Set a default email for testing purposes.
+        self.email_input.setText("aamirksfg@gmail.com")
         self.email_input.setPlaceholderText("Enter your email.")
 
         # Create a label for the user to enter their password.
         self.password_label = QLabel("Password:")
         self.password_input = QLineEdit()
+        # Set a default password for testing purposes.
+        self.password_input.setText("aak365")
         self.password_input.setPlaceholderText("Enter your password.")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password) # Hide the password.
 

@@ -119,8 +119,6 @@ class GalleryWidget(QWidget):
         
         # Convert the pixels data to the format expected by the dialog.
         pixels_data = json.loads(pixels_data)
-        print(f"Type of pixels_data: {type(pixels_data)}")
-        print(f"Type of pixels: {type(pixels_data['pixels'])}")
         pixels_data = {
             "dimensions": tuple(pixels_data["dimensions"]),
             "pixels": {tuple(map(int, key.split(","))): tuple(value) for key, value in pixels_data["pixels"].items()}

@@ -110,7 +110,7 @@ async def get_gallery(limit: int = 15, user_id: str = Depends(get_current_user))
     return sprites
 
 # Our toggle like route to like or unlike a sprite.
-@app.post(f"/sprite/{{sprite_id}}/toggle_like")
+@app.post("/sprite/{sprite_id}/toggle_like")
 async def toggle_like(sprite_id: str, user_id: str = Depends(get_current_user)) -> dict:
 
     # Check if the user has already liked the sprite.
@@ -139,7 +139,7 @@ async def toggle_like(sprite_id: str, user_id: str = Depends(get_current_user)) 
         like_data = {
             "user_id": user_id,
             "sprite_id": sprite_id,
-            "created_at": firestore_manager.db.SERVER_TIMESTAMP
+            "created_at": firestore.SERVER_TIMESTAMP
         }
         firestore_manager.db.collection("likes").add(like_data)
         sprite_ref.update({"likes": firestore_manager.db.FieldValue.increment(1)})
