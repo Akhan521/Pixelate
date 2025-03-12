@@ -31,3 +31,6 @@ class SpriteUploadRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     chat_context: str # Our context is a list of chat messages. Here, it's a JSON string.
+
+class ImageGenRequest(BaseModel):
+    description: str

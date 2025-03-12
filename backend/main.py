@@ -4,13 +4,16 @@ import os
 import json
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import Response
 from auth.auth_manager import AuthManager
 from auth.firestore_manager import FirestoreManager
 from auth.storage_manager import StorageManager
-from auth.models import LoginRequest, AuthResponse, UserDataRequest, SpriteUploadRequest, ChatRequest
+from auth.models import (LoginRequest, AuthResponse, UserDataRequest, 
+                         SpriteUploadRequest, ChatRequest, ImageGenRequest)
 from firebase_admin import auth, firestore
 from config import openai_api_key, dalle_api_key
 from openai import OpenAI
+import requests
 
 # Initialize the FASTAPI app and other necessary components.
 app = FastAPI()
@@ -21,7 +24,7 @@ storage_manager = StorageManager()
 chat_client = OpenAI(
     api_key=openai_api_key,
 )
-img_client = OpenAI(
+dalle_client = OpenAI(
     api_key=dalle_api_key,
 )
 
@@ -230,6 +233,46 @@ async def chat(request: ChatRequest) -> str:
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while chatting: {str(e)}")
+    
+# Our image generation route to generate images using DALL-E.
+@app.post("/image/generate")
+async def generate_image(request: ImageGenRequest) -> Response:
+    
+    # Extract the image generation description from the request.
+    description = request.description
+
+    # If the description is empty, raise an HTTPException.
+    if not description:
+        raise HTTPException(status_code=400, detail="Description is empty")
+    
+    style_prompt = '''Style: A cartoonish, simple image with bold outlines and differentiable colors.'''
+    
+    try:
+        # Generate an image using DALL-E.
+        response = dalle_client.images.generate(
+                model="dall-e-3",
+                prompt=description + "\n" + style_prompt,
+                n=1,
+                size="1024x1024",
+                quality="standard",
+            )
+
+        # If the response is successful, we'll store the image URL.
+        if response and response.data and response.data[0].url:
+            
+            image_url = response.data[0].url
+            
+            # We'll download the image from the URL.
+            image_data = requests.get(image_url).content
+
+            # Return the image data in a response.
+            return Response(content=image_data, media_type="image/png")
+        
+        else:
+            raise HTTPException(status_code=500, detail="Failed to generate image")
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while generating image: {str(e)}")
 
 if __name__ == "__main__":
     # Run the FASTAPI app.

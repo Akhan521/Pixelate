@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QTextEdit, QFormLayout, QDialogButtonBox,
                               QListWidget, QListWidgetItem)
 
-from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage, QGuiApplication, QKeySequence, QShortcut
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage
+from PyQt6.QtCore import Qt, QSize, QTimer
 from chat_bubble_widget import ChatBubbleWidget
 from image_gen_dialog import ImageGenDialog
 from Gallery.gallery_widget import DimmedBackdrop
@@ -24,6 +24,20 @@ load_dotenv()
 # Reading the system prompt for Pixi from a text file.
 with open("Pixelate/Pixi_System_Prompt.txt", "r") as file:
     system_prompt = file.read()
+
+# Our custom text edit to handle sending messages to Pixi when the user presses Enter.
+class PixiTextEdit(QTextEdit):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ai_assistant = parent
+
+    def keyPressEvent(self, event):
+        # If the user presses Enter, we'll send their message to Pixi.
+        if event.key() == Qt.Key.Key_Return and not (event.modifiers() & Qt.KeyboardModifier.ShiftModifier):
+            self.ai_assistant.send_message()
+        else:
+            super().keyPressEvent(event)
 
 # Our AI assistant will be implemented as a chat widget.
 class AIAssistant(QWidget):
@@ -59,7 +73,6 @@ class AIAssistant(QWidget):
 
         # Creating a list widget to display our chat messages.
         self.chat_messages = QListWidget(self)
-        self.chat_messages.setFixedWidth(self.width - 20) # Subtracting 20 to account for padding.
         self.chat_messages.setSpacing(3)
 
         # Hiding the vertical scroll bar of the chat messages list widget.
@@ -68,30 +81,18 @@ class AIAssistant(QWidget):
         # To enable line wrapping, we'll set the word wrap property to True.
         self.chat_messages.setWordWrap(True)
 
-        # An introductory message to welcome the user (added to the chat messages list widget).
-        welcome_message = "Welcome to Pixelate! I'm Pixi, your AI assistant. Feel free to ask me anything."
-        self.chat_context.append({"role": "assistant", "content": welcome_message})
-        self.create_list_item(welcome_message, is_user=False)     
-
         # Adding our chat messages list widget to our main layout.
         main_layout.addWidget(self.chat_messages)
 
         # We'll specify the height of our input field.
-        input_field_height = 50
+        input_field_height = 55
 
         # Creating a text edit widget for our input field. This is where the user will type their messages.
-        self.input_field = QTextEdit(self)
-        self.input_field.setFixedSize(self.width - 20, input_field_height) # Subtracting 20 to account for padding.
+        self.input_field = PixiTextEdit(self)
+        self.input_field.setFixedHeight(input_field_height)
+        self.input_field.setFont(QFont("Press Start 2P", 8))
         self.input_field.setPlaceholderText("Type your message here...")
         self.input_field.setFocus()
-
-        # Adding an enter shortcut to our input field (to send messages to Pixi).
-        enter_shortcut = QShortcut(QKeySequence(Qt.Key.Key_Return), self.input_field)
-        enter_shortcut.activated.connect(self.send_message)
-
-        # Adding a shift + enter shortcut to our input field (to add a new line).
-        shift_enter_shortcut = QShortcut(QKeySequence("Shift+Return"), self.input_field)
-        shift_enter_shortcut.activated.connect(lambda: self.input_field.insertPlainText("\n"))
 
         # Adding our input field to our main layout.
         main_layout.addWidget(self.input_field)
@@ -111,13 +112,52 @@ class AIAssistant(QWidget):
         main_layout.addWidget(self.generate_button)
 
         self.setStyleSheet(f'''
-            background-color: {QColor(240, 240, 240, 255).name()};
-            color: black;
+            QWidget {{
+                background-color: {QColor(240, 240, 240, 255).name()};
+                color: black;
+            }}
+            QListWidget {{
+                background-color: white;
+                border: 2px solid #d0d0d0;
+                border-radius: 5px;
+                padding: 5px;
+            }}
+            QTextEdit {{
+                background-color: white;
+                border: 2px solid #d0d0d0;
+                border-radius: 5px;
+                padding: 5px;
+            }}
+            QTextEdit QScrollBar:vertical {{
+                border: none;
+                background: #f0f0f0;
+                width: 5px;
+                margin: 0px;
+            }}
+            QTextEdit QScrollBar::handle:vertical {{
+                background: #9370DB;
+                min-height: 20px;
+                border-radius: 5px;
+            }}
+            QTextEdit QScrollBar::handle:vertical:hover {{
+                background: #7B68EE;
+            }}
+            QTextEdit QScrollBar::add-line:vertical, QTextEdit QScrollBar::sub-line:vertical {{
+                height: 0px;
+            }}
         ''')
         
         # Finally, we'll set the main layout of our chat widget.
         self.setLayout(main_layout)
 
+        # Delaying the addition of the welcome message to ensure that the chat widget is displayed first.
+        QTimer.singleShot(0, self.add_welcome_message)
+
+    def add_welcome_message(self):
+        # An introductory message to welcome the user (added to the chat messages list widget).
+        welcome_message = "Welcome to Pixelate! I'm Pixi, your AI assistant. Feel free to ask me anything."
+        self.chat_context.append({"role": "assistant", "content": welcome_message})
+        self.create_list_item(welcome_message, is_user=False)
         
     # A function to set the canvas reference for our AI assistant.
     def set_canvas(self, canvas):
