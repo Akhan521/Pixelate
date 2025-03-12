@@ -170,6 +170,12 @@ class AIAssistant(QWidget):
     # A function to send a request to the OpenAI API and receive a response. 
     def get_response(self):
 
+        # Disabling our buttons and input field while we wait for a response from Pixi.
+        self.send_button.setEnabled(False)
+        self.generate_button.setEnabled(False)
+        self.input_field.setEnabled(False)
+        self.input_field.setPlaceholderText("Processing...")
+
         # We'll provide a limited number of messages to Pixi to generate a response.
         chat_context = self.chat_context
 
@@ -190,13 +196,25 @@ class AIAssistant(QWidget):
 
             # If the request was successful, we'll extract the response from the server.
             if response.status_code == 200:
+                self.send_button.setEnabled(True)
+                self.generate_button.setEnabled(True)
+                self.input_field.setEnabled(True)
+                self.input_field.setPlaceholderText("Type your message here...")
                 return response.json()
             
             # If an error occurred, we'll return a default response.
+            self.send_button.setEnabled(True)
+            self.generate_button.setEnabled(True)
+            self.input_field.setEnabled(True)
+            self.input_field.setPlaceholderText("Type your message here...")
             return "I'm sorry, but I'm currently unavailable. Please try again later."
         
         except requests.exceptions.RequestException as e:
             print(f"An error occurred while sending a request to the server: {str(e)}")
+            self.send_button.setEnabled(True)
+            self.generate_button.setEnabled(True)
+            self.input_field.setEnabled(True)
+            self.input_field.setPlaceholderText("Type your message here...")
             return "I'm sorry, an error occurred while processing your request. Please try again later."
 
     # A function to send a message to our AI assistant, Pixi.
