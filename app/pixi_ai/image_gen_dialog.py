@@ -101,6 +101,7 @@ class ImageGenDialog(QDialog):
         self.buttons.accepted.connect(self.start_generation)
         # If the user clicks Cancel, we'll reject the dialog.
         self.buttons.rejected.connect(self.reject)
+        self.buttons.setCenterButtons(True)
         self.buttons.setStyleSheet(self.get_default_style())
 
         # Adding our buttons to our layout.

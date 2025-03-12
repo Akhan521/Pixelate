@@ -102,7 +102,7 @@ class UploadDialog(QDialog):
         self.gallery_manager = gallery_manager
         self.file_name = None
         self.pixels_data = None
-        self.setFixedSize(400, 460)
+        self.setFixedSize(400, 475)
 
         # Hiding our system taskbar and keeping our dialog on top.
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
@@ -151,7 +151,7 @@ class UploadDialog(QDialog):
         self.loading_label.setVisible(False)
         
         # A loading animation to show while an image is being generated.
-        self.movie = QMovie("Pixelate/loading.gif")
+        self.movie = QMovie("app/loading.gif")
         if self.movie.isValid():
             self.loading_label.setMovie(self.movie)
         else:
