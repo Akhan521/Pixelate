@@ -11,10 +11,10 @@ from main_window import MainWindow
 from new_sprite_dialog import NewSpriteDialog
 from custom_messagebox import CustomMessageBox
 from validations import validate_dimensions, validate_imported_data
-from Gallery.gallery_manager import GalleryManager
-from Gallery.gallery_widget import GalleryWidget, SpriteDetailsDialog
-from Pixelate.User_Authentication.auth_manager import AuthManager
-from Pixelate.User_Authentication.auth_dialogs import LoginDialog, RegisterDialog
+from gallery.gallery_manager import GalleryManager
+from gallery.gallery_widget import GalleryWidget
+from app.user_auth.auth_manager import AuthManager
+from app.user_auth.auth_dialogs import LoginDialog
 import ast
 
 # Our starting screen.

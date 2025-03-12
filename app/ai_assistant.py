@@ -11,7 +11,7 @@ from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage
 from PyQt6.QtCore import Qt, QSize, QTimer
 from chat_bubble_widget import ChatBubbleWidget
 from image_gen_dialog import ImageGenDialog
-from Gallery.gallery_widget import DimmedBackdrop
+from gallery.gallery_widget import DimmedBackdrop
 from openai import OpenAI
 from dotenv import load_dotenv
 import requests
@@ -22,7 +22,7 @@ import json
 load_dotenv()
 
 # Reading the system prompt for Pixi from a text file.
-with open("Pixelate/Pixi_System_Prompt.txt", "r") as file:
+with open("app/Pixi_System_Prompt.txt", "r") as file:
     system_prompt = file.read()
 
 # Our custom text edit to handle sending messages to Pixi when the user presses Enter.

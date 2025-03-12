@@ -8,10 +8,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDatabase, QMovie
 from PyQt6.QtCore import Qt, QSize, QThread, pyqtSignal
 from custom_messagebox import CustomMessageBox
-from openai import OpenAI
 from dotenv import load_dotenv
 import requests
-import os
 
 # Loading the environment variables.
 load_dotenv()
@@ -117,7 +115,7 @@ class ImageGenDialog(QDialog):
         layout.addWidget(self.loading_label)
         
         # A loading animation to show while an image is being generated.
-        self.movie = QMovie("./Pixelate/loading.gif")
+        self.movie = QMovie("./app/loading.gif")
         if self.movie.isValid():
             self.loading_label.setMovie(self.movie)
         else:

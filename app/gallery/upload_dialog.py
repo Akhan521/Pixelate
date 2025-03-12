@@ -10,10 +10,10 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QMovie
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 # from gallery_manager import GalleryManager
-from Pixelate.Gallery.gallery_manager import GalleryManager
-from Pixelate.User_Authentication.auth_manager import AuthManager
-from Pixelate.custom_messagebox import CustomMessageBox
-from Pixelate.validations import validate_dimensions, validate_imported_data
+from app.gallery.gallery_manager import GalleryManager
+from app.user_auth.auth_manager import AuthManager
+from app.custom_messagebox import CustomMessageBox
+from app.validations import validate_dimensions, validate_imported_data
 import ast
 
 # A file loader thread to handle loading .pix files in the background.
