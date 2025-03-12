@@ -7,10 +7,10 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
 from PyQt6.QtCore import Qt, QSize
-# from Pixelate.Gallery.gallery_manager import GalleryManager
 from gallery.gallery_manager import GalleryManager
 from gallery.upload_dialog import UploadDialog
 from app.user_auth.auth_manager import AuthManager
+from custom_messagebox import CustomMessageBox
 import json
 
 class GalleryWidget(QWidget):
@@ -66,6 +66,9 @@ class GalleryWidget(QWidget):
     def close_gallery(self):
         self.gallery_manager.auth_manager.logout()
         print("Gallery closed and user logged out.")
+        CustomMessageBox(title="Success",
+                         message="You have successfully logged out. The gallery will now close.",
+                         type="info")
         self.close()
 
     # A method to upload a sprite to the gallery (using our Upload Dialog).

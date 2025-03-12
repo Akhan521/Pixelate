@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QVBoxLayout, QWidget, QGraphicsScene, 
                               QGraphicsProxyWidget, QMenuBar, QMenu,
                               QFileDialog, QMessageBox, QSizePolicy,
-                              QWidgetAction, QLabel )
+                              QWidgetAction, QLabel, QDialog )
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
 from PyQt6.QtCore import Qt
@@ -12,6 +12,11 @@ import ast
 from canvas.pixelate_canvas import PixelateCanvas
 from canvas.color_selection_window import ColorSelectionWindow
 from canvas.zoomable_canvas_view import ZoomableCanvasView
+from gallery.gallery_manager import GalleryManager
+from gallery.gallery_widget import GalleryWidget
+from gallery.upload_dialog import UploadDialog
+from user_auth.auth_manager import AuthManager
+from user_auth.auth_dialogs import LoginDialog
 from pixi_ai.ai_assistant import AIAssistant
 from custom_messagebox import CustomMessageBox
 from app.tools.validations import validate_dimensions, validate_imported_data
@@ -21,6 +26,9 @@ class MainWindow(QMainWindow):
     def __init__(self, dimensions):
 
         super().__init__()
+        self.auth_manager = None    # To handle user auth for our gallery.
+        self.gallery_manager = None # To handle gallery operations.
+        self.gallery_widget = None  # To display our gallery.
         
         # Setting the window title.
         self.setWindowTitle("Pixelate")
@@ -206,6 +214,86 @@ class MainWindow(QMainWindow):
                                  message = str(e), 
                                  type    = "warning")
 
+    # A method to open our gallery.
+    def open_gallery(self):
+        
+        # If we don't have a gallery manager, we'll create one.
+        if not self.gallery_manager:
+
+            # Create an authentication manager instance.
+            self.auth_manager = AuthManager()
+
+            # Create a gallery manager instance.
+            self.gallery_manager = GalleryManager(self.auth_manager)
+
+        # If the user is not logged in, we'll prompt them to log in.
+        if not self.auth_manager.is_logged_in():
+            login_dialog = LoginDialog(self.auth_manager)
+            logged_in = login_dialog.exec()
+            if logged_in == QDialog.DialogCode.Accepted:
+                # If the user successfully logs in, we'll open the gallery.
+                self.gallery_widget = GalleryWidget(self.gallery_manager)
+                self.gallery_widget.showFullScreen()
+            else:
+                # If the user canceled/closed the login dialog, we'll check to see whether they've registered + logged in.
+                # The register dialog will automatically log the user in if they successfully register.
+                # (i.e. if the user is logged in by this point, they've registered successfully).
+                if self.auth_manager.is_logged_in():
+                    self.gallery_widget = GalleryWidget(self.gallery_manager)
+                    self.gallery_widget.showFullScreen()
+
+        # If the user is already logged in, we'll open the gallery.
+        else:
+            self.gallery_widget = GalleryWidget(self.gallery_manager)
+            self.gallery_widget.showFullScreen()
+
+    # A method to upload a sprite to the gallery.
+    def upload_to_gallery(self):
+
+        # If we don't have a gallery manager, we'll create one.
+        if not self.gallery_manager:
+
+            # Create an authentication manager instance.
+            self.auth_manager = AuthManager()
+
+            # Create a gallery manager instance.
+            self.gallery_manager = GalleryManager(self.auth_manager)
+
+        # If the user is not logged in, we'll prompt them to log in.
+        if not self.auth_manager.is_logged_in():
+            login_dialog = LoginDialog(self.auth_manager)
+            logged_in = login_dialog.exec()
+            if logged_in == QDialog.DialogCode.Accepted:
+                # If the user successfully logs in, we'll open the upload dialog.
+                upload_dialog = UploadDialog(self.gallery_manager)
+                upload_dialog.exec()
+            else:
+                # If the user canceled/closed the login dialog, we'll check to see whether they've registered + logged in.
+                # The register dialog will automatically log the user in if they successfully register.
+                # (i.e. if the user is logged in by this point, they've registered successfully).
+                if self.auth_manager.is_logged_in():
+                    upload_dialog = UploadDialog(self.gallery_manager)
+                    upload_dialog.exec()
+
+        # If the user is already logged in, we'll open the upload dialog.
+        else:
+            upload_dialog = UploadDialog(self.gallery_manager)
+            upload_dialog.exec()
+
+    # A method to log out from the gallery.
+    def logout_from_gallery(self):
+
+        # If we have an auth manager and the user is logged in, we'll log them out.
+        if self.auth_manager and self.auth_manager.is_logged_in():
+            self.auth_manager.logout()
+            CustomMessageBox(title   = "Success", 
+                             message = "You have successfully logged out from the gallery.", 
+                             type    = "info")
+        else:
+            CustomMessageBox(title="Warning",
+                            message="You are already logged out.",
+                            type="warning")
+
     # A method to setup our menubar:
     def init_menubar(self):
 
@@ -227,6 +315,27 @@ class MainWindow(QMainWindow):
         import_action.setShortcut("Ctrl+I")
         import_action.triggered.connect(self.import_canvas)
         file_menu.addAction(import_action)
+
+        # Creating a menu for our gallery.
+        gallery_menu = menubar.addMenu("Gallery")
+
+        # Creating an open gallery action for our gallery menu.
+        open_gallery_action = QAction("Open Gallery", self)
+        open_gallery_action.setShortcut("Ctrl+G")
+        open_gallery_action.triggered.connect(self.open_gallery)
+        gallery_menu.addAction(open_gallery_action)
+
+        # Creating an upload action for our gallery menu.
+        upload_action = QAction("Upload to Gallery", self)
+        upload_action.setShortcut("Ctrl+U")
+        upload_action.triggered.connect(self.upload_to_gallery)
+        gallery_menu.addAction(upload_action)
+
+        # Creating a logout action for our gallery menu.
+        logout_action = QAction("Logout", self)
+        logout_action.setShortcut("Ctrl+L")
+        logout_action.triggered.connect(self.logout_from_gallery)
+        gallery_menu.addAction(logout_action)
 
         # Adding a close button to our menu bar.
         close_action = QAction("Close", self)
