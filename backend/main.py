@@ -132,7 +132,7 @@ async def toggle_like(sprite_id: str, user_id: str = Depends(get_current_user)) 
     if likes:
         # Unlike the sprite - delete the like document + decrement the likes count.
         likes[0].reference.delete()
-        sprite_ref.update({"likes": firestore_manager.db.FieldValue.increment(-1)})
+        sprite_ref.update({"likes": firestore.Increment(-1)})
         return {"action": "Unliked", "sprite": sprite_ref.get().to_dict()}
     else:
         # Like the sprite - create a new like document + increment the likes count.
@@ -142,7 +142,7 @@ async def toggle_like(sprite_id: str, user_id: str = Depends(get_current_user)) 
             "created_at": firestore.SERVER_TIMESTAMP
         }
         firestore_manager.db.collection("likes").add(like_data)
-        sprite_ref.update({"likes": firestore_manager.db.FieldValue.increment(1)})
+        sprite_ref.update({"likes": firestore.Increment(1)})
         return {"action": "Liked", "sprite": sprite_ref.get().to_dict()}
     
 # Our get sprite route to retrieve a specific sprite.
