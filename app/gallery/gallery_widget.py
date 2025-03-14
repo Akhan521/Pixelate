@@ -304,7 +304,7 @@ class SpriteDetailsDialog(QDialog):
         pixels_data = sprite_data.get("pixels_data", {})
         dimensions = pixels_data.get("dimensions", (512, 512))
         pixels = pixels_data.get("pixels", {})
-        pixel_size = 1 if 512 <= dimensions[0] <= 1024 else 5
+        pixel_size = 1 if 512 <= dimensions[0] <= 1024 else 3 if 128 <= dimensions[0] < 512 else 5
         pixmap_size = QSize(dimensions[0] * pixel_size, dimensions[1] * pixel_size)
         pixmap = QPixmap(pixmap_size)
         pixmap.fill(QColor(0, 0, 0, 0))

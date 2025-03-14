@@ -34,6 +34,8 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(securit
 
 # Our login route to authenticate the user.
 # TODO: Remove this route as we already have the client provide the user ID and ID token.
+# Begin here, check auth_manager.py, and remove all post requests to this route.
+# The client sdk should handle the sign in/register process from the client side.
 @app.post("/auth/login", response_model=AuthResponse)
 async def login(request: LoginRequest) -> AuthResponse:
     

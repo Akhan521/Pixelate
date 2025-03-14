@@ -120,7 +120,6 @@ class StartScreen(QMainWindow):
                     self.gallery_widget = GalleryWidget(self.gallery_manager)
                     self.gallery_widget.showFullScreen()
 
-
     # A method to start our application using the main window.
     def start(self):
 
