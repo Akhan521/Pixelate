@@ -144,11 +144,20 @@ class MainWindow(QMainWindow):
                     file.write(f"({self.grid_width},{self.grid_height})\n")
                     # Writing the pixels dictionary to the file.
                     file.write(pixels)
+                CustomMessageBox(title   = "Success", 
+                                 message = "Project saved successfully.", 
+                                 type    = "info")
 
             except Exception as e:
                 CustomMessageBox(title   = "ERROR: failed to save project", 
                                  message = str(e), 
                                  type    = "warning")
+                
+        else:
+            CustomMessageBox(title="Warning",
+                            message="You have not saved your project.",
+                            type="warning")
+                
 
     # A method to import a canvas from a text file (loading the pixels dictionary).
     def import_canvas(self):
