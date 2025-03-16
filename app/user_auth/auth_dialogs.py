@@ -265,14 +265,13 @@ class RegisterDialog(QDialog):
             # Get the user's token to save their data to Firestore.
             token = self.auth_manager.get_token()
             if not token:
-                CustomMessageBox("Error", "Failed to refresh token. Please try again.", type="warning")
+                CustomMessageBox("Error", "Failed to refresh token. Please login and try again.", type="warning")
                 self.auth_manager.logout()
                 self.reject()
                 return
             
             # Save the user's data to Firestore.
             try:
-                print(f"\nSending token to backend: {token}\n")
                 # Send the user's data to the backend for saving.
                 user_data = {"email": email, "username": username}
                 response = requests.post(
@@ -283,9 +282,6 @@ class RegisterDialog(QDialog):
                 
                 # If an error occurred while saving the user's data, show an error message.
                 if response.status_code != 200:
-                    print(f"Status code: {response.status_code}")
-                    print(f"Response: {response.text}")
-                    print(f"Saving user data failed: {response.json()}")
                     error = response.json()
                     error_msg = error["detail"]
                     print(f"An error occurred while saving user data: {error_msg}")
@@ -295,18 +291,18 @@ class RegisterDialog(QDialog):
             except requests.exceptions.RequestException as e:
                 error_msg = e.response.json().get("detail", str(e)) if hasattr(e, "response") else str(e)
                 print(f"An error occurred while saving user data: {error_msg}")
-                if "Invalid or expired custom token" in error_msg:
-                    CustomMessageBox("Error", "Session expired. Please try again.", type="warning")
-                    self.auth_manager.logout()
-                    self.reject()
-                else:
-                    CustomMessageBox("Error", f"Failed to save user data: {error_msg}. Please try again.", type="warning")
-                    self.auth_manager.logout()
-                    self.reject()
+                CustomMessageBox("Error", f"Failed to save user data: {error_msg}. Please login and try again.", type="warning")
+                self.auth_manager.logout()
+                self.reject()
                 return
 
             # Automatically log the user in after registering.
-            self.auth_manager.login(email, password)
+            success, error_msg = self.auth_manager.login(email, password)
+            if not success:
+                CustomMessageBox("Error", f"{error_msg}. Please try again.", type="warning")
+                self.reject()
+                return
+            
             CustomMessageBox("Success", "You have successfully registered.", type="info")
             self.accept()
             

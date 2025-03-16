@@ -32,24 +32,9 @@ dalle_client = OpenAI(
 async def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)) -> str:
     return auth_manager.get_current_user(token.credentials)
 
-# Our login route to authenticate the user.
-# TODO: Remove this route as we already have the client provide the user ID and ID token.
-# Begin here, check auth_manager.py, and remove all post requests to this route.
-# The client sdk should handle the sign in/register process from the client side.
-@app.post("/auth/login", response_model=AuthResponse)
-async def login(request: LoginRequest) -> AuthResponse:
-    
-    # Verify the ID token provided by the user.
-    user_id = auth_manager.get_current_user(request.id_token)
-    
-    # Return the user's ID and ID token for backend operations.
-    return AuthResponse(user_id=user_id, token=request.id_token)
-
 # Our save user data route to store user information in Firestore.
 @app.post("/auth/save_user_data")
 async def save_user_data(request: UserDataRequest, user_id: str = Depends(get_current_user)) -> dict:
-
-    print(f"\nUserDataRequest = \n{request}\n")
 
     firestore_manager.save_user_data(user_id, request.email, request.username)
     return {"message": "User data saved successfully"}

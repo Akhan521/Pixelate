@@ -2,18 +2,12 @@
 # Our request and response models:
 from pydantic import BaseModel
 
-class LoginRequest(BaseModel):
-    id_token: str # Provided by Firebase Client SDK.
-
-class AuthResponse(BaseModel):
-    user_id: str
-    token: str    # Provided by Firebase Admin SDK.
-
 # For saving user data to Firestore.
 class UserDataRequest(BaseModel):
     email: str
     username: str
 
+# For uploading a sprite to cloud storage.
 class SpriteUploadRequest(BaseModel):
     title: str
     description: str
@@ -29,8 +23,10 @@ class SpriteUploadRequest(BaseModel):
         }
     '''
 
+# For chat requests using OpenAI API.
 class ChatRequest(BaseModel):
     chat_context: str # Our context is a list of chat messages. Here, it's a JSON string.
 
+# For image generation requests using DALL-E.
 class ImageGenRequest(BaseModel):
     description: str

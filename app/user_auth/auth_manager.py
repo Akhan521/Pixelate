@@ -33,24 +33,16 @@ class AuthManager(QObject):
         try:
             # Create a new user with the specified email and password.
             user = self.auth.create_user_with_email_and_password(email, password)
-            id_token = user["idToken"]
 
-            # Send the ID token to the backend for verification.
-            response = requests.post(f"{self.backend_url}/auth/login", json={"id_token": id_token})
-
-            # If the request was successful, we'll extract the user ID and token.
-            if response.status_code == 200:
-                user_info = response.json()
+            # If the user was created successfully...
+            if user:
                 self.user = user
-                self.token = user_info["token"] 
-                self.user_id = user_info["user_id"]
+                self.token = user["idToken"]
+                self.user_id = user["localId"]
                 self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
                 return (True, None)
-            
             else:
-                error_msg = response.json().get("detail", str(response.json()))
-                print(f"An error occurred while registering: {error_msg}")
-                return (False, error_msg)
+                return (False, "An error occurred while registering.")
         
         except requests.exceptions.HTTPError as e:
             # If an error occurred, we'll extract the error message from the response.
@@ -68,23 +60,16 @@ class AuthManager(QObject):
         try:
             # Attempt to sign in using Firebase Client SDK.
             user = self.auth.sign_in_with_email_and_password(email, password)
-            id_token = user["idToken"]
-
-            # Send the ID token to the backend for verification.
-            response = requests.post(f"{self.backend_url}/auth/login", json={"id_token": id_token})
-
-            # If the request was successful, we'll extract the user ID and token.
-            if response.status_code == 200:
-                user_info = response.json()
+            
+            # If the user was signed in successfully...
+            if user:
                 self.user = user
-                self.token = user_info["token"] 
-                self.user_id = user_info["user_id"]
+                self.token = user["idToken"]
+                self.user_id = user["localId"]
                 self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
                 return (True, None)
             else:
-                error_msg = response.json().get("detail", str(response.json()))
-                print(f"An error occurred while logging in: {error_msg}")
-                return (False, error_msg)
+                return (False, "An error occurred while logging in.")
         
         except requests.exceptions.HTTPError as e:
             # If an error occurred, we'll extract the error message from the response.
@@ -117,24 +102,17 @@ class AuthManager(QObject):
                 print("Refreshing token...")
                 # Refresh the user's token using their refresh token.
                 refreshed_user = self.auth.refresh(self.user["refreshToken"])
-                id_token = refreshed_user["idToken"]
-                self.user = refreshed_user
 
-                # Send the new ID token to the backend for verification and generate a new token.
-                response = requests.post(f"{self.backend_url}/auth/login", json={"id_token": id_token})
-
-                # If the request was successful, we'll extract the user ID and token.
-                if response.status_code == 200:
-                    user_info = response.json()
-                    self.token = user_info["token"]
-                    self.user_id = user_info["user_id"]
+                # If the token was refreshed successfully, we'll update our user info.
+                if refreshed_user:
+                    self.user = refreshed_user
+                    self.token = refreshed_user["idToken"]
+                    self.user_id = refreshed_user["localId"]
                     self.token_expiry = int(time.time()) + 3600 # Set token to expire in 1 hour.
                     print(f"Token refreshed successfully. New expiry: {self.token_expiry}")
                     return True
                 else:
-                    error = response.json()
-                    error_msg = error["detail"]
-                    print(f"An error occurred while refreshing token: {error_msg}")
+                    print("An error occurred while refreshing token.")
                     self.logout()
                     return False
                 
