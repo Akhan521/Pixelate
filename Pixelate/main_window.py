@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QFileDialog, QMessageBox, QSizePolicy,
                               QWidgetAction, QLabel )
 
-from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
+from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction, QImage, QPainter
 from PyQt6.QtCore import Qt
 from tools import Tools
 import ast
@@ -205,6 +205,23 @@ class MainWindow(QMainWindow):
                                  message = str(e), 
                                  type    = "warning")
 
+    # A method to export our canvas as a PNG image.
+    def export_canvas(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Export as PNG", "", "PNG Files (*.png);;All Files (*)")
+
+        #if valid file path, continue.
+        if file_path:
+            # Create an image with the canvas size
+            image = QImage(self.canvas.canvas_buffer.size(), QImage.Format.Format_ARGB32)
+
+            # Use QPainter to render the canvas onto the image
+            painter = QPainter(image)
+            painter.drawPixmap(0, 0, self.canvas.canvas_buffer)
+            painter.end()
+
+            # Save the image as PNG
+            image.save(file_path, "PNG")
+
     # A method to setup our menubar:
     def init_menubar(self):
 
@@ -226,6 +243,12 @@ class MainWindow(QMainWindow):
         import_action.setShortcut("Ctrl+I")
         import_action.triggered.connect(self.import_canvas)
         file_menu.addAction(import_action)
+
+        # Creating an export action to save as PNG
+        export_action = QAction("Export as PNG", self)
+        export_action.setShortcut("Ctrl+E")
+        export_action.triggered.connect(self.export_canvas)
+        file_menu.addAction(export_action) 
 
         # Adding a close button to our menu bar.
         close_action = QAction("Close", self)
