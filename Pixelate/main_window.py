@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QFileDialog, QMessageBox, QSizePolicy,
                               QWidgetAction, QLabel )
 
-from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction
+from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QAction, QImage, QPainter
 from PyQt6.QtCore import Qt
 from tools import Tools
 import ast
@@ -205,6 +205,34 @@ class MainWindow(QMainWindow):
                                  message = str(e), 
                                  type    = "warning")
 
+    # A method to export our canvas as a PNG image.
+    def export_canvas(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Export as PNG", "", "PNG Files (*.png)")
+
+        # If no file path was chosen return error message.
+        if not file_path:
+            CustomMessageBox(title="Export Canceled", message="No file was selected for export.", type="warning")
+            return
+
+        try:
+            # Create an image with the canvas size
+            image = QImage(self.canvas.canvas_buffer.size(), QImage.Format.Format_ARGB32)
+
+            # Use QPainter to render the canvas onto the image
+            painter = QPainter(image)
+            painter.drawPixmap(0, 0, self.canvas.canvas_buffer)
+            painter.end()
+
+            # Save the image as PNG
+            if image.save(file_path, "PNG"):
+                CustomMessageBox(title="Success!", message="Image exported successfully!", type="info")
+            else:
+                CustomMessageBox(title="Error!", message="Failed to save image.", type="error")
+
+        except Exception as e:
+            CustomMessageBox(title="Error!", message=f"An unexpected error occurred: {str(e)}", type="error")
+
+
     # A method to setup our menubar:
     def init_menubar(self):
 
@@ -226,6 +254,12 @@ class MainWindow(QMainWindow):
         import_action.setShortcut("Ctrl+I")
         import_action.triggered.connect(self.import_canvas)
         file_menu.addAction(import_action)
+
+        # Creating an export action to save as PNG
+        export_action = QAction("Export as PNG", self)
+        export_action.setShortcut("Ctrl+E")
+        export_action.triggered.connect(self.export_canvas)
+        file_menu.addAction(export_action) 
 
         # Adding a close button to our menu bar.
         close_action = QAction("Close", self)
@@ -276,9 +310,9 @@ class MainWindow(QMainWindow):
             }}
         '''
         
-app = QApplication([])
-# dim = 32
-dim = 64
-window = MainWindow((dim, dim))
-window.showMaximized()
-app.exec()
+# app = QApplication([])
+# # dim = 32
+# dim = 64
+# window = MainWindow((dim, dim))
+# window.showMaximized()
+# app.exec()
