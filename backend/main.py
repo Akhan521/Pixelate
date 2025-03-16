@@ -8,8 +8,8 @@ from fastapi.responses import Response
 from auth.auth_manager import AuthManager
 from auth.firestore_manager import FirestoreManager
 from auth.storage_manager import StorageManager
-from auth.models import (LoginRequest, AuthResponse, UserDataRequest, 
-                         SpriteUploadRequest, ChatRequest, ImageGenRequest)
+from auth.models import (UserDataRequest, SpriteUploadRequest, 
+                         ChatRequest, ImageGenRequest)
 from firebase_admin import auth, firestore
 from config import openai_api_key, dalle_api_key
 from openai import OpenAI
