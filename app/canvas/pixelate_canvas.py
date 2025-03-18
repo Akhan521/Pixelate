@@ -199,7 +199,7 @@ class PixelateCanvas(QWidget):
 
         painter = QPainter(self)
 
-        # We'll draw our pre-rendered grid on the canvas.
+        # We'll draw our pre-rendered canvas buffer.
         painter.drawPixmap(0, 0, self.canvas_buffer)
 
         # If we have a generated image (QPixmap object), we'll set it to our canvas buffer.
