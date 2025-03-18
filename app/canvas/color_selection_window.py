@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout,
 # Importing the necessary modules to work with canvas drawings.
 from PyQt6.QtGui import QPainter, QColor, QFontDatabase, QFont
 from PyQt6.QtCore import Qt
-from color_button import ColorButton
-from color_approx_mapping import ColorApproximator
+from canvas.color_button import ColorButton
+from canvas.color_approx_mapping import ColorApproximator
 
 class ColorSelectionWindow(QMainWindow):
     def __init__(self, pixel_size=15, grid_width=32, grid_height=32):

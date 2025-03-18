@@ -8,10 +8,8 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDatabase, QMovie
 from PyQt6.QtCore import Qt, QSize, QThread, pyqtSignal
 from custom_messagebox import CustomMessageBox
-from openai import OpenAI
 from dotenv import load_dotenv
 import requests
-import os
 
 # Loading the environment variables.
 load_dotenv()
@@ -23,57 +21,39 @@ class ImageGenThread(QThread):
     image_generated = pyqtSignal(bytes)
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, description, dalle_client):
+    def __init__(self, description):
         super().__init__()
         self.description = description
-        self.dalle_client = dalle_client
+        # To interact with our backend, we'll store the backend URL.
+        self.backend_url = "https://pixelate-backend.onrender.com"
 
     # A method to generate an image in the background.
     def run(self):
 
-        style_prompt = '''Style: A cartoonish, simple image with bold outlines and differentiable colors.'''
-        
         try:
-            # Attempting to generate a response from DALL-E.
-            response = self.dalle_client.images.generate(
-                model="dall-e-3",
-                prompt=self.description + "\n" + style_prompt,
-                n=1,
-                size="1024x1024",
-                quality="standard",
+            # We'll send a POST request to our backend to generate an image based on the user's description.
+            response = requests.post(
+                f"{self.backend_url}/image/generate",
+                json={"description": self.description}
             )
 
-            # If the response is successful, we'll store the image URL.
-            if response and response.data and response.data[0].url:
-                
-                image_url = response.data[0].url
-                
-                # We'll download the image from the URL.
-                image_data = requests.get(image_url).content
-
-                # We'll emit a signal to indicate that the image has been generated (and pass the image data along with it).
+            # If the request was successful, we'll emit the image_generated signal.
+            if response.status_code == 200:
+                image_data = response.content
                 self.image_generated.emit(image_data)
-            
             else:
-                # If the response is unsuccessful, we'll emit an error signal.
+                # If an error occurred, we'll emit the error_occurred signal.
                 self.error_occurred.emit("An error occurred while generating the image.")
-                return
 
-        except Exception as e:
-            # If an error occurs, we'll emit an error signal.
-            self.error_occurred.emit(f"An error occurred: {e}")
-            return
+        except requests.exceptions.RequestException as e:
+            # If an error occurred, we'll emit the error_occurred signal.
+            self.error_occurred.emit("An error occurred while generating the image.")
 
 # A dialog that allows users to specify the image they want to generate.
 class ImageGenDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        # Creating a client to interact with DALL-E.
-        self.dalle_client = OpenAI(
-            api_key=os.getenv("DALLE_API_KEY"),
-        )
 
         # Our generated image data.
         self.image_data = None
@@ -121,6 +101,7 @@ class ImageGenDialog(QDialog):
         self.buttons.accepted.connect(self.start_generation)
         # If the user clicks Cancel, we'll reject the dialog.
         self.buttons.rejected.connect(self.reject)
+        self.buttons.setCenterButtons(True)
         self.buttons.setStyleSheet(self.get_default_style())
 
         # Adding our buttons to our layout.
@@ -135,7 +116,7 @@ class ImageGenDialog(QDialog):
         layout.addWidget(self.loading_label)
         
         # A loading animation to show while an image is being generated.
-        self.movie = QMovie("./Pixelate/loading.gif")
+        self.movie = QMovie("./app/loading.gif")
         if self.movie.isValid():
             self.loading_label.setMovie(self.movie)
         else:
@@ -165,7 +146,7 @@ class ImageGenDialog(QDialog):
         self.movie.start()
         
         # We'll generate the image in the background using a worker thread.
-        self.thread = ImageGenThread(description, self.dalle_client)
+        self.thread = ImageGenThread(description)
         # We'll connect the signals to the appropriate slots.
         self.thread.image_generated.connect(self.on_image_generated)
         self.thread.error_occurred.connect(self.on_error_occurred)
