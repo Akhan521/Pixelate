@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, QEvent, QRect, QTimer
 from color_selection_window import ColorSelectionWindow
 from canvas_history import CanvasHistory
 from collections import deque
+from smart_filter import daltonize
 
 # Defining a custom canvas widget for Pixelate.
 class PixelateCanvas(QWidget):
@@ -752,5 +753,18 @@ class PixelateCanvas(QWidget):
 
             plot_circle_points(x, y)
 
+    def daltonize_canvas(self, cvd_type):
+        # Hate this. What the hell is a buffer ong
+        print(f"Daltonize Canvas using " + cvd_type)
 
-        
+        # Daltonize the filtered pixels
+        for (x, y), color in self.pixels.items():
+            daltonized_color = daltonize(color, cvd_type)
+            self.pixels[(x, y)] = daltonized_color
+
+            # Updating the canvas buffer to display the pixel.
+            current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
+            buffer_painter = QPainter(self.canvas_buffer)
+            buffer_painter.fillRect(current_pixel, color)
+            buffer_painter.end()
+            self.update(current_pixel)

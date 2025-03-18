@@ -1,7 +1,7 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QApplication, QHBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QApplication, QHBoxLayout, QMenu
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor
+from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor, QFont
 from PyQt6.QtCore import Qt, QSize
 # Importing our canvas class.
 from pixelate_canvas import PixelateCanvas
@@ -149,7 +149,7 @@ class Tools(QMainWindow):
         self.tools.append(button)
         layout.addWidget(button)
 
-         # Our circle tool:
+        # Our circle tool:
         button = QPushButton()
         button.setStyleSheet(self.get_default_button_style())
         button.setIcon(QIcon(self.icons_path + "circle_icon.png"))
@@ -157,6 +157,24 @@ class Tools(QMainWindow):
 
         # Connecting its signal to a function that will set our drag state to True.
         button.clicked.connect(self.use_circle_tool)
+        button.setIconSize(self.icon_size)
+        self.tools.append(button)
+        layout.addWidget(button)
+
+        # Our LMS tool:
+        button = QPushButton()
+        button.setStyleSheet(self.get_default_button_style())
+        button.setIcon(QIcon(self.icons_path + "eraser_icon.png"))
+
+        # Create a dropdown menu for the different filters
+        menu = QMenu(self)
+        menu.addAction("Protanopia", lambda: self.use_smart_filter("Protanopia"))
+        menu.addAction("Dueteranopia", lambda: self.use_smart_filter("Deuteranopia"))
+        menu.addAction("Tritanopia", lambda: self.use_smart_filter("Tritanopia"))
+        menu.setStyleSheet(self.get_menubar_style())
+
+        # Connect smart filter menu to the button
+        button.setMenu(menu)
         button.setIconSize(self.icon_size)
         self.tools.append(button)
         layout.addWidget(button)
@@ -455,6 +473,12 @@ class Tools(QMainWindow):
         # Setting the circle tool mode of our canvas True.
         self.canvas.set_circle_mode(True)
 
+    def use_smart_filter(self, cvd_type):
+        self.canvas.daltonize_canvas(cvd_type) 
+
+        # Redrawing our canvas.
+        self.canvas.update()
+
     # Default button style.
     def get_default_button_style(self):
         return f'''
@@ -501,3 +525,31 @@ class Tools(QMainWindow):
                 button.setStyleSheet(self.get_active_button_style())
             else:
                 button.setStyleSheet(self.get_default_button_style())
+
+    # A method to retrieve the style of our menu bar.
+    def get_menubar_style(self):
+
+        pixelated_font = QFont("Press Start 2P")
+        pixelated_font.setPointSize(16)
+
+        return f'''
+            QMenuBar {{
+                background-color: white;
+                color: black;
+                font-family: {pixelated_font.family()};
+            }}
+            QMenuBar::item:selected {{
+                background-color: gray;
+                color: black;
+            }}
+
+            QMenu {{
+                background-color: white;
+                color: black;
+                font-family: {pixelated_font.family()};
+            }}
+            QMenu::item:selected {{
+                background-color: gray;
+                color: black;
+            }}
+        '''
