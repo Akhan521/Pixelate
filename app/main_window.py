@@ -225,10 +225,14 @@ class MainWindow(QMainWindow):
 
     # A method to export our canvas as a PNG image.
     def export_canvas(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Export as PNG", "", "PNG Files (*.png);;All Files (*)")
+        file_path, _ = QFileDialog.getSaveFileName(self, "Export as PNG", "", "PNG Files (*.png)")
 
-        #if valid file path, continue.
-        if file_path:
+        # If no file path was chosen return error message.
+        if not file_path:
+            CustomMessageBox(title="Export Canceled", message="No file was selected for export.", type="warning")
+            return
+
+        try:
             # Create an image with the canvas size
             image = QImage(self.canvas.canvas_buffer.size(), QImage.Format.Format_ARGB32)
 
@@ -238,7 +242,14 @@ class MainWindow(QMainWindow):
             painter.end()
 
             # Save the image as PNG
-            image.save(file_path, "PNG")
+            if image.save(file_path, "PNG"):
+                CustomMessageBox(title="Success!", message="Image exported successfully!", type="info")
+            else:
+                CustomMessageBox(title="Error!", message="Failed to save image.", type="error")
+
+        except Exception as e:
+            CustomMessageBox(title="Error!", message=f"An unexpected error occurred: {str(e)}", type="error")
+
 
     # A method to open our gallery.
     def open_gallery(self):
