@@ -149,6 +149,18 @@ class Tools(QMainWindow):
         self.tools.append(button)
         layout.addWidget(button)
 
+         # Our circle tool:
+        button = QPushButton()
+        button.setStyleSheet(self.get_default_button_style())
+        button.setIcon(QIcon(self.icons_path + "circle_icon.png"))
+        button.setIconSize(self.icon_size)
+
+        # Connecting its signal to a function that will set our drag state to True.
+        button.clicked.connect(self.use_circle_tool)
+        button.setIconSize(self.icon_size)
+        self.tools.append(button)
+        layout.addWidget(button)
+
         # Creating an intermediary widget to hold our layout.
         window = QWidget()
         window.setLayout(layout)
@@ -228,6 +240,9 @@ class Tools(QMainWindow):
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
     def use_pencil_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
@@ -254,6 +269,9 @@ class Tools(QMainWindow):
 
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
+
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
 
     def use_erase_tool(self):
 
@@ -282,6 +300,9 @@ class Tools(QMainWindow):
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
     def use_cursor_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
@@ -308,6 +329,9 @@ class Tools(QMainWindow):
 
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
+
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
 
     def use_eyedropper_tool(self):
 
@@ -340,6 +364,9 @@ class Tools(QMainWindow):
 
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
+
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
         
     def use_line_tool(self):
 
@@ -368,6 +395,9 @@ class Tools(QMainWindow):
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
     def use_square_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
@@ -394,6 +424,36 @@ class Tools(QMainWindow):
 
         #Setting the square tool mode of our canvas True.
         self.canvas.set_square_mode(True)
+
+    def use_circle_tool(self):
+
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tool = self.tools[7]
+        self.update_button_styles()
+        
+        # Setting our cursor to be an arrow cursor.
+        self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
+
+        # Setting the fill mode of our canvas to False.
+        self.canvas.set_fill_mode(False)
+
+        # Setting the drag state of our canvas to False.
+        self.canvas.set_draggable(False)
+
+        # Setting eyedropper mode to False.
+        self.canvas.set_eyedropper_mode(False)
+
+        # Setting the erase mode of our canvas to False.
+        self.canvas.set_erase_mode(False)
+
+        # Setting the line tool mode of our canvas False.
+        self.canvas.set_line_mode(False)
+
+        #Setting the square tool mode of our canvas True.
+        self.canvas.set_square_mode(False)
+
+        # Setting the circle tool mode of our canvas True.
+        self.canvas.set_circle_mode(True)
 
     # Default button style.
     def get_default_button_style(self):
