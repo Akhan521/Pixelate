@@ -5,37 +5,55 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QFileDialog, QMessageBox, QPushButton, 
                               QLabel, QDialog, QInputDialog, QLineEdit,
                               QTextEdit, QFormLayout, QDialogButtonBox,
-                              QListWidget, QListWidgetItem )
+                              QListWidget, QListWidgetItem)
 
 from PyQt6.QtGui import QColor, QImage, QFont, QPixmap, QPainter, QImage
-from PyQt6.QtCore import Qt, QSize
-from chat_bubble_widget import ChatBubbleWidget
-from image_gen_dialog import ImageGenDialog
+from PyQt6.QtCore import Qt, QSize, QTimer
+from pixi_ai.chat_bubble_widget import ChatBubbleWidget
+from pixi_ai.image_gen_dialog import ImageGenDialog
+from gallery.gallery_widget import DimmedBackdrop
 from openai import OpenAI
 from dotenv import load_dotenv
+import requests
 import os
+import json
 
 # Loading the environment variables.
 load_dotenv()
 
 # Reading the system prompt for Pixi from a text file.
-with open("Pixelate/Pixi_System_Prompt.txt", "r") as file:
+with open("app/pixi_ai/Pixi_System_Prompt.txt", "r") as file:
     system_prompt = file.read()
+
+# Our custom text edit to handle sending messages to Pixi when the user presses Enter.
+class PixiTextEdit(QTextEdit):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ai_assistant = parent
+
+    def keyPressEvent(self, event):
+        # If the user presses Enter, we'll send their message to Pixi.
+        if event.key() == Qt.Key.Key_Return and not (event.modifiers() & Qt.KeyboardModifier.ShiftModifier):
+            self.ai_assistant.send_message()
+        else:
+            super().keyPressEvent(event)
 
 # Our AI assistant will be implemented as a chat widget.
 class AIAssistant(QWidget):
 
-    def __init__(self, width, height, canvas=None):
+    def __init__(self, width, height, canvas=None, main_window=None):
 
         super().__init__()
 
-        # Storing a reference to the canvas (to handle image generation).
+        # Storing a reference to the canvas (to handle image generation + drawing).
         self.canvas = canvas
 
-        # Creating an instance of the OpenAI class.
-        self.client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY")
-        )
+        # Storing a reference to the main window (to dim the background during image generation).
+        self.main_window = main_window
+
+        # To interact with our backend, we'll store the backend URL.
+        self.backend_url = "https://pixelate-backend.onrender.com"
         
         # Setting the width and height of our chat widget.
         self.width = width
@@ -55,7 +73,6 @@ class AIAssistant(QWidget):
 
         # Creating a list widget to display our chat messages.
         self.chat_messages = QListWidget(self)
-        self.chat_messages.setFixedWidth(self.width - 20) # Subtracting 20 to account for padding.
         self.chat_messages.setSpacing(3)
 
         # Hiding the vertical scroll bar of the chat messages list widget.
@@ -64,21 +81,18 @@ class AIAssistant(QWidget):
         # To enable line wrapping, we'll set the word wrap property to True.
         self.chat_messages.setWordWrap(True)
 
-        # An introductory message to welcome the user (added to the chat messages list widget).
-        welcome_message = "Welcome to Pixelate! I'm Pixi, your AI assistant. Feel free to ask me anything."
-        self.chat_context.append({"role": "assistant", "content": welcome_message})
-        self.create_list_item(welcome_message, is_user=False)     
-
         # Adding our chat messages list widget to our main layout.
         main_layout.addWidget(self.chat_messages)
 
         # We'll specify the height of our input field.
-        input_field_height = 50
+        input_field_height = 55
 
         # Creating a text edit widget for our input field. This is where the user will type their messages.
-        self.input_field = QTextEdit(self)
-        self.input_field.setFixedSize(self.width - 20, input_field_height) # Subtracting 20 to account for padding.
+        self.input_field = PixiTextEdit(self)
+        self.input_field.setFixedHeight(input_field_height)
+        self.input_field.setFont(QFont("Press Start 2P", 8))
         self.input_field.setPlaceholderText("Type your message here...")
+        self.input_field.setFocus()
 
         # Adding our input field to our main layout.
         main_layout.addWidget(self.input_field)
@@ -98,20 +112,69 @@ class AIAssistant(QWidget):
         main_layout.addWidget(self.generate_button)
 
         self.setStyleSheet(f'''
-            background-color: {QColor(240, 240, 240, 255).name()};
-            color: black;
+            QWidget {{
+                background-color: {QColor(240, 240, 240, 255).name()};
+                color: black;
+            }}
+            QListWidget {{
+                background-color: white;
+                border: 2px solid #d0d0d0;
+                border-radius: 5px;
+                padding: 5px;
+            }}
+            QTextEdit {{
+                background-color: white;
+                border: 2px solid #d0d0d0;
+                border-radius: 5px;
+                padding: 5px;
+            }}
+            QTextEdit QScrollBar:vertical {{
+                border: none;
+                background: #f0f0f0;
+                width: 5px;
+                margin: 0px;
+            }}
+            QTextEdit QScrollBar::handle:vertical {{
+                background: #9370DB;
+                min-height: 20px;
+                border-radius: 5px;
+            }}
+            QTextEdit QScrollBar::handle:vertical:hover {{
+                background: #7B68EE;
+            }}
+            QTextEdit QScrollBar::add-line:vertical, QTextEdit QScrollBar::sub-line:vertical {{
+                height: 0px;
+            }}
         ''')
         
         # Finally, we'll set the main layout of our chat widget.
         self.setLayout(main_layout)
 
+        # Delaying the addition of the welcome message to ensure that the chat widget is displayed first.
+        QTimer.singleShot(0, self.add_welcome_message)
+
+    def add_welcome_message(self):
+        # An introductory message to welcome the user (added to the chat messages list widget).
+        welcome_message = "Welcome to Pixelate! I'm Pixi, your AI assistant. Feel free to ask me anything."
+        self.chat_context.append({"role": "assistant", "content": welcome_message})
+        self.create_list_item(welcome_message, is_user=False)
         
     # A function to set the canvas reference for our AI assistant.
     def set_canvas(self, canvas):
         self.canvas = canvas
 
+    # A function to set the main window reference for our AI assistant.
+    def set_main_window(self, main_window):
+        self.main_window = main_window
+
     # A function to send a request to the OpenAI API and receive a response. 
     def get_response(self):
+
+        # Disabling our buttons and input field while we wait for a response from Pixi.
+        self.send_button.setEnabled(False)
+        self.generate_button.setEnabled(False)
+        self.input_field.setEnabled(False)
+        self.input_field.setPlaceholderText("Processing...")
 
         # We'll provide a limited number of messages to Pixi to generate a response.
         chat_context = self.chat_context
@@ -120,20 +183,39 @@ class AIAssistant(QWidget):
         if len(self.chat_context) > self.context_limit + 1: # We add 1 to account for the system prompt.
 
             # We'll provide the system prompt and the most recent messages to Pixi.
-            chat_context = self.chat_context[0] + self.chat_context[-self.context_limit:]
+            chat_context = system_prompt + self.chat_context[-self.context_limit:]
 
-        # Now, we'll send a request to the OpenAI API w/ our chat context to get a response.
+        # Now, we'll send a request to our backend server to interact with Pixi, our AI assistant.
+        chat_context_json = json.dumps(chat_context)
+        
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=chat_context
+            response = requests.post(
+                f"{self.backend_url}/chat",
+                json={"chat_context": chat_context_json}
             )
 
-            return response.choices[0].message.content
+            # If the request was successful, we'll extract the response from the server.
+            if response.status_code == 200:
+                self.send_button.setEnabled(True)
+                self.generate_button.setEnabled(True)
+                self.input_field.setEnabled(True)
+                self.input_field.setPlaceholderText("Type your message here...")
+                return response.json()
+            
+            # If an error occurred, we'll return a default response.
+            self.send_button.setEnabled(True)
+            self.generate_button.setEnabled(True)
+            self.input_field.setEnabled(True)
+            self.input_field.setPlaceholderText("Type your message here...")
+            return "I'm sorry, but I'm currently unavailable. Please try again later."
         
-        except Exception as e:
-            return f"An error occurred: {e}"
-
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred while sending a request to the server: {str(e)}")
+            self.send_button.setEnabled(True)
+            self.generate_button.setEnabled(True)
+            self.input_field.setEnabled(True)
+            self.input_field.setPlaceholderText("Type your message here...")
+            return "I'm sorry, an error occurred while processing your request. Please try again later."
 
     # A function to send a message to our AI assistant, Pixi.
     def send_message(self):
@@ -164,7 +246,6 @@ class AIAssistant(QWidget):
             # Automatically scrolling to the bottom of our chat messages list widget.
             self.chat_messages.scrollToBottom()
 
-
     # A function to create a list item for our chat messages list widget.
     def create_list_item(self, message, is_user=False):
 
@@ -186,16 +267,12 @@ class AIAssistant(QWidget):
         # Automatically scrolling to the bottom of our chat messages list widget.
         self.chat_messages.scrollToBottom()
 
-    # If the user presses Ctrl + Enter, we'll send their message to Pixi.
-    def keyPressEvent(self, event):
-
-        if event.key() == Qt.Key.Key_Return and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-
-            # Sending the user's message to Pixi.
-            self.send_message()
-
     # Our generate_image method will be implemented here.
     def generate_image(self):
+
+        # Providing a dimmed backdrop for the image generation dialog.
+        self.backdrop = DimmedBackdrop(self.main_window)
+        self.backdrop.show()
 
         # Creating an ImageGenDialog instance to generate an image based on the user's description.
         image_gen_dialog = ImageGenDialog()
@@ -224,6 +301,9 @@ class AIAssistant(QWidget):
                 
                 # Storing the generated image in our canvas.
                 self.canvas.set_generated_image(image)
+
+        # Closing the dimmed backdrop after the image generation dialog is closed.
+        self.backdrop.close()
 
     # Button Style:
     def get_button_style(self):

@@ -50,7 +50,7 @@ class ChatBubbleWidget(QWidget):
     def sizeHint(self):
         
         # The width of our chat bubble widget will be the width of the list widget that holds it.
-        width = self.list_widget.width() - 10 # Subtracting 10 to account for padding.
+        width = self.list_widget.width() - 20 # Subtracting 20 to account for padding.
         
         # The height of our chat bubble widget will be the height required to display the message.
         height = self.message_label.heightForWidth(width) 
@@ -66,7 +66,7 @@ class ChatBubbleWidget(QWidget):
 
         # If the message is from Pixi, we'll use a lighter shade of gray.
         else:
-            background_color = "#888"
+            background_color = "#9370DB"
 
         # Returning the style of our chat bubble widget.
         return f'''
