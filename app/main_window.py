@@ -132,6 +132,9 @@ class MainWindow(QMainWindow):
     # A method to save our canvas to a text file (saving the pixels dictionary).
     def save_canvas(self):
 
+        # Displaying our dimmed backdrop.
+        self.dimmed_backdrop.show()
+
         # Retrieving our pixels dictionary (which contains the color of each pixel).
         # We'd like to have our dictionary in the form {(x,y): rgba_tuple}.
         pixels = self.canvas.convert_to_rgba_format()
@@ -151,20 +154,25 @@ class MainWindow(QMainWindow):
                 CustomMessageBox(title   = "Success", 
                                  message = "Project saved successfully.", 
                                  type    = "info")
+                self.dimmed_backdrop.hide()
 
             except Exception as e:
                 CustomMessageBox(title   = "ERROR: failed to save project", 
                                  message = str(e), 
                                  type    = "warning")
+                self.dimmed_backdrop.hide()
                 
         else:
             CustomMessageBox(title="Warning",
                             message="You have not saved your project.",
                             type="warning")
-                
+            self.dimmed_backdrop.hide()     
 
     # A method to import a canvas from a text file (loading the pixels dictionary).
     def import_canvas(self):
+
+        # Displaying our dimmed backdrop.
+        self.dimmed_backdrop.show()
 
         # Prompting the user to select a file to open.
         filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Import Canvas", "", "Pix Files (*.pix)")
@@ -191,6 +199,7 @@ class MainWindow(QMainWindow):
                     CustomMessageBox(title   = "ERROR: invalid/missing dimensions", 
                                      message = "The selected file is missing or has invalid dimensions.", 
                                      type    = "error")
+                    self.dimmed_backdrop.hide()
                     return
                 
                 # If our dimensions are valid, they must match the dimensions of our canvas.
@@ -198,6 +207,7 @@ class MainWindow(QMainWindow):
                     CustomMessageBox(title   = "ERROR: invalid dimensions", 
                                      message = "The dimensions of the selected file do not match the dimensions of the current canvas.", 
                                      type    = "error")
+                    self.dimmed_backdrop.hide()
                     return
 
                 # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
@@ -208,6 +218,7 @@ class MainWindow(QMainWindow):
                     CustomMessageBox(title   = "ERROR: invalid data format/type", 
                                      message = "The data in the selected file is not in the correct format.", 
                                      type    = "error")
+                    self.dimmed_backdrop.hide()
                     return
                 
                 # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
@@ -215,6 +226,7 @@ class MainWindow(QMainWindow):
                     CustomMessageBox(title   = "Success", 
                                      message = "Project imported successfully.", 
                                      type    = "info")
+                    self.dimmed_backdrop.hide()
 
                     # Converting our pixels data to a dictionary of the form {(x,y): QColor}.
                     pixels = self.canvas.convert_to_qcolor_format(pixels)
@@ -226,14 +238,23 @@ class MainWindow(QMainWindow):
                 CustomMessageBox(title   = "ERROR: failed to import project", 
                                  message = str(e), 
                                  type    = "warning")
+                self.dimmed_backdrop.hide()
+
+        # Hiding our dimmed backdrop.
+        self.dimmed_backdrop.hide()
 
     # A method to export our canvas as a PNG image.
     def export_canvas(self):
+
+        # Displaying our dimmed backdrop.
+        self.dimmed_backdrop.show()
+
         file_path, _ = QFileDialog.getSaveFileName(self, "Export as PNG", "", "PNG Files (*.png)")
 
         # If no file path was chosen return error message.
         if not file_path:
-            CustomMessageBox(title="Export Canceled", message="No save location was provided for export.", type="warning")
+            CustomMessageBox(title="Export Canceled", message="No save location was provided.", type="warning")
+            self.dimmed_backdrop.hide()
             return
 
         try:
@@ -251,8 +272,12 @@ class MainWindow(QMainWindow):
             else:
                 CustomMessageBox(title="Error!", message="Failed to save image.", type="error")
 
+            # Hiding our dimmed backdrop.
+            self.dimmed_backdrop.hide()
+
         except Exception as e:
             CustomMessageBox(title="Error!", message=f"An unexpected error occurred: {str(e)}", type="error")
+            self.dimmed_backdrop.hide()
 
     # A method to open our gallery.
     def open_gallery(self):

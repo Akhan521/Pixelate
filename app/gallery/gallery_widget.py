@@ -70,17 +70,39 @@ class GalleryWidget(QWidget):
     def close_gallery(self):
         self.gallery_manager.auth_manager.logout()
         print("Gallery closed and user logged out.")
+
+        # Display our dimmed backdrop.
+        self.details_backdrop.show()
         CustomMessageBox(title="Success",
                          message="You have successfully logged out. The gallery will now close.",
                          type="info")
+        # Hide our dimmed backdrop.
+        self.details_backdrop.hide()
+
+        # Close the gallery widget.
         self.close()
 
     # A method to upload a sprite to the gallery (using our Upload Dialog).
     def upload_sprite(self):
+        # Display our dimmed backdrop.
+        self.details_backdrop.show()
+
+        # Create an upload dialog to upload a sprite.
         upload_dialog = UploadDialog(self.gallery_manager)
-        upload_dialog.exec()
-        # Reload the gallery after the dialog is closed.
-        self.load_gallery()
+
+        def on_dialog_finished():
+            # When our dialog is finished, hide the dimmed backdrop.
+            self.details_backdrop.hide()
+
+            # To ensure that the backdrop is hidden immediately, we'll force immediate processing of events.
+            QApplication.processEvents()
+
+        upload_dialog.finished.connect(on_dialog_finished)
+        
+        # If we've successfully uploaded a sprite, reload the gallery.
+        if upload_dialog.exec() == QDialog.DialogCode.Accepted:
+            # We'll defer reloading the gallery to ensure that the backdrop is hidden first.
+            QTimer.singleShot(0, self.load_gallery)
 
     # A method to load the gallery of sprites.
     def load_gallery(self):
@@ -153,10 +175,10 @@ class GalleryWidget(QWidget):
 
             # Show the dialog.
             dialog.exec()
-            
-            # Reload the gallery after the dialog is closed.
-            # We'll defer it to ensure that the backdrop is hidden first.
-            QTimer.singleShot(0, self.load_gallery)
+
+            # Update the sprite we've just viewed (in case the user liked/unliked it).
+            sprite_data = self.gallery_manager.get_sprite(sprite_id)
+            item.setText(f"{sprite_data['title']} by {sprite_data['creator_username']} - {sprite_data.get('likes', 0)} likes")
 
     # Default styling.
     def get_style(self):
