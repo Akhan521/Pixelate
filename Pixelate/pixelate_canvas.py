@@ -30,6 +30,9 @@ class PixelateCanvas(QWidget):
         self.circle_start = (0, 0)
         self.circle_end   = (0, 0)
 
+        self.is_filter_on = False
+        self.filter_type = None
+
         # To store the state of the mouse button.
         self.mouse_button_pressed = False  
 
@@ -200,6 +203,15 @@ class PixelateCanvas(QWidget):
         else:
             self.color_selection_window.set_color_approx_label("None")
 
+    def restore_buffer(self):
+        for (x, y), color in self.pixels.items():
+            current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
+            buffer_painter = QPainter(self.canvas_buffer)
+            buffer_painter.fillRect(current_pixel, color)
+            buffer_painter.end()
+            
+        self.update()
+
     # Overriding the paintEvent method, which handles drawing on the canvas.
     def paintEvent(self, event):
 
@@ -239,7 +251,7 @@ class PixelateCanvas(QWidget):
             # Updating the canvas buffer to display the pixel.
             current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
             buffer_painter = QPainter(self.canvas_buffer)
-            buffer_painter.fillRect(current_pixel, color)
+            buffer_painter.fillRect(current_pixel, color if not self.is_filter_on else daltonize(color, self.filter_type))
             buffer_painter.end()
             
             # Repainting the pixel we've drawn on our canvas.
@@ -581,6 +593,8 @@ class PixelateCanvas(QWidget):
         # Getting our primary color.
         else:
             preview_color = self.color_selection_window.get_primary_color()
+            if self.is_filter_on:
+                preview_color = daltonize(preview_color, self.filter_type)
 
         # If we're in line mode and the mouse button was pressed, we'll draw a preview line.
         if self.line_mode and self.mouse_button_pressed:
@@ -621,11 +635,13 @@ class PixelateCanvas(QWidget):
     def update_pixels(self, pixels):
         self.pixels.update(pixels)
 
+        daltonized_color = daltonize(color, self.filter_type)
+
         # Updating the canvas buffer to display the new pixels.
         for (x, y), color in pixels.items():
             current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
             buffer_painter = QPainter(self.canvas_buffer)
-            buffer_painter.fillRect(current_pixel, color)
+            buffer_painter.fillRect(current_pixel, color if not self.is_filter_on else daltonized_color)
             buffer_painter.end()
 
         # Repainting the canvas to display the new pixels.
@@ -754,17 +770,23 @@ class PixelateCanvas(QWidget):
             plot_circle_points(x, y)
 
     def daltonize_canvas(self, cvd_type):
-        # Hate this. What the hell is a buffer ong
-        print(f"Daltonize Canvas using " + cvd_type)
 
-        # Daltonize the filtered pixels
-        for (x, y), color in self.pixels.items():
-            daltonized_color = daltonize(color, cvd_type)
-            self.pixels[(x, y)] = daltonized_color
+        if not self.is_filter_on or self.filter_type != cvd_type:
+            # Daltonize the filtered pixels
+            for (x, y), color in self.pixels.items():
+                daltonized_color = daltonize(color, cvd_type)
+                #self.pixels[(x, y)] = daltonized_color
 
-            # Updating the canvas buffer to display the pixel.
-            current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
-            buffer_painter = QPainter(self.canvas_buffer)
-            buffer_painter.fillRect(current_pixel, color)
-            buffer_painter.end()
-            self.update(current_pixel)
+                # Updating the canvas buffer to display the pixel while preserving original value
+                current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
+                buffer_painter = QPainter(self.canvas_buffer)
+                buffer_painter.fillRect(current_pixel, daltonized_color)
+                buffer_painter.end()
+            self.update()
+
+            self.is_filter_on = True
+            self.filter_type = cvd_type
+        
+        else:
+            self.is_filter_on = False
+            self.filter_type = None
