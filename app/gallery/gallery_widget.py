@@ -7,10 +7,13 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
 from PyQt6.QtCore import Qt, QSize, QTimer
-from gallery.gallery_manager import GalleryManager
-from gallery.upload_dialog import UploadDialog
+# from gallery.gallery_manager import GalleryManager
+# from gallery.upload_dialog import UploadDialog
+from gallery_manager import GalleryManager
+from upload_dialog import UploadDialog
+from app.custom_messagebox import CustomMessageBox
 from app.user_auth.auth_manager import AuthManager
-from custom_messagebox import CustomMessageBox
+# from custom_messagebox import CustomMessageBox
 import json
 
 class GalleryWidget(QWidget):
@@ -51,6 +54,7 @@ class GalleryWidget(QWidget):
         # A list of sprites in the gallery.
         self.sprite_list = QListWidget()
         self.sprite_list.itemDoubleClicked.connect(self.show_sprite_details)
+        self.sprite_list.setFocusPolicy(Qt.FocusPolicy.NoFocus) # To disable focus outlines.
 
         # A dimmed backdrop to display behind sprite details dialogs.
         self.details_backdrop = DimmedBackdrop(self)
@@ -166,6 +170,9 @@ class GalleryWidget(QWidget):
             def on_dialog_finished():
                 # When our dialog is finished, hide the dimmed backdrop.
                 self.details_backdrop.hide()
+
+                # Clear the selection in the sprite list.
+                self.sprite_list.clearSelection()
 
                 # To ensure that the backdrop is hidden immediately, we'll force immediate processing of events.
                 QApplication.processEvents()
@@ -525,7 +532,6 @@ class SpriteDetailsDialog(QDialog):
             pixelated_font = QFont()
 
         return pixelated_font
-
 
 if __name__ == "__main__":
     app = QApplication([])
