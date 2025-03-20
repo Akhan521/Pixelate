@@ -1,7 +1,7 @@
 # Importing basic widgets from PyQt6.
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QColorDialog, QLabel
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor, QFontDatabase, QFont
+from PyQt6.QtGui import QPainter, QColor, QFontDatabase, QFont, QGuiApplication
 from PyQt6.QtCore import Qt
 from canvas.color_button import ColorButton
 from canvas.color_approx_mapping import ColorApproximator

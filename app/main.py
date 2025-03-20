@@ -6,13 +6,13 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QFormLayout )
 
 from PyQt6.QtGui import QGuiApplication, QColor, QIcon, QPixmap, QFont, QFontDatabase
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QTimer
 from main_window import MainWindow
 from app.canvas.new_sprite_dialog import NewSpriteDialog
 from custom_messagebox import CustomMessageBox
 from app.tools.validations import validate_dimensions, validate_imported_data
 from gallery.gallery_manager import GalleryManager
-from gallery.gallery_widget import GalleryWidget
+from gallery.gallery_widget import GalleryWidget, DimmedBackdrop
 from app.user_auth.auth_manager import AuthManager
 from app.user_auth.auth_dialogs import LoginDialog
 import ast
@@ -33,6 +33,10 @@ class StartScreen(QMainWindow):
         
         # Retrieving the dimensions of our window.
         self.screen_geometry = self.screen.geometry()
+
+        # A dimmed backdrop to be displayed behind our login/register dialogs.
+        self.dimmed_backdrop = DimmedBackdrop(self)
+        self.dimmed_backdrop.hide()
 
         # Defining an offset for our logo, so that it doesn't take up the entire screen.
         logo_offset = 300
@@ -107,12 +111,22 @@ class StartScreen(QMainWindow):
 
         # If the user is not logged in, we'll prompt them to log in.
         if not self.auth_manager.is_logged_in():
+            # Displaying the dimmed backdrop.
+            self.dimmed_backdrop.show()
+
+            # Executing the login dialog.
             logged_in = login_dialog.exec()
             if logged_in == QDialog.DialogCode.Accepted:
+                # Hiding the dimmed backdrop.
+                self.dimmed_backdrop.hide()
+
                 # If the user successfully logs in, we'll open the gallery.
                 self.gallery_widget = GalleryWidget(self.gallery_manager)
                 self.gallery_widget.showFullScreen()
             else:
+                # Hiding the dimmed backdrop.
+                self.dimmed_backdrop.hide()
+
                 # If the user canceled/closed the login dialog, we'll check to see whether they've registered + logged in.
                 # The register dialog will automatically log the user in if they successfully register.
                 # (i.e. if the user is logged in by this point, they've registered successfully).
@@ -123,10 +137,16 @@ class StartScreen(QMainWindow):
     # A method to start our application using the main window.
     def start(self):
 
+        # Displaying the dimmed backdrop.
+        self.dimmed_backdrop.show()
+
         # Creating a dialog to get the dimensions of our new sprite.
         dialog = NewSpriteDialog()
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
+
+            # Hiding the dimmed backdrop.
+            self.dimmed_backdrop.hide()
 
             # Getting the dimensions of our new sprite.
             dimensions = dialog.get_dimensions()
@@ -142,6 +162,9 @@ class StartScreen(QMainWindow):
 
                 # Closing our start screen.
                 self.close()
+
+        # Hiding the dimmed backdrop.
+        self.dimmed_backdrop.hide()
 
     # A method to open a previous project (by loading a text file w/ our pixels data).
     def open(self):
