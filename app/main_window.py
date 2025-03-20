@@ -13,7 +13,7 @@ from canvas.pixelate_canvas import PixelateCanvas
 from canvas.color_selection_window import ColorSelectionWindow
 from canvas.zoomable_canvas_view import ZoomableCanvasView
 from gallery.gallery_manager import GalleryManager
-from gallery.gallery_widget import GalleryWidget
+from gallery.gallery_widget import GalleryWidget, DimmedBackdrop
 from gallery.upload_dialog import UploadDialog
 from user_auth.auth_manager import AuthManager
 from user_auth.auth_dialogs import LoginDialog
@@ -32,6 +32,10 @@ class MainWindow(QMainWindow):
         
         # Setting the window title.
         self.setWindowTitle("Pixelate")
+
+        # A dimmed backdrop.
+        self.dimmed_backdrop = DimmedBackdrop(self)
+        self.dimmed_backdrop.hide()
 
         # Setting up our menu bar.
         self.init_menubar()
@@ -229,7 +233,7 @@ class MainWindow(QMainWindow):
 
         # If no file path was chosen return error message.
         if not file_path:
-            CustomMessageBox(title="Export Canceled", message="No file was selected for export.", type="warning")
+            CustomMessageBox(title="Export Canceled", message="No save location was provided for export.", type="warning")
             return
 
         try:
@@ -250,7 +254,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             CustomMessageBox(title="Error!", message=f"An unexpected error occurred: {str(e)}", type="error")
 
-
     # A method to open our gallery.
     def open_gallery(self):
         
@@ -265,13 +268,23 @@ class MainWindow(QMainWindow):
 
         # If the user is not logged in, we'll prompt them to log in.
         if not self.auth_manager.is_logged_in():
+            # Displaying our dimmed backdrop.
+            self.dimmed_backdrop.show()
+
+            # Prompting the user to log in.
             login_dialog = LoginDialog(self.auth_manager)
             logged_in = login_dialog.exec()
             if logged_in == QDialog.DialogCode.Accepted:
+                # Hiding our dimmed backdrop.
+                self.dimmed_backdrop.hide()
+
                 # If the user successfully logs in, we'll open the gallery.
                 self.gallery_widget = GalleryWidget(self.gallery_manager)
                 self.gallery_widget.showFullScreen()
             else:
+                # Hiding our dimmed backdrop.
+                self.dimmed_backdrop.hide()
+
                 # If the user canceled/closed the login dialog, we'll check to see whether they've registered + logged in.
                 # The register dialog will automatically log the user in if they successfully register.
                 # (i.e. if the user is logged in by this point, they've registered successfully).
@@ -298,27 +311,46 @@ class MainWindow(QMainWindow):
 
         # If the user is not logged in, we'll prompt them to log in.
         if not self.auth_manager.is_logged_in():
+            # Displaying our dimmed backdrop.
+            self.dimmed_backdrop.show()
+
+            # Prompting the user to log in.
             login_dialog = LoginDialog(self.auth_manager)
             logged_in = login_dialog.exec()
+
             if logged_in == QDialog.DialogCode.Accepted:
                 # If the user successfully logs in, we'll open the upload dialog.
                 upload_dialog = UploadDialog(self.gallery_manager)
+                upload_dialog.finished.connect(self.dimmed_backdrop.hide)
                 upload_dialog.exec()
+
             else:
                 # If the user canceled/closed the login dialog, we'll check to see whether they've registered + logged in.
                 # The register dialog will automatically log the user in if they successfully register.
                 # (i.e. if the user is logged in by this point, they've registered successfully).
                 if self.auth_manager.is_logged_in():
                     upload_dialog = UploadDialog(self.gallery_manager)
+                    upload_dialog.finished.connect(self.dimmed_backdrop.hide)
                     upload_dialog.exec()
+
+            # Hiding our dimmed backdrop.
+            self.dimmed_backdrop.hide()
 
         # If the user is already logged in, we'll open the upload dialog.
         else:
+            # Displaying our dimmed backdrop.
+            self.dimmed_backdrop.show()
+
+            # If the user is already logged in, we'll open the upload dialog.
             upload_dialog = UploadDialog(self.gallery_manager)
+            upload_dialog.finished.connect(self.dimmed_backdrop.hide)
             upload_dialog.exec()
 
     # A method to log out from the gallery.
     def logout_from_gallery(self):
+
+        # Displaying our dimmed backdrop.
+        self.dimmed_backdrop.show()
 
         # If we have an auth manager and the user is logged in, we'll log them out.
         if self.auth_manager and self.auth_manager.is_logged_in():
@@ -330,6 +362,9 @@ class MainWindow(QMainWindow):
             CustomMessageBox(title="Warning",
                             message="You are already logged out.",
                             type="warning")
+
+        # Hiding our dimmed backdrop.
+        self.dimmed_backdrop.hide()
 
     # A method to setup our menubar:
     def init_menubar(self):

@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
                               QListWidgetItem, QPushButton, QDialog)
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, QTimer
 from gallery.gallery_manager import GalleryManager
 from gallery.upload_dialog import UploadDialog
 from app.user_auth.auth_manager import AuthManager
@@ -51,6 +51,10 @@ class GalleryWidget(QWidget):
         # A list of sprites in the gallery.
         self.sprite_list = QListWidget()
         self.sprite_list.itemDoubleClicked.connect(self.show_sprite_details)
+
+        # A dimmed backdrop to display behind sprite details dialogs.
+        self.details_backdrop = DimmedBackdrop(self)
+        self.details_backdrop.hide()
 
         # Adding our widgets to the layout.
         layout.addWidget(header)
@@ -131,16 +135,28 @@ class GalleryWidget(QWidget):
 
         # Show the sprite details in a dialog.
         if sprite_data:
-            # Create a dimmed backdrop to display behind the details dialog.
-            self.details_backdrop = DimmedBackdrop(self)
+            # Show our dimmed backdrop behind the details dialog.
             self.details_backdrop.show()
+
             # Create a dialog to display the sprite details.
             dialog = SpriteDetailsDialog(sprite_data, self.gallery_manager)
+
+            def on_dialog_finished():
+                # When our dialog is finished, hide the dimmed backdrop.
+                self.details_backdrop.hide()
+
+                # To ensure that the backdrop is hidden immediately, we'll force immediate processing of events.
+                QApplication.processEvents()
+
+            # When the dialog finishes, hide the dimmed backdrop.
+            dialog.finished.connect(on_dialog_finished)
+
+            # Show the dialog.
             dialog.exec()
-            # Close the backdrop when the details dialog is closed.
-            self.details_backdrop.close()
+            
             # Reload the gallery after the dialog is closed.
-            self.load_gallery()
+            # We'll defer it to ensure that the backdrop is hidden first.
+            QTimer.singleShot(0, self.load_gallery)
 
     # Default styling.
     def get_style(self):
@@ -255,11 +271,21 @@ class DimmedBackdrop(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
 
-        # Set the backdrop to be the same size as the parent widget.
-        self.setGeometry(parent.geometry())
+        # Set the backdrop to be the same size as entire screen initially.
+        screen_geometry = QGuiApplication.primaryScreen().geometry()
+        self.setGeometry(screen_geometry)
 
         # Set the backdrop to be on top of the parent widget.
         self.raise_()
+
+    def showEvent(self, event):
+        # Set the backdrop to be the same size as the entire screen when it's shown.
+        screen_geometry = QGuiApplication.primaryScreen().geometry()
+        self.setGeometry(screen_geometry)
+
+        # Make sure the backdrop is on top of the parent widget.
+        self.raise_()
+        super().showEvent(event)
 
     # Overriding the paint event to draw the dimmed backdrop.
     def paintEvent(self, event):
