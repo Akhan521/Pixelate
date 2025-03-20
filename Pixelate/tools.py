@@ -480,7 +480,6 @@ class Tools(QMainWindow):
 
     def use_smart_filter(self, cvd_type):
         self.active_tools[1] = self.tools[8]
-        self.update_button_styles()
 
         # Check if the filter is already active
         if self.canvas.is_filter_on and self.canvas.filter_type == cvd_type:
@@ -488,6 +487,7 @@ class Tools(QMainWindow):
             self.canvas.is_filter_on = False
             self.canvas.filter_type = None
             self.canvas.restore_buffer()
+            self.active_tools[1] = None
 
             # Uncheck the action
             if cvd_type == "Protanopia":
@@ -496,6 +496,7 @@ class Tools(QMainWindow):
                 self.deuteranopia_action.setChecked(False)
             elif cvd_type == "Tritanopia":
                 self.tritanopia_action.setChecked(False)
+            
         else:
             # Apply the filter
             self.canvas.daltonize_canvas(cvd_type)
@@ -518,6 +519,7 @@ class Tools(QMainWindow):
 
         # Update the canvas
         self.canvas.update()
+        self.update_button_styles()
 
     # Default button style.
     def get_default_button_style(self):
