@@ -7,13 +7,10 @@ from PyQt6.QtWidgets import ( QApplication, QMainWindow, QHBoxLayout,
 
 from PyQt6.QtGui import QGuiApplication, QColor, QFont, QFontDatabase, QPixmap, QPainter
 from PyQt6.QtCore import Qt, QSize, QTimer
-# from gallery.gallery_manager import GalleryManager
-# from gallery.upload_dialog import UploadDialog
-from gallery_manager import GalleryManager
-from upload_dialog import UploadDialog
-from app.custom_messagebox import CustomMessageBox
+from gallery.gallery_manager import GalleryManager
+from gallery.upload_dialog import UploadDialog
 from app.user_auth.auth_manager import AuthManager
-# from custom_messagebox import CustomMessageBox
+from custom_messagebox import CustomMessageBox
 import json
 
 class GalleryWidget(QWidget):
