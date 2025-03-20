@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, QEvent, QRect, QTimer
 from canvas.color_selection_window import ColorSelectionWindow
 from canvas.canvas_history import CanvasHistory
 from collections import deque
+from tools.smart_filter import daltonize
 
 # Defining a custom canvas widget for Pixelate.
 class PixelateCanvas(QWidget):
@@ -24,6 +25,14 @@ class PixelateCanvas(QWidget):
         # The start and end points for the square tool.
         self.square_start = (0, 0)
         self.square_end   = (0, 0)
+
+        # The start and end points for the circle tool.
+        self.circle_start = (0, 0)
+        self.circle_end   = (0, 0)
+
+        # Our filter state.
+        self.is_filter_on = False
+        self.filter_type = None
 
         # To store the state of the mouse button.
         self.mouse_button_pressed = False  
@@ -56,6 +65,7 @@ class PixelateCanvas(QWidget):
         self.erase_mode      = False
         self.line_mode       = False
         self.square_mode     = False
+        self.circle_mode     = False
 
         # Finally, we'll set the size of the canvas.
         self.setFixedSize(self.pixel_size * self.grid_width, self.pixel_size * self.grid_height)
@@ -194,6 +204,15 @@ class PixelateCanvas(QWidget):
         else:
             self.color_selection_window.set_color_approx_label("None")
 
+    def restore_buffer(self):
+        for (x, y), color in self.pixels.items():
+            current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
+            buffer_painter = QPainter(self.canvas_buffer)
+            buffer_painter.fillRect(current_pixel, color)
+            buffer_painter.end()
+
+        self.update()
+
     # Overriding the paintEvent method, which handles drawing on the canvas.
     def paintEvent(self, event):
 
@@ -233,7 +252,7 @@ class PixelateCanvas(QWidget):
             # Updating the canvas buffer to display the pixel.
             current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
             buffer_painter = QPainter(self.canvas_buffer)
-            buffer_painter.fillRect(current_pixel, color)
+            buffer_painter.fillRect(current_pixel, color if not self.is_filter_on else daltonize(color, self.filter_type))
             buffer_painter.end()
             
             # Repainting the pixel we've drawn on our canvas.
@@ -335,6 +354,12 @@ class PixelateCanvas(QWidget):
             self.square_end = pixel
             return
 
+        if self.circle_mode:
+            # Store the starting point & end point.
+            self.circle_start = pixel
+            self.circle_end = pixel
+            return
+
         # If we press the left mouse button, we'll draw with the primary color.
         if event.button() == Qt.MouseButton.LeftButton:
             
@@ -414,6 +439,22 @@ class PixelateCanvas(QWidget):
             if self.is_within_canvas(self.square_start) and self.is_within_canvas(self.square_end):
                 self.draw_square(self.square_start, self.square_end, color, is_preview=False)
             return
+        
+        if self.circle_mode:
+
+            x, y = event.pos().x(), event.pos().y()
+            x = x // self.pixel_size
+            y = y // self.pixel_size
+
+            self.circle_end = (x, y)
+
+            # Retrieving the primary color.
+            color = self.color_selection_window.get_primary_color()
+
+            # If the start and end points are within the canvas bounds, we'll draw the circle on our canvas buffer.
+            if self.is_within_canvas(self.circle_start) and self.is_within_canvas(self.circle_end):
+                self.draw_circle(self.circle_start, self.circle_end, color, is_preview=False)
+            return
 
     # Similarly, we'll override the mouseMoveEvent method to draw pixels as we drag our mouse.
     def mouseMoveEvent(self, event):
@@ -445,6 +486,16 @@ class PixelateCanvas(QWidget):
             self.square_end = pixel
 
             # Repaint the canvas to show the new preview square.
+            self.update()
+            return
+
+        # If in circle mode, we will draw a preview if mouse is clicked and moving.
+        if self.circle_mode and event.buttons() == Qt.MouseButton.LeftButton:
+
+            # Update the end point of the circle.
+            self.circle_end = pixel
+
+            # Repaint the canvas to show the new preview circle.
             self.update()
             return
 
@@ -483,6 +534,10 @@ class PixelateCanvas(QWidget):
     # To set our canvas to square mode, we'll use the following method.
     def set_square_mode(self, square_mode):
         self.square_mode = square_mode
+
+    # To set our canvas to circle mode, we'll use the following method.
+    def set_circle_mode(self, circle_mode):
+        self.circle_mode = circle_mode
 
     # A method to get our canvas dimensions.
     def get_dimensions(self):
@@ -539,6 +594,8 @@ class PixelateCanvas(QWidget):
         # Getting our primary color.
         else:
             preview_color = self.color_selection_window.get_primary_color()
+            if self.is_filter_on:
+                preview_color = daltonize(preview_color, self.filter_type)
 
         # If we're in line mode and the mouse button was pressed, we'll draw a preview line.
         if self.line_mode and self.mouse_button_pressed:
@@ -551,6 +608,12 @@ class PixelateCanvas(QWidget):
 
             # We'll draw the preview square directly onto the canvas, not the canvas buffer.
             self.draw_square(self.square_start, self.square_end, preview_color, is_preview=True, painter=painter)
+
+        # If we're in circle mode and the mouse button was pressed, we'll draw a preview circle.
+        if self.circle_mode and self.mouse_button_pressed:
+
+            # We'll draw the preview circle directly onto the canvas, not the canvas buffer.
+            self.draw_circle(self.circle_start, self.circle_end, preview_color, is_preview=True, painter=painter)
 
         # If we have a preview pixel, we'll draw it on our canvas.
         if self.preview_pixel:
@@ -642,5 +705,89 @@ class PixelateCanvas(QWidget):
         self.draw_line((x2, y1), end, color, is_preview, painter)
         self.draw_line(end, (x1, y2), color, is_preview, painter)
         self.draw_line((x1, y2), start, color, is_preview, painter)
+
+    def draw_circle(self, start, end, color, is_preview=False, painter=None):
+        # Following code is based on mid-point circle drawing algorithm.
+
+        x1, y1 = start  
+        x2, y2 = end  
+        radius = round(abs(x2 - x1) / 2) 
+
+        # Calculate the center of the circle based on beginning and ending coordinate signs
+        if x2 < x1 and y2 < y1: # Dragging from top right to bottom left
+            cx = x1 - radius
+            cy = y1 - radius
+
+        elif x2 >= x1 and y2 >= y1: # Dragging from bottom left to top right
+            cx = x1 + radius
+            cy = y1 + radius
+
+        elif x2 < x1 and y2 >= y1: # Dragging from bottom right to top left
+            cx = x1 - radius
+            cy = y1 + radius
+
+        elif x2 >= x1 and y2 < y1: # Dragging from top left to bottom right
+            cx = x1 + radius
+            cy = y1 - radius
+
+        x = radius
+        y = 0
+        P = 1 - radius  # Initial decision parameter
+
+        def plot_circle_points(px, py):
+            # Since it's a circle, if we verify that a pixel is a valid point, then its symmetrical counterparts are also valid (using 8 quadrants)
+            points = [
+                (cx + px, cy + py), (cx - px, cy + py),
+                (cx + px, cy - py), (cx - px, cy - py),
+                (cx + py, cy + px), (cx - py, cy + px),
+                (cx + py, cy - px), (cx - py, cy - px),
+            ]
+
+            # Making sure we draw in canvas bounds!
+            for px, py in points:
+                if self.is_within_canvas((px, py)):  
+                    if is_preview:
+                        painter.fillRect(px * self.pixel_size, py * self.pixel_size,
+                                        self.pixel_size, self.pixel_size, color)
+                    else:
+                        self.draw_pixel((px, py), color)
+
+        # Draw the initial circle points
+        plot_circle_points(x, y)
+
+        while x > y:
+            y += 1
+            if P <= 0:  # Midpoint is inside or on the perimeter
+                P = P + 2 * y + 1
+            else:  # Midpoint is outside
+                x -= 1
+                P = P + 2 * y - 2 * x + 1
+
+            if x < y:  # Finished drawing all the points in the quadrant; break
+                break
+
+            plot_circle_points(x, y)
+
+    def daltonize_canvas(self, cvd_type):
+
+        if not self.is_filter_on or self.filter_type != cvd_type:
+            # Daltonize the filtered pixels
+            for (x, y), color in self.pixels.items():
+                daltonized_color = daltonize(color, cvd_type)
+                #self.pixels[(x, y)] = daltonized_color
+
+                # Updating the canvas buffer to display the pixel while preserving original value
+                current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)
+                buffer_painter = QPainter(self.canvas_buffer)
+                buffer_painter.fillRect(current_pixel, daltonized_color)
+                buffer_painter.end()
+            self.update()
+
+            self.is_filter_on = True
+            self.filter_type = cvd_type
+
+        else:
+            self.is_filter_on = False
+            self.filter_type = None
 
         

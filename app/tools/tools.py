@@ -1,8 +1,8 @@
 # Importing basic widgets from PyQt6.
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QApplication, QHBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QApplication, QHBoxLayout, QMenu
 # Importing the necessary modules to work with canvas drawings.
-from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QPainter, QColor, QIcon, QPixmap, QCursor, QFont
+from PyQt6.QtCore import Qt, QSize, QPoint
 # Importing our canvas class.
 from canvas.pixelate_canvas import PixelateCanvas
 from canvas.canvas_history import CanvasHistory
@@ -28,7 +28,7 @@ class Tools(QMainWindow):
 
         # To store our tool buttons (for styling purposes).
         self.tools = []
-        self.active_tool = None
+        self.active_tools = [None, None]
 
         # Using a vertical layout as our main layout.
         layout = QVBoxLayout()
@@ -149,6 +149,42 @@ class Tools(QMainWindow):
         self.tools.append(button)
         layout.addWidget(button)
 
+        # Our circle tool:
+        button = QPushButton()
+        button.setStyleSheet(self.get_default_button_style())
+        button.setIcon(QIcon(self.icons_path + "circle_icon.png"))
+        button.setIconSize(self.icon_size)
+
+        # Connecting its signal to a function that will set our drag state to True.
+        button.clicked.connect(self.use_circle_tool)
+        button.setIconSize(self.icon_size)
+        self.tools.append(button)
+        layout.addWidget(button)
+
+        # Our LMS tool:
+        self.lms_button = FilterButton()
+        self.lms_button.setStyleSheet(self.get_default_button_style())
+        self.lms_button.setIcon(QIcon(self.icons_path + "smart_filter.png"))
+
+        # Create a dropdown menu for the different filters
+        self.lms_menu = QMenu(self)
+        self.protanopia_action = self.lms_menu.addAction("Protanopia", lambda: self.use_smart_filter("Protanopia"))
+        self.deuteranopia_action = self.lms_menu.addAction("Deuteranopia", lambda: self.use_smart_filter("Deuteranopia"))
+        self.tritanopia_action = self.lms_menu.addAction("Tritanopia", lambda: self.use_smart_filter("Tritanopia"))
+
+        self.protanopia_action.setCheckable(True)
+        self.deuteranopia_action.setCheckable(True)
+        self.tritanopia_action.setCheckable(True)
+
+        self.lms_menu.setStyleSheet(self.get_menu_style())
+
+        # Connect smart filter menu to the button.
+        self.lms_button.clicked.connect(self.show_lms_menu)
+        self.lms_button.setMenu(self.lms_menu)
+        self.lms_button.setIconSize(self.icon_size)
+        self.tools.append(self.lms_button)
+        layout.addWidget(self.lms_button)
+
         # Creating an intermediary widget to hold our layout.
         window = QWidget()
         window.setLayout(layout)
@@ -158,6 +194,27 @@ class Tools(QMainWindow):
 
         # Setting the central widget of our tools window.
         self.setCentralWidget(window)
+
+    # A method to show the LMS menu.
+    def show_lms_menu(self):
+        menu = self.lms_button.getMenu()
+        
+        # Get the lms_button's rect.
+        rect = self.lms_button.rect()
+
+        # Get the bottom right corner of the rect and map it to global coordinates.
+        bottom_right = self.lms_button.mapToGlobal(rect.bottomRight())
+
+        # Show the menu at the bottom right corner of the lms_button.
+        menu_width = menu.sizeHint().width()
+
+        # Calculate the x and y positions for the menu.
+        offset = 5
+        x = bottom_right.x() - menu_width - offset
+        y = bottom_right.y()
+
+        # Show the menu at the calculated position.
+        menu.popup(QPoint(x, y))
 
     def clear_canvas(self):
 
@@ -204,7 +261,7 @@ class Tools(QMainWindow):
     def set_fill_mode(self, fill_mode):
 
         # Setting it as the active tool and updating the styles of our buttons.
-        self.active_tool = self.tools[0]
+        self.active_tools[0] = self.tools[0]
         self.update_button_styles()
 
         # Setting our cursor to be an arrow cursor.
@@ -228,10 +285,13 @@ class Tools(QMainWindow):
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
     def use_pencil_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
-        self.active_tool = self.tools[3]
+        self.active_tools[0] = self.tools[3]
         self.update_button_styles()
 
         # Setting our cursor to be an arrow cursor.
@@ -255,10 +315,13 @@ class Tools(QMainWindow):
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
     def use_erase_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
-        self.active_tool = self.tools[4]
+        self.active_tools[0] = self.tools[4]
         self.update_button_styles()
         
         # Setting our cursor to be an arrow cursor.
@@ -282,10 +345,13 @@ class Tools(QMainWindow):
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
     def use_cursor_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
-        self.active_tool = self.tools[2]
+        self.active_tools[0] = self.tools[2]
         self.update_button_styles()
 
         # Setting our cursor to be an open hand cursor to indicate that it's draggable.
@@ -309,10 +375,13 @@ class Tools(QMainWindow):
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
     def use_eyedropper_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
-        self.active_tool = self.tools[1]
+        self.active_tools[0] = self.tools[1]
         self.update_button_styles()
 
         # To set our cursor as an eyedropper icon, we'll use a pixmap.
@@ -340,11 +409,14 @@ class Tools(QMainWindow):
 
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
+
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
         
     def use_line_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
-        self.active_tool = self.tools[5]
+        self.active_tools[0] = self.tools[5]
         self.update_button_styles()
 
         # Setting our cursor to be an arrow cursor.
@@ -368,10 +440,13 @@ class Tools(QMainWindow):
         # Setting the square tool mode of our canvas False.
         self.canvas.set_square_mode(False)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
     def use_square_tool(self):
 
         # Setting it as the active tool and updating the styles of our buttons.
-        self.active_tool = self.tools[6]
+        self.active_tools[0] = self.tools[6]
         self.update_button_styles()
         
         # Setting our cursor to be an arrow cursor.
@@ -395,6 +470,82 @@ class Tools(QMainWindow):
         #Setting the square tool mode of our canvas True.
         self.canvas.set_square_mode(True)
 
+        # Setting the circle tool mode of our canvas False.
+        self.canvas.set_circle_mode(False)
+
+    def use_circle_tool(self):
+
+        # Setting it as the active tool and updating the styles of our buttons.
+        self.active_tools[0] = self.tools[7]
+        self.update_button_styles()
+
+        # Setting our cursor to be an arrow cursor.
+        self.canvas.setCursor(Qt.CursorShape.ArrowCursor)
+
+        # Setting the fill mode of our canvas to False.
+        self.canvas.set_fill_mode(False)
+
+        # Setting the drag state of our canvas to False.
+        self.canvas.set_draggable(False)
+
+        # Setting eyedropper mode to False.
+        self.canvas.set_eyedropper_mode(False)
+
+        # Setting the erase mode of our canvas to False.
+        self.canvas.set_erase_mode(False)
+
+        # Setting the line tool mode of our canvas False.
+        self.canvas.set_line_mode(False)
+
+        #Setting the square tool mode of our canvas True.
+        self.canvas.set_square_mode(False)
+
+        # Setting the circle tool mode of our canvas True.
+        self.canvas.set_circle_mode(True)
+
+    def use_smart_filter(self, cvd_type):
+        self.active_tools[1] = self.tools[8]
+
+        # Check if the filter is already active
+        if self.canvas.is_filter_on and self.canvas.filter_type == cvd_type:
+            # Turn off the filter
+            self.canvas.is_filter_on = False
+            self.canvas.filter_type = None
+            self.canvas.restore_buffer()
+            self.active_tools[1] = None
+
+            # Uncheck the action
+            if cvd_type == "Protanopia":
+                self.protanopia_action.setChecked(False)
+            elif cvd_type == "Deuteranopia":
+                self.deuteranopia_action.setChecked(False)
+            elif cvd_type == "Tritanopia":
+                self.tritanopia_action.setChecked(False)
+
+        else:
+            # Apply the filter
+            self.canvas.daltonize_canvas(cvd_type)
+
+            # Check the action and uncheck others
+            if cvd_type == "Protanopia":
+                self.protanopia_action.setChecked(True)
+                self.deuteranopia_action.setChecked(False)
+                self.tritanopia_action.setChecked(False)
+
+            elif cvd_type == "Deuteranopia":
+                self.protanopia_action.setChecked(False)
+                self.deuteranopia_action.setChecked(True)
+                self.tritanopia_action.setChecked(False)
+
+            elif cvd_type == "Tritanopia":
+                self.protanopia_action.setChecked(False)
+                self.deuteranopia_action.setChecked(False)
+                self.tritanopia_action.setChecked(True)
+
+        # Update the canvas
+        self.canvas.update()
+        self.update_button_styles()
+
     # Default button style.
     def get_default_button_style(self):
         return f'''
@@ -410,6 +561,15 @@ class Tools(QMainWindow):
             }}
             QPushButton:pressed {{
                 background-color: darkgray;
+            }}
+            QPushButton::menu-indicator {{
+                subcontrol-origin: padding;
+                subcontrol-position: right bottom;
+                right: 5px; /* To move the arrow left/right */
+                bottom: 5px; /* To move the arrow up/down */
+                padding-right: 10px; /* Adds padding to the right of the arrow */
+                padding-left: 5px; /* Adds padding to the left of the arrow */
+                padding-bottom: 5px; /* Adds padding to the bottom of the arrow */
             }}
         '''
     
@@ -432,12 +592,74 @@ class Tools(QMainWindow):
                 /* An even darker shade of purple. */
                 background-color: #483D8B;
             }}
+            QPushButton::menu-indicator {{
+                subcontrol-origin: padding;
+                subcontrol-position: right bottom;
+                right: 5px; /* To move the arrow left/right */
+                bottom: 5px; /* To move the arrow up/down */
+                padding-right: 10px; /* Adds padding to the right of the arrow */
+                padding-left: 5px; /* Adds padding to the left of the arrow */
+                padding-bottom: 5px; /* Adds padding to the bottom of the arrow */
+            }}
         '''
     
     # A method to update the styles of our buttons.
     def update_button_styles(self):
         for button in self.tools:
-            if button == self.active_tool:
+            if button in self.active_tools:
                 button.setStyleSheet(self.get_active_button_style())
             else:
                 button.setStyleSheet(self.get_default_button_style())
+
+    # A method to retrieve the style of our menu bar.
+    def get_menu_style(self):
+
+        pixelated_font = QFont("Press Start 2P")
+        pixelated_font.setPointSize(16)
+
+        return f'''
+            QMenu {{
+                background-color: lightgray;
+                color: black;
+                font-family: {pixelated_font.family()};
+                border: 1px solid black;
+                min-width: 150px;
+            }}
+            QMenu::item {{
+                padding: 10px 20px;
+                border-bottom: 1px solid darkgray;
+            }}
+            QMenu::item:selected {{
+                /* A medium shade of gray. */
+                background-color: #BEBEBE;
+                color: black;
+            }}
+            QMenu::item:pressed {{
+                background-color: darkgray;
+            }}
+            QMenu::item:checked {{
+                background-color: #9370DB;
+                color: white;
+                font-weight: bold;
+            }}
+        '''
+
+# A custom filter button for our LMS filter.
+class FilterButton(QPushButton):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.menu = None
+
+    def setMenu(self, menu):
+        self.menu = menu
+        super().setMenu(menu)
+
+    def mousePressEvent(self, event):
+        # Emit the clicked signal when the button is clicked; don't show the menu yet.
+        self.clicked.emit()
+        self.setDown(False) # Don't keep the button pressed.
+        event.accept()
+
+    def getMenu(self):
+        return self.menu
