@@ -17,7 +17,7 @@ class PixelateCanvas(QWidget):
 
         # Invoking the parent class constructor.
         super().__init__()
-
+        
         # The start and end points for the line tool.
         self.line_start = (0,0)
         self.line_end   = (0,0)
@@ -789,5 +789,3 @@ class PixelateCanvas(QWidget):
         else:
             self.is_filter_on = False
             self.filter_type = None
-
-        

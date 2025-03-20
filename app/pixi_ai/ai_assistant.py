@@ -229,7 +229,7 @@ class AIAssistant(QWidget):
             self.chat_context.append({"role": "user", "content": message})
 
             # Creating a list item to display the user's message and adding it to our chat messages list widget.
-            self.create_list_item(f"You: {message}", is_user=True)
+            self.create_list_item(f"{message}", is_user=True)
 
             # Clearing the input field.
             self.input_field.clear()
@@ -245,6 +245,9 @@ class AIAssistant(QWidget):
 
             # Automatically scrolling to the bottom of our chat messages list widget.
             self.chat_messages.scrollToBottom()
+
+            # Refocusing on the input field after sending a message.
+            self.input_field.setFocus()
 
     # A function to create a list item for our chat messages list widget.
     def create_list_item(self, message, is_user=False):
