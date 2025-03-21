@@ -14,14 +14,14 @@ class ColorButton(QPushButton):
         # Storing a reference to the color selection window (to work w/ its primary and secondary colors).
         self.color_selection_window = color_selection_window
 
+        # Storing our color as a hexadecimal string.
+        self.color = "#000000" # Default color is black.
+
     # Overriding the mousePressEvent method to handle setting primary and secondary colors of our color selection window.
     def mousePressEvent(self, event):
         
-        # Getting our mouse button's stylesheet.
-        button_stylesheet = self.styleSheet()
-
-        # Extracting the background color from the stylesheet.
-        button_color = button_stylesheet.split("background-color: ")[1].split(";")[0]
+        # Getting our button's color (unfiltered).
+        button_color = self.color
 
         # Checking if the left mouse button was clicked.
         if event.button() == Qt.MouseButton.LeftButton:
@@ -43,11 +43,8 @@ class ColorButton(QPushButton):
     # Overriding the enterEvent method to set our color selection window's approximation label.
     def enterEvent(self, event):
 
-        # Getting our mouse button's stylesheet.
-        button_stylesheet = self.styleSheet()
-
-        # Extracting the background color from the stylesheet.
-        button_color = button_stylesheet.split("background-color: ")[1].split(";")[0]
+        # Getting our button's color (unfiltered).
+        button_color = self.color
 
         # Setting the approximation label of our color selection window.
         self.color_selection_window.set_color_approx_label(QColor(button_color))
@@ -62,3 +59,7 @@ class ColorButton(QPushButton):
 
         super().leaveEvent(event)
 
+    def setColor(self, color):
+
+        # Setting our button's color as a hexadecimal string.
+        self.color = color

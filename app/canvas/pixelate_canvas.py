@@ -774,7 +774,6 @@ class PixelateCanvas(QWidget):
             # Daltonize the filtered pixels
             for (x, y), color in self.pixels.items():
                 daltonized_color = daltonize(color, cvd_type)
-                #self.pixels[(x, y)] = daltonized_color
 
                 # Updating the canvas buffer to display the pixel while preserving original value
                 current_pixel = QRect(x * self.pixel_size, y * self.pixel_size, self.pixel_size, self.pixel_size)

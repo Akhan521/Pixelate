@@ -99,7 +99,7 @@ class CustomMessageBox(QDialog):
     # A method to get our custom style.
     def get_style(self, type="info"):
 
-        border_color = "purple" if type == "info" else "darkred" if type == "error" or type == "warning" else "darkgreen"
+        border_color = "#8c52ff" if type == "info" else "darkred" if type == "error" or type == "warning" else "darkgreen"
         return f'''
             QDialog {{
                 background-color: lightgray;
@@ -136,7 +136,7 @@ class CustomMessageBox(QDialog):
     # A method to get our custom taskbar style.
     def get_taskbar_style(self, type):
 
-        bg_color = "purple" if type == "info" else "darkred" if type == "error" or type == "warning" else "darkgreen"
+        bg_color = "#8c52ff" if type == "info" else "darkred" if type == "error" or type == "warning" else "darkgreen"
         return f'''
             QLabel {{
                 background-color: {bg_color};
