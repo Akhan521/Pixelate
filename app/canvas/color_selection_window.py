@@ -5,6 +5,7 @@ from PyQt6.QtGui import QPainter, QColor, QFontDatabase, QFont, QGuiApplication
 from PyQt6.QtCore import Qt
 from canvas.color_button import ColorButton
 from canvas.color_approx_mapping import ColorApproximator
+from tools.smart_filter import daltonize
 
 class ColorSelectionWindow(QMainWindow):
     def __init__(self, pixel_size=15, grid_width=32, grid_height=32):
@@ -30,6 +31,10 @@ class ColorSelectionWindow(QMainWindow):
         self.width = self.button_size * self.columns + self.width_offset
         self.height = self.button_size * self.rows + self.height_offset
         self.setFixedSize(self.width, self.height)
+
+        # Our filter status.
+        self.is_filter_on = False
+        self.filter_type = None # The type of color vision deficiency filter to apply.
 
         # Our predefined color palettes (Normal, Protanopia, Deuteranopia, and Tritanopia).
         # We'll store these palettes in a dictionary; each palette will consist of 30 colors.
@@ -102,9 +107,11 @@ class ColorSelectionWindow(QMainWindow):
         # We'll then add our primary and secondary color boxes below.
         button = ColorButton(color_selection_window=self)
         button.setStyleSheet(f"background-color: {self.get_primary_color().name()}; border: {self.button_border}px solid black;")
+        button.setColor(self.get_primary_color().name())
         selected_colors_layout.addWidget(button)
         button = ColorButton(color_selection_window=self)
         button.setStyleSheet(f"background-color: {self.get_secondary_color().name()}; border: {self.button_border}px solid black;")
+        button.setColor(self.get_secondary_color().name())
         selected_colors_layout.addWidget(button)
 
         # Our color approximation label which will store the name of the color closest to the selected color.
@@ -131,9 +138,6 @@ class ColorSelectionWindow(QMainWindow):
         main_layout.addWidget(self.selected_colors)
         main_layout.addWidget(self.color_approx_label)
         window.setLayout(main_layout)
-
-        # Fixing the size of our color selection grid widget and our primary/secondary color boxes.
-        # color_grid.setFixedSize(self.button_size * self.columns, self.button_size * self.rows)
         
         # Setting the central widget of our application.
         self.setCentralWidget(window)
@@ -173,6 +177,10 @@ class ColorSelectionWindow(QMainWindow):
         # We'll then access each button in our grid layout and set its color to the corresponding color in our palette.
         for i, color in enumerate(self.color_palettes[palette]):
             button = grid_layout.itemAt(i).widget()
+            # We'll update the hexadecimal color value of our custom color button.
+            button.setColor(color.name())
+            # We'll update the background color of our custom color button.
+            color = color if not self.is_filter_on else daltonize(color, self.filter_type)
             button.setStyleSheet(f"background-color: {color.name()}; border: {self.button_border}px solid black;")
 
         # We'll update the selected colors to reflect the changes we've made.
@@ -214,6 +222,8 @@ class ColorSelectionWindow(QMainWindow):
             # Creating a button w/ the given background color + a border.
             button = ColorButton(color_selection_window=self)
             button.setStyleSheet(f"background-color: {color.name()}; border: {self.button_border}px solid black;")
+            # We'll store the hexadecimal color value of our button.
+            button.setColor(color.name())
             # Adding the button to our grid layout. We'll need to specify the row and column for each button.
             grid_layout.addWidget(button, i // self.columns, i % self.columns)
             # Fixing the size of each button.
@@ -302,17 +312,21 @@ class ColorSelectionWindow(QMainWindow):
         # Note: our selected colors widget has only 2 sub-widgets (our 2 color boxes/buttons).
         layout = self.selected_colors.layout()
 
-        # We'll then access the primary color button.
         # The very first widget is our primary color button (at index 0).
         primary_color_button = layout.itemAt(0).widget()
+        primary_color = self.get_primary_color() if not self.is_filter_on else daltonize(self.get_primary_color(), self.filter_type)
         # We'll update the background color of our primary color button.
-        primary_color_button.setStyleSheet(f'''background-color: {self.get_primary_color().name()}; 
+        primary_color_button.setStyleSheet(f'''background-color: {primary_color.name()}; 
                                                border: {self.button_border}px solid black;''')
+        primary_color_button.setColor(self.get_primary_color().name())
 
         # Next, we'll do the same for our secondary color button (at index 1).
         secondary_color_button = layout.itemAt(1).widget() 
-        secondary_color_button.setStyleSheet(f'''background-color: {self.get_secondary_color().name()};
+        secondary_color = self.get_secondary_color() if not self.is_filter_on else daltonize(self.get_secondary_color(), self.filter_type)
+        # We'll update the background color of our secondary color button.
+        secondary_color_button.setStyleSheet(f'''background-color: {secondary_color.name()};
                                                  border: {self.button_border}px solid black;''')
+        secondary_color_button.setColor(self.get_secondary_color().name())
 
     # The following method will return the primary color.
     def get_primary_color(self):
@@ -340,7 +354,59 @@ class ColorSelectionWindow(QMainWindow):
         else:
             self.color_approx_label.setText("Color:\nNone")
 
-# app = QApplication([])
-# window = ColorSelectionWindow()
-# window.show()
-# app.exec()
+    # A method to daltonize our color palette.
+    def daltonize_color_palette(self, cvd_type):
+        self.is_filter_on = True
+        self.filter_type = cvd_type
+        
+        # We'll need access to our central widget's layout (which holds our color selection widget).
+        layout = self.centralWidget().layout()
+
+        # We'll then access the grid layout of our color selection widget.
+        grid_layout = layout.itemAt(2).widget().layout()
+
+        # We'll then access each button in our grid layout and daltonize its color.
+        for i in range(self.rows * self.columns):
+            button = grid_layout.itemAt(i).widget()
+            # Getting our button's color (unfiltered).
+            color = QColor(button.color)
+            daltonized_color = daltonize(color, cvd_type)
+            button.setStyleSheet(f"background-color: {daltonized_color.name()}; border: {self.button_border}px solid black;")
+
+        # We'll daltonize our primary and secondary colors as well.
+        self.daltonize_selected_colors(cvd_type)
+
+    def daltonize_selected_colors(self, cvd_type):
+        
+        # We'll access our primary and secondary color buttons and update their colors.
+        selected_colors_layout = self.selected_colors.layout()
+        primary_color_button = selected_colors_layout.itemAt(0).widget()
+        secondary_color_button = selected_colors_layout.itemAt(1).widget()
+        daltonized_primary_color = daltonize(self.get_primary_color(), cvd_type)
+        daltonized_secondary_color = daltonize(self.get_secondary_color(), cvd_type)
+        primary_color_button.setStyleSheet(f"background-color: {daltonized_primary_color.name()}; border: {self.button_border}px solid black;")
+        secondary_color_button.setStyleSheet(f"background-color: {daltonized_secondary_color.name()}; border: {self.button_border}px solid black;")
+
+    # A method to restore the original color palette (after daltonizing).
+    def restore_color_palette(self):
+        self.is_filter_on = False
+        self.filter_type = None
+
+        # We'll need access to our central widget's layout (which holds our color selection widget).
+        layout = self.centralWidget().layout()
+
+        # We'll then access the grid layout of our color selection widget.
+        grid_layout = layout.itemAt(2).widget().layout()
+
+        # Determining the active palette.
+        active_palette = self.active_palette_button.text()
+        active_palette = "Normal" if active_palette == "N" else "Protanopia" if active_palette == "P" else "Deuteranopia" if active_palette == "D" else "Tritanopia"
+
+        # We'll then access each button in our grid layout and set its color to the corresponding color in our palette.
+        for i, color in enumerate(self.color_palettes[active_palette]):
+            button = grid_layout.itemAt(i).widget()
+            button.setStyleSheet(f"background-color: {color.name()}; border: {self.button_border}px solid black;")
+
+        # We'll update the selected colors to reflect the changes we've made.
+        self.update_selected_colors()
+    

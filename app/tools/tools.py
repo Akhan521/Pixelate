@@ -211,7 +211,7 @@ class Tools(QMainWindow):
         # Calculate the x and y positions for the menu.
         offset = 5
         x = bottom_right.x() - menu_width - offset
-        y = bottom_right.y()
+        y = bottom_right.y() + offset
 
         # Show the menu at the calculated position.
         menu.popup(QPoint(x, y))
@@ -504,17 +504,19 @@ class Tools(QMainWindow):
         self.canvas.set_circle_mode(True)
 
     def use_smart_filter(self, cvd_type):
+        # Setting our active filter and updating the styles of our buttons.
         self.active_tools[1] = self.tools[8]
 
-        # Check if the filter is already active
+        # Check if the filter is already active...
         if self.canvas.is_filter_on and self.canvas.filter_type == cvd_type:
-            # Turn off the filter
+            # Turn off the filter.
             self.canvas.is_filter_on = False
             self.canvas.filter_type = None
             self.canvas.restore_buffer()
+            self.canvas.color_selection_window.restore_color_palette()
             self.active_tools[1] = None
 
-            # Uncheck the action
+            # Uncheck the action.
             if cvd_type == "Protanopia":
                 self.protanopia_action.setChecked(False)
             elif cvd_type == "Deuteranopia":
@@ -523,8 +525,9 @@ class Tools(QMainWindow):
                 self.tritanopia_action.setChecked(False)
 
         else:
-            # Apply the filter
+            # Apply the filter to our canvas and color palette.
             self.canvas.daltonize_canvas(cvd_type)
+            self.canvas.color_selection_window.daltonize_color_palette(cvd_type)
 
             # Check the action and uncheck others
             if cvd_type == "Protanopia":
