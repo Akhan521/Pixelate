@@ -406,6 +406,7 @@ class ColorSelectionWindow(QMainWindow):
         for i, color in enumerate(self.color_palettes[active_palette]):
             button = grid_layout.itemAt(i).widget()
             button.setStyleSheet(f"background-color: {color.name()}; border: {self.button_border}px solid black;")
+            button.setColor(color.name())
 
         # We'll update the selected colors to reflect the changes we've made.
         self.update_selected_colors()
