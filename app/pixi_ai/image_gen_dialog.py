@@ -223,12 +223,12 @@ class ImageGenDialog(QDialog):
             }}
             QDialogButtonBox QPushButton:hover {{
                 color: white;
-                background-color: purple;
+                background-color: #8c52ff;
                 border: 2px solid white;
             }}
             QDialogButtonBox QPushButton:pressed {{
                 color: white;
-                background-color: #4B0082;
+                background-color: purple;
                 border: 2px solid white
             }}
             '''
@@ -237,7 +237,7 @@ class ImageGenDialog(QDialog):
     def get_taskbar_style(self):
         return f'''
             QLabel {{
-                background-color: purple;
+                background-color: #8c52ff;
                 color: white;
                 padding: 10px;
                 font-family: {self.get_font().family()};

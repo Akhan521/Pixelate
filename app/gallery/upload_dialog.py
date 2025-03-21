@@ -300,7 +300,7 @@ class UploadDialog(QDialog):
     def get_header_style(self):
         return f'''
             QLabel {{
-                background-color: purple;
+                background-color: #8c52ff;
                 color: white;
                 font-family: {self.get_font().family()};
                 padding: 10px;
@@ -352,12 +352,12 @@ class UploadDialog(QDialog):
             }}
             QPushButton:hover {{
                 color: white;
-                background-color: purple;
+                background-color: #8c52ff;
                 border: 2px solid white;
             }}
             QPushButton:pressed {{
                 color: white;
-                background-color: #4B0082;
+                background-color: purple;
                 border: 2px solid white
             }}
         '''

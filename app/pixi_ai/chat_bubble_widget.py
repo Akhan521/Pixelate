@@ -66,7 +66,7 @@ class ChatBubbleWidget(QWidget):
 
         # If the message is from Pixi, we'll use a lighter shade of gray.
         else:
-            background_color = "#9370DB"
+            background_color = "#8c52ff"
 
         # Returning the style of our chat bubble widget.
         return f'''

@@ -581,7 +581,7 @@ class Tools(QMainWindow):
         return f'''
             QPushButton {{
                 /* A lighter shade of purple. */
-                background-color: #9370DB;
+                background-color: #8c52ff;
                 color: white;
                 padding: 5px;
                 border: 2px solid white;
@@ -641,7 +641,7 @@ class Tools(QMainWindow):
                 background-color: darkgray;
             }}
             QMenu::item:checked {{
-                background-color: #9370DB;
+                background-color: #8c52ff;
                 color: white;
                 font-weight: bold;
             }}

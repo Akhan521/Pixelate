@@ -169,6 +169,9 @@ class StartScreen(QMainWindow):
     # A method to open a previous project (by loading a text file w/ our pixels data).
     def open(self):
 
+        # Displaying the dimmed backdrop.
+        self.dimmed_backdrop.show()
+
         # Prompting the user to select a file to open.
         filepath, _ = QFileDialog.getOpenFileName(self, "Pixelate: Open Project", "", "Pix Files (*.pix)")
 
@@ -194,6 +197,7 @@ class StartScreen(QMainWindow):
                     CustomMessageBox(title   = "ERROR: invalid/missing dimensions", 
                                      message = "The selected file is missing or has invalid dimensions.", 
                                      type    = "error")
+                    self.dimmed_backdrop.hide()
                     return
 
                 # Parsing our text file using the ast module. (Converting our string dict. to an actual dict.)
@@ -204,6 +208,7 @@ class StartScreen(QMainWindow):
                     CustomMessageBox(title   = "ERROR: invalid data format/type", 
                                      message = "The data in the selected file is not in the correct format.", 
                                      type    = "error")
+                    self.dimmed_backdrop.hide()
                     return
                 
                 # If our dimensions and pixels data are valid, we'll set up our canvas with the imported data.
@@ -211,6 +216,7 @@ class StartScreen(QMainWindow):
                     CustomMessageBox(title   = "Success", 
                                      message = "Project opened successfully.", 
                                      type    = "info")
+                    self.dimmed_backdrop.hide()
 
                     # Creating our main window with the imported dimensions.
                     self.main_window = MainWindow(dimensions)
@@ -231,6 +237,10 @@ class StartScreen(QMainWindow):
                 CustomMessageBox(title   = "ERROR: failed to open project", 
                                  message = str(e), 
                                  type    = "warning")
+                self.dimmed_backdrop.hide()
+
+        # Hiding the dimmed backdrop.
+        self.dimmed_backdrop.hide()
 
     def get_button_style(self):
 
@@ -249,7 +259,7 @@ class StartScreen(QMainWindow):
 
         return f'''
             QPushButton {{
-                background-color: purple;
+                background-color: #8c52ff;
                 color: white;
                 font-size: 20px;
                 font-family: {pixelated_font.family()};
@@ -258,11 +268,11 @@ class StartScreen(QMainWindow):
                 border-radius: 10px;
             }}
             QPushButton:hover {{
-                /* A very dark shade of purple. */
-                background-color: #4B0082;
+                background-color: purple;
             }}
             QPushButton:pressed {{
-                background-color: purple;
+                /* A very dark shade of purple. */
+                background-color: #4B0082;
             }}
             '''
         

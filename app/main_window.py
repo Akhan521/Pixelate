@@ -455,7 +455,7 @@ class MainWindow(QMainWindow):
         return f'''
             QMenuBar {{
                 /* A light shade of purple. */
-                background-color: #9370DB;
+                background-color: #8c52ff;
                 color: white;
                 font-family: {pixelated_font.family()};
             }}

@@ -204,7 +204,7 @@ class GalleryWidget(QWidget):
             color: white;
             margin-bottom: 10px;
             padding: 12px;
-            background-color: purple;
+            background-color: #8c52ff;
             border-radius: 8px;
         }}
         QListWidget {{
@@ -260,12 +260,12 @@ class GalleryWidget(QWidget):
         }}
         QPushButton:hover {{
             color: white;
-            background-color: purple;
+            background-color: #8c52ff;
             border: 2px solid white;
         }}
         QPushButton:pressed {{
             color: white;
-            background-color: #4B0082;
+            background-color: purple;
             border: 2px solid white;
         }}
     '''
