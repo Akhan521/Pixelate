@@ -1,4 +1,4 @@
-# Pixelate
+# Pixelate: A pixel-art sprite editor with accessibility accommodations for the colorblind
 
 Authors: [Aamir Khan](https://github.com/Akhan521), [Abdi Nava](https://github.com/abdinava), [Alexis Manalastas](https://github.com/amana032)
 
