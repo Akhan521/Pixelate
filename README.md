@@ -1,4 +1,4 @@
-# Pixelate ![pixelate-icon](https://github.com/user-attachments/assets/391d0ebd-d8f4-4cc0-86d9-7c6e884593a5): A pixel-art platform with greater accessibility
+# Pixelate ![pixelate-logo](https://github.com/user-attachments/assets/406abdbe-6fc0-496f-95fd-e087c12b16ca) : A pixel-art platform with greater accessibility
 
 Authors: [Aamir Khan](https://github.com/Akhan521), [Abdi Nava](https://github.com/abdinava), [Alexis Manalastas](https://github.com/amana032)
 
