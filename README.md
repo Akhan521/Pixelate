@@ -2,9 +2,7 @@
 
 Authors: [Aamir Khan](https://github.com/Akhan521), [Abdi Nava](https://github.com/abdinava), [Alexis Manalastas](https://github.com/amana032)
 
-<div style="text-align: center; margin: 20px 0;">
-  <img src="https://github.com/user-attachments/assets/87f37cf8-1f87-4921-9466-670ffd896e01" alt="pixelate-logo">
-</div>
+![pixelate-logo-small](https://github.com/user-attachments/assets/2554ff53-6a40-4481-8e27-262be016748e)
 
 ## Project Description
 Pixelate is an inclusive pixel-art sprite editor designed to help colorblind artists with its unique accessibility features. Existing image editing tools on the market do not offer support for color-vision deficiencies, which more than 300 million people are afflicted with worldwide.  Pixelate addresses this issue by offering tools such as an AI conversational assistant, vision filters, and approximation tools tailored to the three most common types of colorblindness: protanopia, deuteranopia, and tritanopia. Additionally, we foster community engagement through our custom gallery feature. It is with great pleasure and enthusiasm that we introduce to you, Pixelate!
