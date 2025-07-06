@@ -1,4 +1,4 @@
-# ![pixelate-logo](https://github.com/user-attachments/assets/406abdbe-6fc0-496f-95fd-e087c12b16ca) Pixelate: An Inclusive Pixel-Art Platform for All Creators
+# ![pixelate-logo](https://github.com/user-attachments/assets/406abdbe-6fc0-496f-95fd-e087c12b16ca) Pixelate: An Inclusive Pixel-Art Platform
 
 Built by: [Aamir Khan](https://github.com/Akhan521), [Abdi Nava](https://github.com/abdinava), [Alexis Manalastas](https://github.com/amana032)
 
