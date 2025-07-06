@@ -61,7 +61,11 @@ Throughout this project, we took on multiple technical and design challenges. He
 ## 🌟 Pixelate in Action
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/7d0299c8-23b5-4cd5-a4c8-55c83b1935f1" alt="Pixelate Demo" width="80%">
+  
+
+https://github.com/user-attachments/assets/4ced2f19-67f5-4b88-869e-ff139be8dd83
+
+
 </div>
 
 ---
