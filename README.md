@@ -77,7 +77,7 @@ You can run Pixelate locally on your machine by following these simple steps:
 ### ✅ Prerequisites
 - **Python 3.8 or higher**  
   → [Download Python](https://www.python.org/downloads/)
-- **Git** 
+- **Git**  
   → [Download Git](https://git-scm.com/)
 
 ---
