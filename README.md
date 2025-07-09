@@ -173,6 +173,19 @@ But the biggest win wasn’t technical, it was learning how to **build for other
 
 ---
 
+## 📚 Acknowledgements
+
+The following resources were very beneficial and insightful during our development of *Pixelate*, so we acknowledge them here:
+- Tecson, Gerald & Calanda, Fredilyn & Cayabyab, Gerald & Reyes Jr, Felizardo. (2017). Covisance: A Real Time Mobile Recolorization Tool for Aiding Color Vision Deficient Users Utilizing D-15 Color Arrangement Test.
+- Swathi, Baswaraju and Vishal Roshan. “Color Blindness Algorithm Comparison for Developing an Android Application.” (2020).
+- Burtsev, S.V., and Ye.P. Kuzmin. "An Efficient Flood-Filling Algorithm." Computers & Graphics, vol. 17, no. 5, 1993, pp. 549-561.
+- Madan, Lokesh, Kislay Anand, and Bharat Bhushan. "Bresenham's Lines Algorithm." International Journal of Research in Science and Technology, vol. 4, no. 3, Jul.-Sep. 2014
+- Zufri, Tubagus & Hilman, Dodi & Frans, Octavianus. (2022). Research on the Application of Pixel Art in Game Character Design. Journal of Games, Game Art, and Gamification. 7. 27-31. 10.21512/jggag.v7i1.8565. 
+- Hui, Zimo. (2021). Color Identification: Guiding Children with Color Vision Deficiency to Learn Art. 10.2991/assehr.k.210813.111. 
+
+
+---
+
 ## ⭐ Support Us
 
 If you found this project helpful, interesting, or inspiring, feel free to ⭐ the repository! 
